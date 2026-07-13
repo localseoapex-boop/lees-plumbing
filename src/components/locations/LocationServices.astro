@@ -1,0 +1,193 @@
+---
+/**
+ * LocationServices.astro — the two service cards on a city page.
+ *
+ * This is the largest section on a city overview page and its most valuable one,
+ * because it is what routes the visitor into the core Hyde Park service pages.
+ * Every link here points at a real page: the hub (/plumbing, /heating-cooling)
+ * and the individual sub-services beneath it. There are NO city-service links,
+ * because those pages do not exist by design.
+ *
+ * Both the card title and its CTA link to the hub, and every highlighted service
+ * is its own link, so the section carries real internal-linking weight rather
+ * than being a decorative summary.
+ */
+export interface ServiceHighlight {
+  name: string;
+  href: string;
+}
+
+export interface LocationServiceCardView {
+  name: string;
+  intro: string;
+  href: string;
+  ctaLabel: string;
+  highlights: ServiceHighlight[];
+}
+
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  cards: LocationServiceCardView[];
+}
+
+const { id, heading, intro, cards } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="loc-services" {id} aria-labelledby={headingId}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    <ul class="card-grid">
+      {
+        cards.map((card) => (
+          <li class="service-card">
+            <h3 class="card-title">
+              <a href={card.href}>{card.name}</a>
+            </h3>
+            <p class="card-intro">{card.intro}</p>
+
+            <ul class="highlights">
+              {card.highlights.map((h) => (
+                <li>
+                  <a href={h.href}>{h.name}</a>
+                </li>
+              ))}
+            </ul>
+
+            <a class="card-cta" href={card.href}>
+              {card.ctaLabel}
+              <span aria-hidden="true">&rsaquo;</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .loc-services {
+    background: var(--color-surface);
+    padding: var(--section-y) 0;
+    scroll-margin-top: 1.5rem;
+  }
+  .section-head {
+    max-width: 62ch;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .section-intro {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .card-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 2.5vw, 2rem);
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-red);
+    border-radius: var(--radius-lg);
+  }
+  .card-title {
+    font-size: 1.75rem;
+    margin: 0 0 0.75rem;
+  }
+  .card-title a {
+    color: var(--color-dark);
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: var(--color-red);
+  }
+  .card-intro {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+  }
+
+  .highlights {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+  }
+  .highlights li {
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.5rem;
+  }
+  .highlights a {
+    color: var(--color-dark);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .highlights a:hover {
+    color: var(--color-red);
+    text-decoration: underline;
+  }
+
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    align-self: flex-start;
+    padding: 0.8rem 1.4rem;
+    border: 2px solid var(--color-red);
+    border-radius: var(--radius-sm);
+    color: var(--color-red);
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+  .card-cta:hover {
+    background: var(--color-red);
+    color: var(--color-white);
+  }
+
+  .card-title a:focus-visible,
+  .highlights a:focus-visible,
+  .card-cta:focus-visible {
+    outline: 3px solid var(--color-red);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 860px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 420px) {
+    .highlights {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

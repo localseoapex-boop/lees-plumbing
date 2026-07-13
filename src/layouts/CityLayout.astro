@@ -1,20 +1,63 @@
 ---
 /**
- * CityLayout.astro — template for /locations/[city] pages.
+ * CityLayout.astro — the CITY OVERVIEW template (/locations/[city]).
  *
- * Data-driven from a Location object. Builds the city hero, breadcrumbs, the
- * list of services available in that city (each linking to the dedicated
- * location-service page), and nearby-city links. The serving office's phone is
- * resolved via officeId so the CTA is locally relevant.
+ * These are NOT city-service pages. Those were removed at launch. A city page's
+ * job is narrower and more useful: confirm we serve the city, show what is
+ * available, explain what commonly goes wrong in a Cache Valley home, and route
+ * the visitor into the core Hyde Park service pages. It does not duplicate
+ * service content, and it links to no route that does not exist.
+ *
+ * Section order:
+ *   1. Hero                    5. Areas we serve nearby
+ *   2. Services we offer       6. Reviews
+ *   3. Trust                   7. FAQs
+ *   4. Common problems         8. Final CTA
+ *
+ * Composition is deliberately DIFFERENT from the service hub and sub-service
+ * templates: no sub-service directory, no signs / expect / causes blocks. Those
+ * belong on the pages that serve that intent.
+ *
+ * Reuses the approved service and homepage components rather than growing a
+ * third set. All copy comes from data/location-content.ts.
  */
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
-import InternalLinks from '../components/InternalLinks.astro';
+
+// Reused from the approved service framework.
+import ServiceHero from '../components/services/ServiceHero.astro';
+import FaqSection from '../components/services/FaqSection.astro';
+import ServiceFinalCta from '../components/services/ServiceFinalCta.astro';
+
+// Reused from the approved homepage framework.
+import TrustSection from '../components/homepage/TrustSection.astro';
+import ReviewsSection from '../components/homepage/ReviewsSection.astro';
+import ServiceAreasSection from '../components/homepage/ServiceAreasSection.astro';
+
+// New, and specific to this tier.
+import LocationServices from '../components/locations/LocationServices.astro';
+import LocalProblems from '../components/locations/LocalProblems.astro';
+
 import type { Location } from '../data/locations';
 import { SITE } from '../config/site';
-import { getOffice, primaryOffice } from '../data/offices';
-import { servicesForLocation, nearbyCities } from '../lib/links';
-import { cityUrl, serviceUrl, LOCATIONS_URL } from '../lib/urls';
+import { getOffice, primaryOffice, formatHours } from '../data/offices';
+import { cityLocations, getLocation, HQ_CITY_SLUG } from '../data/locations';
+import { getService } from '../data/services';
+import { getSubService } from '../data/subservices';
+import { nearbyCities } from '../lib/links';
+import { cityUrl, serviceUrl, subServiceUrl, LOCATIONS_URL } from '../lib/urls';
+import { TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
+import {
+  HERO,
+  SERVICE_CARDS,
+  SERVICES_SECTION,
+  PROBLEMS_SECTION,
+  PROBLEM_GROUPS,
+  NEARBY_SECTION,
+  FAQ_HEADING,
+  cityFaqs,
+  FINAL_CTA,
+} from '../data/location-content';
 
 interface Props {
   location: Location;
@@ -22,51 +65,140 @@ interface Props {
 
 const { location } = Astro.props;
 const office = getOffice(location.officeId) ?? primaryOffice;
+const hours = formatHours(office.hours[0]);
 
-const title = `Plumbing and HVAC Services in ${location.city}, ${location.region}`;
-const description = `Plumbing, heating, and cooling services for ${location.city}, ${location.region} homeowners from ${SITE.name}.`;
+const city = location.city;
+const cityState = `${city}, ${location.region}`;
 
+const title = `Plumbing and HVAC Services in ${cityState}`;
+const description = `Plumbing, heating, and cooling services for ${cityState} homeowners from ${SITE.name}, based in Hyde Park and serving Cache Valley.`;
+
+// Unchanged: Home > Service Areas > City.
 const crumbs = [
   { name: 'Home', href: '/' },
   { name: 'Service Areas', href: LOCATIONS_URL },
-  { name: `${location.city}, ${location.region}` },
+  { name: cityState },
 ];
 
-// City-service and city-sub-service pages no longer exist, so a city page links
-// UP to the two core service hubs rather than sideways into a matrix of
-// near-duplicate combination pages.
-const serviceLinks = servicesForLocation(location).map((s) => ({
-  label: s.name,
-  href: serviceUrl(s.slug),
-  description: s.tagline,
-}));
+// Service cards, resolved from slugs to real names and real routes. Throwing here
+// rather than rendering a dead link means a bad slug in location-content.ts fails
+// the BUILD instead of shipping a broken internal link.
+const serviceCards = SERVICE_CARDS.map((card) => {
+  const service = getService(card.serviceSlug);
+  if (!service) {
+    throw new Error(`CityLayout: unknown service slug "${card.serviceSlug}" in location-content.ts`);
+  }
 
-// Nearby cities for lateral internal linking.
-const nearbyLinks = nearbyCities(location.slug).map((loc) => ({
-  label: `${loc.city}, ${loc.region}`,
-  href: cityUrl(loc.slug),
-}));
+  const highlights = card.highlights.map((slug) => {
+    const sub = getSubService(card.serviceSlug, slug);
+    if (!sub) {
+      throw new Error(
+        `CityLayout: "${slug}" is not a sub-service of "${card.serviceSlug}" (location-content.ts)`,
+      );
+    }
+    return { name: sub.name, href: subServiceUrl(card.serviceSlug, sub.slug) };
+  });
+
+  return {
+    name: service.name,
+    intro: card.intro(city),
+    href: serviceUrl(service.slug),
+    ctaLabel: card.ctaLabel,
+    highlights,
+  };
+});
+
+// The nearby grid: Hyde Park as the unlinked headquarters, then every OTHER city
+// that has a page. The current city is excluded, since the visitor is already on it.
+const hq = getLocation(HQ_CITY_SLUG)!;
+const areas = [
+  { city: hq.city, region: hq.region, href: null, isHeadquarters: true },
+  ...cityLocations
+    .filter((l) => l.slug !== location.slug)
+    .map((l) => ({
+      city: l.city,
+      region: l.region,
+      href: cityUrl(l.slug),
+      isHeadquarters: false,
+    })),
+];
+
+// Real neighbours from the location catalog, used in the closing FAQ so the
+// answer names actual nearby cities rather than a generic list.
+const nearbyNames = nearbyCities(location.slug, 4).map((l) => l.city);
+const faqs = cityFaqs(city, nearbyNames);
 ---
 
 <BaseLayout {title} {description}>
-  <article class="container page">
+  <div class="container crumb-bar">
     <Breadcrumbs items={crumbs} />
+  </div>
 
-    <header class="page-hero">
-      <p class="eyebrow">Serving {location.city}, {location.region}</p>
-      <h1>{title}</h1>
-      <p class="lede">{description}</p>
-      <a class="cta" href={`tel:${office.phone}`}>Call {office.phoneDisplay}</a>
-    </header>
+  <ServiceHero
+    eyebrow={HERO.eyebrow}
+    heading={HERO.heading(city)}
+    lede={HERO.lede(city)}
+    phone={office.phone}
+    phoneDisplay={office.phoneDisplay}
+    {hours}
+    secondaryCtaLabel={HERO.secondaryCtaLabel}
+    secondaryCtaHref={HERO.secondaryCtaHref}
+  />
 
-    <div class="page-body">
-      <p>
-        {SITE.name} works out of {office.name.replace(' Office', '')} and serves {location.city} and
-        the surrounding Cache Valley communities.
-      </p>
-    </div>
+  <LocationServices
+    id="services"
+    heading={SERVICES_SECTION.heading(city)}
+    intro={SERVICES_SECTION.intro}
+    cards={serviceCards}
+  />
 
-    <InternalLinks title={`Services we offer in ${location.city}`} links={serviceLinks} />
-    <InternalLinks title="Nearby cities we serve" links={nearbyLinks} />
-  </article>
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro={`A Hyde Park company serving ${city} and the rest of Cache Valley.`}
+    cards={TRUST_CARDS}
+  />
+
+  <LocalProblems
+    id="problems"
+    heading={PROBLEMS_SECTION.heading(city)}
+    intro={PROBLEMS_SECTION.intro(city)}
+    groups={PROBLEM_GROUPS}
+  />
+
+  <ServiceAreasSection
+    id="areas"
+    heading={NEARBY_SECTION.heading}
+    intro={NEARBY_SECTION.intro(city)}
+    {areas}
+    headquartersLabel={NEARBY_SECTION.headquartersLabel}
+  />
+
+  <ReviewsSection
+    id="reviews"
+    heading={REVIEWS.heading}
+    items={[]}
+    isPlaceholder={REVIEWS.isPlaceholder}
+    emptyMessage={REVIEWS.emptyMessage}
+  />
+
+  <FaqSection id="faqs" heading={FAQ_HEADING(city)} items={faqs} />
+
+  <ServiceFinalCta
+    heading={FINAL_CTA.heading(city)}
+    body={FINAL_CTA.body(city)}
+    phone={office.phone}
+    phoneDisplay={office.phoneDisplay}
+    {hours}
+    secondaryLabel={FINAL_CTA.secondaryLabel}
+    secondaryHref={FINAL_CTA.secondaryHref}
+  />
 </BaseLayout>
+
+<style>
+  /* The breadcrumb sits on white above the dark hero. */
+  .crumb-bar {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+</style>
