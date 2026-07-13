@@ -8,7 +8,8 @@
  * document structure. Page content is injected through the <slot />.
  *
  * The specialized templates (Service/City/BlogPost) build ON TOP of this layout,
- * so global concerns live here and only here.
+ * so global concerns live here and only here. That includes the brand tokens in
+ * the :root block below, which every component styles against.
  */
 import BaseHead from '../components/BaseHead.astro';
 import Navigation from '../components/Navigation.astro';
@@ -43,16 +44,31 @@ const { title, description, image, type, noindex } = Astro.props;
 </html>
 
 <style is:global>
+  /* Brand tokens. Colors and fonts are defined ONCE here and referenced
+     everywhere else through these variables. */
   :root {
     --content-width: 1100px;
-    --accent: #2563eb;
+
+    --color-dark: #050707;
+    --color-red: #d22727;
+    --color-white: #ffffff;
+
+    --color-text: #050707;
+    --color-muted: #5c6060;
+    --color-border: #dfe2e2;
+    --accent: #d22727;
+    /* Darker red reserved for hover/active states on red surfaces. */
+    --accent-dark: #b01f1f;
+
+    --font-heading: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'Montserrat', Arial, sans-serif;
   }
   * {
     box-sizing: border-box;
   }
   html {
-    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    color: #1f2937;
+    font-family: var(--font-body);
+    color: var(--color-text);
     line-height: 1.6;
   }
   body {
@@ -66,9 +82,13 @@ const { title, description, image, type, noindex } = Astro.props;
   }
   h1,
   h2,
-  h3 {
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
     line-height: 1.2;
-    color: #111827;
+    color: var(--color-dark);
   }
   img {
     max-width: 100%;
@@ -89,7 +109,7 @@ const { title, description, image, type, noindex } = Astro.props;
     padding: 1.5rem 0 0;
   }
   .page-hero h1 {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
     margin: 0.25rem 0 0.75rem;
   }
   .eyebrow {
@@ -102,21 +122,21 @@ const { title, description, image, type, noindex } = Astro.props;
   }
   .lede {
     font-size: 1.2rem;
-    color: #4b5563;
+    color: var(--color-muted);
     max-width: 60ch;
   }
   .cta {
     display: inline-block;
     margin-top: 1rem;
     background: var(--accent);
-    color: #fff;
+    color: var(--color-white);
     text-decoration: none;
     padding: 0.75rem 1.25rem;
     border-radius: 8px;
     font-weight: 600;
   }
   .cta:hover {
-    background: #1d4ed8;
+    background: var(--accent-dark);
   }
   .page-body {
     margin-top: 2.5rem;

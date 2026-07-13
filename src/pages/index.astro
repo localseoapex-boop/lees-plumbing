@@ -2,39 +2,45 @@
 /**
  * Homepage (/) — uses BaseLayout directly (it's not a service/city/blog page).
  *
- * Passes the brand name as the title so BaseHead renders the bare brand (no
- * "| brand" suffix) — the canonical homepage title pattern. Demonstrates linking
- * into the service and location pages for internal-link equity.
+ * Passes the geo-targeted title WITHOUT the brand: BaseHead appends "| {brand}"
+ * for any title that isn't the bare brand name, so the rendered title is
+ * "Plumber in Hyde Park, UT | Lee's Plumbing" and the brand is never doubled.
+ * Cards link into the two service categories and the service-area hub for
+ * internal-link equity.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE, BUSINESS } from '../config/site';
+import { BUSINESS } from '../config/site';
+
+const title = 'Plumber in Hyde Park, UT';
+const description =
+  "Lee's Plumbing provides trusted plumbing, heating, and cooling services in Hyde Park and communities across Cache Valley. Call 435-563-0611.";
 ---
 
-<BaseLayout
-  title={SITE.name}
-  description={SITE.description}
->
+<BaseLayout {title} {description}>
   <section class="hero container">
-    <h1>Trusted Home Services in {BUSINESS.address.city}</h1>
-    <p class="lede">{SITE.description}</p>
+    <h1>Trusted Plumbing and HVAC Services in Hyde Park, Utah</h1>
+    <p class="lede">
+      Plumbing, heating, and cooling services for homeowners in Hyde Park and communities across
+      Cache Valley.
+    </p>
     <div class="hero-actions">
-      <a class="btn primary" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phone}</a>
-      <a class="btn" href="/services/plumbing">View services</a>
+      <a class="btn primary" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phoneDisplay}</a>
+      <a class="btn" href="/services/plumbing">View plumbing services</a>
     </div>
   </section>
 
   <section class="container grid">
     <a class="card" href="/services/plumbing">
       <h2>Plumbing</h2>
-      <p>Leaks, water heaters, drains, and emergency repairs.</p>
+      <p>Leaks, water heaters, pipes, fixtures, and drains.</p>
     </a>
-    <a class="card" href="/locations/phoenix-az">
-      <h2>Phoenix, AZ</h2>
-      <p>Fast, local service across the Phoenix metro area.</p>
+    <a class="card" href="/services/hvac">
+      <h2>Heating &amp; Cooling</h2>
+      <p>Furnaces, air conditioners, heat pumps, and maintenance.</p>
     </a>
-    <a class="card" href="/blog">
-      <h2>Tips &amp; Guides</h2>
-      <p>Maintenance advice to keep your home running.</p>
+    <a class="card" href="/locations">
+      <h2>Service Areas</h2>
+      <p>Serving Hyde Park, Logan, and communities across Cache Valley.</p>
     </a>
   </section>
 </BaseLayout>
@@ -45,12 +51,12 @@ import { SITE, BUSINESS } from '../config/site';
     text-align: center;
   }
   .hero h1 {
-    font-size: 2.75rem;
+    font-size: 3rem;
     margin: 0 0 1rem;
   }
   .lede {
     font-size: 1.25rem;
-    color: #4b5563;
+    color: var(--color-muted);
     max-width: 60ch;
     margin: 0 auto 1.5rem;
   }
@@ -70,7 +76,11 @@ import { SITE, BUSINESS } from '../config/site';
   }
   .btn.primary {
     background: var(--accent);
-    color: #fff;
+    color: var(--color-white);
+  }
+  .btn.primary:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
   }
   .grid {
     display: grid;
@@ -79,7 +89,7 @@ import { SITE, BUSINESS } from '../config/site';
     padding-top: 2rem;
   }
   .card {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 1.5rem;
     text-decoration: none;
@@ -94,6 +104,6 @@ import { SITE, BUSINESS } from '../config/site';
   }
   .card p {
     margin: 0;
-    color: #4b5563;
+    color: var(--color-muted);
   }
 </style>

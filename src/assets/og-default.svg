@@ -6,33 +6,35 @@
   og:image (social crawlers don't render SVG). Instead, scripts/generate-og.mjs
   rasterizes it to public/og-default.png at 1200x630 — the canonical OG size.
 
-  Edit colors/text here, then run `npm run og` (or any build) to regenerate.
+  Placeholder brand treatment only: brand colors and correct copy, no final
+  design work yet. Edit colors/text here, then run `npm run og` (or any build)
+  to regenerate.
 -->
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background gradient -->
+  <!-- Background gradient, brand dark -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1d4ed8" />
-      <stop offset="1" stop-color="#111827" />
+      <stop offset="0" stop-color="#141a1a" />
+      <stop offset="1" stop-color="#050707" />
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)" />
 
-  <!-- Accent bar -->
-  <rect x="80" y="250" width="64" height="8" rx="4" fill="#60a5fa" />
+  <!-- Accent bar, brand red -->
+  <rect x="80" y="250" width="64" height="8" rx="4" fill="#D22727" />
 
   <!-- Brand name -->
-  <text x="80" y="340" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">
-    Acme Home Services
+  <text x="80" y="345" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#FFFFFF">
+    Lee&#39;s Plumbing
   </text>
 
   <!-- Tagline -->
-  <text x="80" y="410" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="400" fill="#cbd5e1">
-    Plumbing · HVAC · Electrical · Drain · Insulation
+  <text x="80" y="415" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="400" fill="#d4d6d6">
+    Plumbing · Heating &amp; Cooling · Cache Valley, Utah
   </text>
 
   <!-- Footer / domain -->
-  <text x="80" y="540" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="600" fill="#93c5fd">
-    seo-starter-site.vercel.app
+  <text x="80" y="540" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600" fill="#D22727">
+    lees-plumbing-eosin.vercel.app
   </text>
 </svg>

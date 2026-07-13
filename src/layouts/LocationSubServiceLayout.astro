@@ -76,13 +76,13 @@ const serviceSchema = {
       <p class="eyebrow">{cityState} · {service.name}</p>
       <h1>{title}</h1>
       <p class="lede">{subService.tagline}</p>
-      <a class="cta" href={`tel:${office.phone}`}>Book {subService.name.toLowerCase()} — {office.phone}</a>
+      <a class="cta" href={`tel:${office.phone}`}>Call {office.phoneDisplay}</a>
     </header>
 
     <div class="page-body">
       <p>
-        Need {subService.name.toLowerCase()} in {cityState}? {subService.intro} Our {location.city}
-        customers get upfront pricing and licensed technicians, dispatched from our {office.name}.
+        Need {subService.name.toLowerCase()} in {cityState}? {subService.intro} Work in {location.city}
+        is handled out of our {office.name.replace(' Office', '')} location.
       </p>
       <h2>What's included</h2>
       <ul>

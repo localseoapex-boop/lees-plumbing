@@ -9,6 +9,9 @@
  * `related` holds sibling slugs for cross-linking; `schemaType` is the closest
  * schema.org business type if you later emit per-service LocalBusiness nodes.
  * Adding a service here automatically generates its pages — no new files.
+ *
+ * Order matters: plumbing is the primary trade and is listed first, so it leads
+ * every generated list of services.
  */
 export interface Service {
   slug: string;
@@ -29,96 +32,40 @@ export interface Service {
 
 export const services: Service[] = [
   {
-    slug: 'hvac',
-    name: 'HVAC',
-    schemaType: 'HVACBusiness',
-    tagline: 'Heating and cooling repair, installation, and maintenance.',
-    description:
-      'Expert HVAC repair, AC installation, and heating maintenance to keep your home comfortable year-round.',
-    intro:
-      'From summer AC breakdowns to winter heating tune-ups, our licensed HVAC technicians keep your home comfortable in every season.',
-    features: [
-      'AC repair and replacement',
-      'Furnace and heat pump service',
-      'Seasonal maintenance plans',
-      'Thermostat installation',
-      'Indoor air quality solutions',
-    ],
-    related: ['insulation', 'electrical', 'plumbing'],
-  },
-  {
     slug: 'plumbing',
     name: 'Plumbing',
     schemaType: 'Plumber',
-    tagline: 'Licensed plumbers for repairs, installs, and emergencies.',
+    tagline: 'Dependable plumbing repair, installation, and maintenance.',
     description:
-      'Licensed plumbers for leaks, water heaters, drain cleaning, and 24/7 emergency repairs.',
+      'Plumbing services for leaks, water heaters, pipes, fixtures, drains, and other common home plumbing needs.',
     intro:
-      'Leaks, clogs, and water heater failures never happen at a good time. Our licensed plumbers offer upfront pricing and same-day service.',
+      "Lee's Plumbing helps homeowners across Cache Valley with dependable plumbing repairs, replacements, and installations.",
     features: [
-      'Leak detection and pipe repair',
-      'Water heater install & replacement',
-      'Fixture and faucet installation',
-      'Repiping and remodels',
-      '24/7 emergency plumbing',
+      'Leak and pipe repair',
+      'Water heater service',
+      'Fixture and faucet service',
+      'Drain and sewer solutions',
+      'Plumbing replacements and installations',
     ],
-    related: ['drains', 'hvac', 'electrical'],
+    related: ['hvac'],
   },
   {
-    slug: 'electrical',
-    name: 'Electrical',
-    schemaType: 'Electrician',
-    tagline: 'Safe, code-compliant electrical work for your home.',
+    slug: 'hvac',
+    name: 'Heating & Cooling',
+    schemaType: 'HVACBusiness',
+    tagline: 'Heating and cooling services for year-round home comfort.',
     description:
-      'Licensed electricians for panel upgrades, wiring, outlets, lighting, and electrical safety inspections.',
+      'Heating and cooling repair, replacement, installation, and maintenance for homes across Cache Valley.',
     intro:
-      'Electrical work is no place to cut corners. Our licensed electricians handle everything from a flickering outlet to a full panel upgrade.',
+      "Lee's Plumbing provides heating and cooling services for furnaces, air conditioners, heat pumps, and other home comfort systems.",
     features: [
-      'Panel upgrades and replacements',
-      'Outlet, switch, and wiring repair',
-      'Lighting installation',
-      'EV charger installation',
-      'Electrical safety inspections',
+      'Air conditioning service',
+      'Furnace service',
+      'Heat pump service',
+      'Equipment installation and replacement',
+      'Seasonal maintenance',
     ],
-    related: ['hvac', 'plumbing', 'insulation'],
-  },
-  {
-    // Renamed from 'drain-cleaning' to 'drains' so it reads as a CATEGORY that
-    // contains sub-services (Drain Cleaning, Sewer Line Repair, Hydro Jetting, …).
-    slug: 'drains',
-    name: 'Drains',
-    schemaType: 'Plumber',
-    tagline: 'Drain and sewer cleaning, repair, and inspection.',
-    description:
-      'Professional drain and sewer services — drain cleaning, clog removal, sewer line repair, and camera inspection.',
-    intro:
-      'A slow or backed-up drain can quickly become a mess. We clear clogs fast and use camera inspection to find the root cause — from a single sink to the main sewer line.',
-    features: [
-      'Kitchen and bathroom drains',
-      'Main sewer line clearing',
-      'Hydro jetting',
-      'Camera line inspection',
-      'Recurring clog diagnosis',
-    ],
-    related: ['plumbing', 'hvac', 'electrical'],
-  },
-  {
-    slug: 'insulation',
-    name: 'Insulation',
-    schemaType: 'GeneralContractor',
-    tagline: 'Lower bills and a more comfortable home.',
-    description:
-      'Attic, wall, and crawl space insulation to cut energy bills and improve home comfort.',
-    intro:
-      'Proper insulation is one of the highest-ROI upgrades for an Arizona home — lower energy bills and a more even temperature in every room.',
-    features: [
-      'Attic insulation and air sealing',
-      'Wall and crawl space insulation',
-      'Blown-in and batt insulation',
-      'Energy efficiency assessment',
-      'Radiant barrier installation',
-    ],
-    related: ['hvac', 'electrical', 'plumbing'],
+    related: ['plumbing'],
   },
 ];
 

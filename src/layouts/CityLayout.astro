@@ -11,6 +11,7 @@ import BaseLayout from './BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import InternalLinks from '../components/InternalLinks.astro';
 import type { Location } from '../data/locations';
+import { SITE } from '../config/site';
 import { getOffice, primaryOffice } from '../data/offices';
 import { servicesForLocation, nearbyCities } from '../lib/links';
 import { cityUrl, locationServiceUrl } from '../lib/urls';
@@ -22,8 +23,8 @@ interface Props {
 const { location } = Astro.props;
 const office = getOffice(location.officeId) ?? primaryOffice;
 
-const title = `Home Services in ${location.city}, ${location.region}`;
-const description = `Plumbing, HVAC, electrical, and more for ${location.city}, ${location.region} homeowners. Local crews, fast response, and honest pricing.`;
+const title = `Plumbing and HVAC Services in ${location.city}, ${location.region}`;
+const description = `Plumbing, heating, and cooling services for ${location.city}, ${location.region} homeowners from ${SITE.name}.`;
 
 const crumbs = [
   { name: 'Home', href: '/' },
@@ -53,13 +54,13 @@ const nearbyLinks = nearbyCities(location.slug).map((loc) => ({
       <p class="eyebrow">Serving {location.city}, {location.region}</p>
       <h1>{title}</h1>
       <p class="lede">{description}</p>
-      <a class="cta" href={`tel:${office.phone}`}>Call your local team — {office.phone}</a>
+      <a class="cta" href={`tel:${office.phone}`}>Call {office.phoneDisplay}</a>
     </header>
 
     <div class="page-body">
       <p>
-        Our {office.name.replace(' Office', '')} crews live and work in the area, so we know the
-        homes and the climate and can get to you fast.
+        {SITE.name} works out of {office.name.replace(' Office', '')} and serves {location.city} and
+        the surrounding Cache Valley communities.
       </p>
     </div>
 

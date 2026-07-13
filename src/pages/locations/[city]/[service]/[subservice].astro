@@ -5,8 +5,8 @@
  * getStaticPaths() builds: every location × each category it offers × each
  * sub-service of that category. Because it iterates servicesForLocation(), a
  * city never generates sub-service pages for a category it doesn't serve — so
- * unavailable combinations are never created (req #9). Categories with no
- * sub-services (e.g. insulation) simply contribute nothing.
+ * unavailable combinations are never created (req #9). A category with no
+ * sub-services simply contributes nothing.
  */
 import LocationSubServiceLayout from '../../../../layouts/LocationSubServiceLayout.astro';
 import { locations } from '../../../../data/locations';

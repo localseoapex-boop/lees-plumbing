@@ -62,8 +62,8 @@ export const nearbyCities = (citySlug: string, limit = 4): Location[] => {
 };
 
 /**
- * Sub-services belonging to a category, in catalog order. Empty for categories
- * that have none yet (e.g. 'insulation'), so callers can render unconditionally.
+ * Sub-services belonging to a category, in catalog order. Returns an empty array
+ * for a category with no sub-services, so callers can render unconditionally.
  */
 export const subServicesForCategory = (categorySlug: string): SubService[] =>
   subServices.filter((s) => s.parent === categorySlug);

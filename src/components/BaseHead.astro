@@ -9,6 +9,9 @@
  *
  * Canonical + OG URLs are built as ABSOLUTE urls from Astro.site (set in
  * astro.config.mjs) + the current path, which is what crawlers require.
+ *
+ * Brand fonts are loaded here in one place: preconnect + a single stylesheet
+ * request for both families, with display=swap so text renders immediately.
  */
 import { SITE } from '../config/site';
 
@@ -36,7 +39,8 @@ const {
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(image, Astro.site);
 
-// Title pattern: page-specific text + brand. The homepage passes the brand alone.
+// Title pattern: page-specific text + brand. A page may pass the brand alone to
+// suppress the suffix, which avoids ever doubling the brand name in a title.
 const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
 ---
 
@@ -44,6 +48,14 @@ const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
+
+<!-- Brand fonts: Cormorant Garamond (headings) + Montserrat (body/UI) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap"
+/>
 
 <!-- Primary meta tags -->
 <title>{fullTitle}</title>
@@ -69,9 +81,8 @@ const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
 <meta property="og:site_name" content={SITE.name} />
 <meta property="og:locale" content="en_US" />
 
-<!-- Twitter / X -->
+<!-- Twitter / X. No twitter:site handle until the business has a verified account. -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:site" content={SITE.twitter} />
 <meta name="twitter:url" content={canonicalURL} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />

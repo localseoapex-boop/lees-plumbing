@@ -3,15 +3,23 @@
  * Navigation.astro — site header + primary nav.
  *
  * Pulls links from NAV_LINKS so the menu is edited in one place. Highlights the
- * active link by comparing each href against the current path (good for UX and
- * gives crawlers clear, consistent internal linking). A prominent "Call" CTA is
- * standard for home-service sites where phone calls are the main conversion.
+ * active link by matching the current path against each href exactly or as a
+ * path prefix — the nav now links directly to individual service categories, so
+ * a coarse "first path segment" match would light up both service links at once.
+ * A prominent "Call" CTA is standard for home-service sites where phone calls
+ * are the main conversion.
  */
 import { SITE, BUSINESS, NAV_LINKS } from '../config/site';
 
 const currentPath = Astro.url.pathname;
-const isActive = (href: string) =>
-  href === '/' ? currentPath === '/' : currentPath.startsWith(href.split('/').slice(0, 2).join('/'));
+const normalize = (path: string) => (path.length > 1 ? path.replace(/\/$/, '') : path);
+
+const isActive = (href: string) => {
+  const path = normalize(currentPath);
+  const target = normalize(href);
+  if (target === '/') return path === '/';
+  return path === target || path.startsWith(`${target}/`);
+};
 ---
 
 <header class="site-header">
@@ -30,14 +38,14 @@ const isActive = (href: string) =>
       }
     </ul>
 
-    <a class="cta" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phone}</a>
+    <a class="cta" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phoneDisplay}</a>
   </nav>
 </header>
 
 <style>
   .site-header {
-    border-bottom: 1px solid #e5e7eb;
-    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-white);
   }
   .nav {
     max-width: 1100px;
@@ -48,9 +56,10 @@ const isActive = (href: string) =>
     gap: 1.5rem;
   }
   .brand {
+    font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 1.15rem;
-    color: #111827;
+    font-size: 1.5rem;
+    color: var(--color-dark);
     text-decoration: none;
   }
   .nav-links {
@@ -62,17 +71,18 @@ const isActive = (href: string) =>
     margin-left: auto;
   }
   .nav-links a {
-    color: #374151;
+    color: var(--color-dark);
     text-decoration: none;
     font-size: 0.95rem;
+    font-weight: 500;
   }
   .nav-links a:hover,
   .nav-links a[aria-current='page'] {
-    color: #2563eb;
+    color: var(--color-red);
   }
   .cta {
-    background: #2563eb;
-    color: #fff;
+    background: var(--color-red);
+    color: var(--color-white);
     text-decoration: none;
     padding: 0.5rem 0.9rem;
     border-radius: 8px;
@@ -81,7 +91,7 @@ const isActive = (href: string) =>
     white-space: nowrap;
   }
   .cta:hover {
-    background: #1d4ed8;
+    background: #b01f1f;
   }
   @media (max-width: 640px) {
     .nav {
@@ -92,6 +102,7 @@ const isActive = (href: string) =>
       margin-left: 0;
       order: 3;
       width: 100%;
+      flex-wrap: wrap;
     }
   }
 </style>

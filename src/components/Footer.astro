@@ -2,13 +2,17 @@
 /**
  * Footer.astro — site footer with a NAP block PER office (requirement #5).
  *
- * Iterates offices.ts so every physical location shows its own address and
- * phone in a semantic <address> element. This mirrors the multi-node
+ * Iterates offices.ts so every physical location shows its own address, phone,
+ * email, and hours in a semantic <address> element. This mirrors the
  * LocalBusiness schema exactly — consistent NAP across page + schema + external
  * listings is a core local-SEO ranking factor.
+ *
+ * The mailing-only P.O. Box comes from MAILING_ADDRESS in config/site.ts and is
+ * rendered under its own "Mailing Address" label so it can never be mistaken for
+ * the physical location.
  */
-import { SITE, FOOTER_LINKS } from '../config/site';
-import { offices } from '../data/offices';
+import { SITE, FOOTER_LINKS, MAILING_ADDRESS } from '../config/site';
+import { offices, formatHours } from '../data/offices';
 
 const year = new Date().getFullYear();
 ---
@@ -29,11 +33,23 @@ const year = new Date().getFullYear();
             <br />
             {office.address.city}, {office.address.region} {office.address.postalCode}
             <br />
-            <a href={`tel:${office.phone}`}>{office.phone}</a>
+            <a href={`tel:${office.phone}`}>{office.phoneDisplay}</a>
+            <br />
+            <a href={`mailto:${office.email}`}>{office.email}</a>
           </address>
+          <p class="footer-hours">{office.hours.map((spec) => formatHours(spec)).join(' / ')}</p>
         </div>
       ))
     }
+
+    <div class="footer-office">
+      <p class="footer-heading">Mailing Address</p>
+      <address>
+        {MAILING_ADDRESS.street}
+        <br />
+        {MAILING_ADDRESS.city}, {MAILING_ADDRESS.region} {MAILING_ADDRESS.postalCode}
+      </address>
+    </div>
 
     {
       FOOTER_LINKS.map((group) => (
@@ -58,8 +74,8 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    background: #111827;
-    color: #d1d5db;
+    background: var(--color-dark);
+    color: #d4d6d6;
     margin-top: 4rem;
   }
   .footer-inner {
@@ -74,10 +90,11 @@ const year = new Date().getFullYear();
     min-width: 220px;
   }
   .footer-brand {
+    font-family: var(--font-heading);
     font-weight: 700;
-    color: #fff;
+    color: var(--color-white);
     margin: 0 0 0.5rem;
-    font-size: 1.1rem;
+    font-size: 1.35rem;
   }
   .footer-tagline {
     margin: 0;
@@ -89,9 +106,13 @@ const year = new Date().getFullYear();
     line-height: 1.7;
     font-size: 0.9rem;
   }
+  .footer-hours {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+  }
   .footer-heading {
     font-weight: 600;
-    color: #fff;
+    color: var(--color-white);
     margin: 0 0 0.75rem;
   }
   .footer-group ul {
@@ -101,18 +122,19 @@ const year = new Date().getFullYear();
     line-height: 1.9;
   }
   .site-footer a {
-    color: #d1d5db;
+    color: #d4d6d6;
     text-decoration: none;
   }
   .site-footer a:hover {
-    color: #fff;
+    color: var(--color-white);
+    text-decoration: underline;
   }
   .footer-legal {
     max-width: 1100px;
     margin: 0 auto;
     padding: 1.5rem 1rem;
-    border-top: 1px solid #374151;
+    border-top: 1px solid #2a2e2e;
     font-size: 0.85rem;
-    color: #9ca3af;
+    color: #a3a7a7;
   }
 </style>
