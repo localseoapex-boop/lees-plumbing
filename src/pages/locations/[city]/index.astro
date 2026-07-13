@@ -1,15 +1,20 @@
 ---
 /**
- * /locations/[city] — dynamic route generating ONE page per city.
+ * /locations/[city] — one page per city, for the NINE non-HQ cities.
  *
- * getStaticPaths() fans out over the locations catalog. Add a city to
- * data/locations.ts and its page (plus its location-service pages) appears.
+ * Fans out over `cityLocations`, not `locations`. Hyde Park is excluded by
+ * construction: it is the headquarters and is targeted directly by the homepage
+ * and the core service pages, so it generates no city page. See the reasoning on
+ * HQ_CITY_SLUG in data/locations.ts.
+ *
+ * This is the ONLY location route. City-service and city-sub-service pages were
+ * removed at launch rather than shipping 180 near-duplicate combination pages.
  */
 import CityLayout from '../../../layouts/CityLayout.astro';
-import { locations } from '../../../data/locations';
+import { cityLocations } from '../../../data/locations';
 
 export function getStaticPaths() {
-  return locations.map((location) => ({
+  return cityLocations.map((location) => ({
     params: { city: location.slug },
     props: { location },
   }));

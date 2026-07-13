@@ -41,8 +41,9 @@ import { BUSINESS, SITE } from '../config/site';
 import { primaryOffice, formatHours } from '../data/offices';
 import type { Service } from '../data/services';
 import { subServices } from '../data/subservices';
-import { locationsForService } from '../lib/links';
-import { serviceUrl, locationServiceUrl, subServiceUrl, absoluteUrl } from '../lib/urls';
+import { linkableCitiesForService } from '../lib/links';
+import { serviceUrl, cityUrl, subServiceUrl, absoluteUrl } from '../lib/urls';
+import { HQ_CITY_SLUG, getLocation } from '../data/locations';
 import { getHubContent, TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
 
 interface Props {
@@ -62,11 +63,9 @@ const title = `${service.name} Services`;
 const description = service.description;
 const hours = formatHours(primaryOffice.hours[0]);
 
-const crumbs = [
-  { name: 'Home', href: '/' },
-  { name: 'Services', href: '/services' },
-  { name: service.name },
-];
+// Home > Plumbing. There is no /services/ tier at launch, so the hub sits one
+// level below the homepage.
+const crumbs = [{ name: 'Home', href: '/' }, { name: service.name }];
 
 // Directory groups, resolved from slugs to real sub-service records. The build
 // guarantees every slug here exists, belongs to this category, and that no
@@ -83,14 +82,19 @@ const groups = content.groups.map((group) => ({
   }),
 }));
 
-// Service areas point at the LOCATION-SERVICE page for THIS category, so the
-// plumbing hub links to /locations/logan-ut/plumbing rather than to the city page.
-const areas = locationsForService(service.slug).map((loc) => ({
-  city: loc.city,
-  region: loc.region,
-  href: locationServiceUrl(loc.slug, service.slug),
-  isHeadquarters: loc.slug === 'hyde-park-ut',
-}));
+// Service areas link to the NINE city pages. Hyde Park leads the grid as the
+// headquarters but carries no link: it has no city page, because this page is
+// already the Hyde Park page for this service.
+const hq = getLocation(HQ_CITY_SLUG)!;
+const areas = [
+  { city: hq.city, region: hq.region, href: null, isHeadquarters: true },
+  ...linkableCitiesForService(service.slug).map((loc) => ({
+    city: loc.city,
+    region: loc.region,
+    href: cityUrl(loc.slug),
+    isHeadquarters: false,
+  })),
+];
 
 // Unchanged from the previous template: one Service node per page, provider
 // pointing at the LocalBusiness graph. No FAQPage schema is emitted (see report).

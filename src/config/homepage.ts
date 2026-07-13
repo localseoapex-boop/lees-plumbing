@@ -189,7 +189,7 @@ export const ABOUT = {
 export const SERVICE_AREAS = {
   heading: 'Proudly Serving Cache Valley',
   intro:
-    'Our office is in Hyde Park and we serve homeowners throughout the surrounding communities. Choose your city to see the plumbing and heating and cooling services we offer there.',
+    "Our office is in Hyde Park and we serve homeowners throughout the surrounding communities. Select your city to learn more about the plumbing and heating and cooling services Lee's Plumbing provides across Cache Valley.",
   /** Slug of the city that is the physical HQ. Highlighted in the grid. */
   headquartersSlug: 'hyde-park-ut',
   headquartersLabel: 'Headquarters',

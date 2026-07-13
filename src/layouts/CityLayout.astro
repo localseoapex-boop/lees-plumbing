@@ -14,7 +14,7 @@ import type { Location } from '../data/locations';
 import { SITE } from '../config/site';
 import { getOffice, primaryOffice } from '../data/offices';
 import { servicesForLocation, nearbyCities } from '../lib/links';
-import { cityUrl, locationServiceUrl } from '../lib/urls';
+import { cityUrl, serviceUrl, LOCATIONS_URL } from '../lib/urls';
 
 interface Props {
   location: Location;
@@ -28,14 +28,16 @@ const description = `Plumbing, heating, and cooling services for ${location.city
 
 const crumbs = [
   { name: 'Home', href: '/' },
-  { name: 'Locations', href: '/locations' },
+  { name: 'Service Areas', href: LOCATIONS_URL },
   { name: `${location.city}, ${location.region}` },
 ];
 
-// Services this city offers -> deep links to the location-service combo pages.
+// City-service and city-sub-service pages no longer exist, so a city page links
+// UP to the two core service hubs rather than sideways into a matrix of
+// near-duplicate combination pages.
 const serviceLinks = servicesForLocation(location).map((s) => ({
-  label: `${s.name} in ${location.city}`,
-  href: locationServiceUrl(location.slug, s.slug),
+  label: s.name,
+  href: serviceUrl(s.slug),
   description: s.tagline,
 }));
 
@@ -64,7 +66,7 @@ const nearbyLinks = nearbyCities(location.slug).map((loc) => ({
       </p>
     </div>
 
-    <InternalLinks title={`Services in ${location.city}`} links={serviceLinks} />
+    <InternalLinks title={`Services we offer in ${location.city}`} links={serviceLinks} />
     <InternalLinks title="Nearby cities we serve" links={nearbyLinks} />
   </article>
 </BaseLayout>

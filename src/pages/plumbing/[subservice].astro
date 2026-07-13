@@ -1,0 +1,29 @@
+---
+/**
+ * /plumbing/[subservice] — one page per plumbing sub-service (12 of them).
+ *
+ * getStaticPaths() fans out over the plumbing rows in data/subservices.ts, so
+ * adding a sub-service there creates its page here with no new file. Slugs are
+ * unchanged from the previous architecture: only the parent segment moved from
+ * /services/plumbing/ to /plumbing/.
+ */
+import SubServiceLayout from '../../layouts/SubServiceLayout.astro';
+import { subServices } from '../../data/subservices';
+import { getService } from '../../data/services';
+
+export function getStaticPaths() {
+  const service = getService('plumbing');
+  if (!service) throw new Error('/plumbing: the "plumbing" service is missing from data/services.ts');
+
+  return subServices
+    .filter((sub) => sub.parent === 'plumbing')
+    .map((subService) => ({
+      params: { subservice: subService.slug },
+      props: { service, subService },
+    }));
+}
+
+const { service, subService } = Astro.props;
+---
+
+<SubServiceLayout {service} {subService} />

@@ -57,8 +57,8 @@ export const BUSINESS = {
 /** Primary navigation links rendered in the header. */
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Plumbing', href: '/services/plumbing' },
-  { label: 'Heating & Cooling', href: '/services/hvac' },
+  { label: 'Plumbing', href: '/plumbing' },
+  { label: 'Heating & Cooling', href: '/heating-cooling' },
   { label: 'Service Areas', href: '/locations' },
   { label: 'Blog', href: '/blog' },
 ] as const;
@@ -68,8 +68,8 @@ export const FOOTER_LINKS = [
   {
     title: 'Services',
     links: [
-      { label: 'Plumbing', href: '/services/plumbing' },
-      { label: 'Heating & Cooling', href: '/services/hvac' },
+      { label: 'Plumbing', href: '/plumbing' },
+      { label: 'Heating & Cooling', href: '/heating-cooling' },
     ],
   },
   {

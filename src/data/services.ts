@@ -14,7 +14,21 @@
  * every generated list of services.
  */
 export interface Service {
+  /** Stable identifier used everywhere in the data model. NOT the URL. */
   slug: string;
+  /**
+   * The top-level URL segment this category lives at, e.g. 'heating-cooling'.
+   *
+   * Deliberately separate from `slug`: the slug 'hvac' is the internal key that
+   * subservices.ts `parent`, links.ts, and service-content.ts are all keyed on,
+   * while the public route is /heating-cooling/ because that is what a homeowner
+   * searches for. Keeping them apart means the URL can read well without a
+   * rename cascading through the whole data model.
+   *
+   * lib/urls.ts is the only place that reads this. Add a service here and its
+   * route follows automatically.
+   */
+  routeSegment: string;
   name: string;
   /** Closest schema.org business type for this trade. */
   schemaType: string;
@@ -33,6 +47,7 @@ export interface Service {
 export const services: Service[] = [
   {
     slug: 'plumbing',
+    routeSegment: 'plumbing',
     name: 'Plumbing',
     schemaType: 'Plumber',
     tagline: 'Dependable plumbing repair, installation, and maintenance.',
@@ -51,6 +66,7 @@ export const services: Service[] = [
   },
   {
     slug: 'hvac',
+    routeSegment: 'heating-cooling',
     name: 'Heating & Cooling',
     schemaType: 'HVACBusiness',
     tagline: 'Heating and cooling services for year-round home comfort.',

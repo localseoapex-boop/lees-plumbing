@@ -7,10 +7,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InternalLinks from '../../components/InternalLinks.astro';
-import { locations } from '../../data/locations';
+// The nine cities that have a page. Hyde Park is the HQ and is covered by the
+// homepage and the core service pages, so it is not listed as a destination here.
+import { cityLocations } from '../../data/locations';
 import { cityUrl } from '../../lib/urls';
 
-const links = locations.map((loc) => ({
+const links = cityLocations.map((loc) => ({
   label: `${loc.city}, ${loc.region}`,
   href: cityUrl(loc.slug),
 }));

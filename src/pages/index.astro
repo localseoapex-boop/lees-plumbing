@@ -44,7 +44,7 @@ import {
 } from '../config/homepage';
 import { getService } from '../data/services';
 import { getSubService } from '../data/subservices';
-import { locations } from '../data/locations';
+import { locations, HQ_CITY_SLUG, hasCityPage } from '../data/locations';
 import { primaryOffice, formatHours } from '../data/offices';
 import { serviceUrl, subServiceUrl, cityUrl } from '../lib/urls';
 
@@ -75,12 +75,15 @@ function resolveServiceSection(content: ServiceSectionContent) {
 const plumbing = resolveServiceSection(PLUMBING_SECTION);
 const hvac = resolveServiceSection(HVAC_SECTION);
 
-// Every city in the catalog gets a homepage link. HQ is flagged for emphasis.
+// All ten cities appear in the grid, because all ten are served. Only the nine
+// with a page are LINKED: Hyde Park is the HQ, it has no city page, and this
+// homepage is already the page that targets it. A null href renders it as an
+// emphasized but non-interactive card rather than a link to nowhere.
 const areas = locations.map((loc) => ({
   city: loc.city,
   region: loc.region,
-  href: cityUrl(loc.slug),
-  isHeadquarters: loc.slug === SERVICE_AREAS.headquartersSlug,
+  href: hasCityPage(loc.slug) ? cityUrl(loc.slug) : null,
+  isHeadquarters: loc.slug === HQ_CITY_SLUG,
 }));
 
 const hours = primaryOffice.hours.map((spec) => formatHours(spec));

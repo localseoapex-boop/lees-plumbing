@@ -12,7 +12,16 @@
 export interface AreaCard {
   city: string;
   region: string;
-  href: string;
+  /**
+   * Destination, or null for a city with no page of its own.
+   *
+   * Hyde Park is the headquarters and is covered directly by the homepage and
+   * the core service pages, so it generates no /locations/ page. It still
+   * belongs in this grid as the anchor of the service area, so a null href
+   * renders the card as plain, non-interactive text rather than as a link to a
+   * page that does not exist. The badge and emphasis are unchanged.
+   */
+  href: string | null;
   isHeadquarters?: boolean;
 }
 
@@ -37,16 +46,22 @@ const headingId = `${id}-heading`;
 
     <ul class="area-grid">
       {
-        areas.map((area) => (
-          <li>
-            <a class:list={['area-card', area.isHeadquarters && 'is-hq']} href={area.href}>
-              <span class="area-city">
-                {area.city}, {area.region}
-              </span>
-              {area.isHeadquarters && <span class="area-badge">{headquartersLabel}</span>}
-            </a>
-          </li>
-        ))
+        areas.map((area) => {
+          const Tag = area.href ? 'a' : 'div';
+          return (
+            <li>
+              <Tag
+                class:list={['area-card', area.isHeadquarters && 'is-hq', !area.href && 'is-static']}
+                href={area.href ?? undefined}
+              >
+                <span class="area-city">
+                  {area.city}, {area.region}
+                </span>
+                {area.isHeadquarters && <span class="area-badge">{headquartersLabel}</span>}
+              </Tag>
+            </li>
+          );
+        })
       }
     </ul>
   </div>
@@ -109,6 +124,14 @@ const headingId = `${id}-heading`;
     border-color: var(--color-red);
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
+  }
+  /* The HQ card has no page to link to. It keeps the card styling and the badge,
+     but must not pretend to be interactive. */
+  .area-card.is-static,
+  .area-card.is-static:hover {
+    box-shadow: var(--shadow-sm);
+    transform: none;
+    cursor: default;
   }
   .area-card:focus-visible {
     outline: 3px solid var(--color-red);

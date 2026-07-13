@@ -46,8 +46,9 @@ import { BUSINESS, SITE } from '../config/site';
 import { primaryOffice, formatHours } from '../data/offices';
 import type { Service } from '../data/services';
 import { subServices, type SubService } from '../data/subservices';
-import { locationsForService } from '../lib/links';
-import { serviceUrl, subServiceUrl, locationSubServiceUrl, absoluteUrl } from '../lib/urls';
+import { linkableCitiesForService } from '../lib/links';
+import { serviceUrl, subServiceUrl, cityUrl, absoluteUrl } from '../lib/urls';
+import { HQ_CITY_SLUG, getLocation } from '../data/locations';
 import {
   getSubServiceContent,
   getHubContent,
@@ -84,9 +85,9 @@ const heroLede = `${subService.tagline} Based in Hyde Park and serving homeowner
 const supportingHeading =
   content.supportingHeading ?? `Professional ${subService.name} for Hyde Park and Cache Valley`;
 
+// Home > Plumbing > Water Heater Repair. No /services/ tier at launch.
 const crumbs = [
   { name: 'Home', href: '/' },
-  { name: 'Services', href: '/services' },
   { name: service.name, href: serviceUrl(service.slug) },
   { name: subService.name },
 ];
@@ -111,15 +112,19 @@ const relatedLinks = [
   },
 ];
 
-// Service areas point at the LOCATION-SUB-SERVICE page, so Water Heater Repair
-// links to /locations/hyde-park-ut/plumbing/water-heater-repair. Those routes
-// already exist for every city that offers the parent category.
-const areas = locationsForService(service.slug).map((loc) => ({
-  city: loc.city,
-  region: loc.region,
-  href: locationSubServiceUrl(loc.slug, service.slug, subService.slug),
-  isHeadquarters: loc.slug === 'hyde-park-ut',
-}));
+// Service areas link to the NINE city pages. Hyde Park leads as the headquarters
+// with no link: this page already targets "[Service] in Hyde Park, Utah", so it
+// IS the Hyde Park page and has nowhere else to send the visitor.
+const hq = getLocation(HQ_CITY_SLUG)!;
+const areas = [
+  { city: hq.city, region: hq.region, href: null, isHeadquarters: true },
+  ...linkableCitiesForService(service.slug).map((loc) => ({
+    city: loc.city,
+    region: loc.region,
+    href: cityUrl(loc.slug),
+    isHeadquarters: false,
+  })),
+];
 
 // Unchanged: one Service node scoped to this sub-service. No FAQPage schema.
 const serviceSchema = {

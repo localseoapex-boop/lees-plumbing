@@ -1,0 +1,30 @@
+---
+/**
+ * /heating-cooling/[subservice] — one page per HVAC sub-service (6 of them).
+ *
+ * Sub-service slugs are unchanged, including `hvac-maintenance`, which keeps its
+ * slug while displaying as "Heating & Cooling Maintenance". Only the parent
+ * segment moved, from /services/hvac/ to /heating-cooling/.
+ */
+import SubServiceLayout from '../../layouts/SubServiceLayout.astro';
+import { subServices } from '../../data/subservices';
+import { getService } from '../../data/services';
+
+export function getStaticPaths() {
+  const service = getService('hvac');
+  if (!service) {
+    throw new Error('/heating-cooling: the "hvac" service is missing from data/services.ts');
+  }
+
+  return subServices
+    .filter((sub) => sub.parent === 'hvac')
+    .map((subService) => ({
+      params: { subservice: subService.slug },
+      props: { service, subService },
+    }));
+}
+
+const { service, subService } = Astro.props;
+---
+
+<SubServiceLayout {service} {subService} />

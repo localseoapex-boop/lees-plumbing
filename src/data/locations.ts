@@ -128,5 +128,33 @@ export const locations: Location[] = [
   },
 ];
 
+/**
+ * The headquarters city.
+ *
+ * Hyde Park is the physical office and the primary market, so it is targeted
+ * DIRECTLY by the homepage, the two service hubs, and all 18 core sub-service
+ * pages ("Water Heater Repair in Hyde Park, Utah"). Giving it a
+ * /locations/hyde-park-ut/ page as well would put a weaker city page in
+ * competition with the pages that are already the strongest expression of that
+ * intent, so it generates no city page.
+ *
+ * It stays in `locations` above, and therefore in BUSINESS.areaServed and the
+ * LocalBusiness schema, because it IS served and it IS where the office sits.
+ * Only the ROUTE is withheld.
+ */
+export const HQ_CITY_SLUG = 'hyde-park-ut';
+
+/**
+ * The cities that generate a /locations/[city] page: everything except HQ.
+ *
+ * Use this for route generation and for any list of city LINKS. Use `locations`
+ * (all ten) for area-served, schema, and anything describing who is served
+ * rather than what is linkable.
+ */
+export const cityLocations: Location[] = locations.filter((l) => l.slug !== HQ_CITY_SLUG);
+
 export const getLocation = (slug: string): Location | undefined =>
   locations.find((l) => l.slug === slug);
+
+/** True when a city has its own page. False for the HQ city. */
+export const hasCityPage = (slug: string): boolean => slug !== HQ_CITY_SLUG;

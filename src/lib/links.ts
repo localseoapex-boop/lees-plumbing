@@ -1,20 +1,18 @@
 /**
- * links.ts — internal-linking helpers (requirement #4).
- *
- * Internal linking is how programmatic-SEO sites pass relevance between pages
- * and help crawlers discover hundreds of URLs. These pure functions answer the
- * questions every template asks:
- *
- *   - relatedServices(slug)      → "Related services" block
- *   - nearbyCities(slug)         → "Nearby cities" block
- *   - locationsForService(slug)  → "Available in these areas" (related locations)
- *   - servicesForLocation(loc)   → which services a city offers
+ * links.ts — internal-linking helpers.
  *
  * Keeping this logic out of the templates means every page links consistently
  * and the rules live in one testable place.
+ *
+ * LAUNCH RULE, enforced here: any helper that returns a list of cities to LINK
+ * to returns only cities that actually have a page. Hyde Park is the HQ and has
+ * no /locations/ page (see data/locations.ts), so it can never appear in a link
+ * list built from these functions. It is still served, still in the schema, and
+ * still targeted directly by the homepage and the core service pages. It simply
+ * is not a link destination.
  */
 import { services, getService, allServiceSlugs, type Service } from '../data/services';
-import { locations, getLocation, type Location } from '../data/locations';
+import { cityLocations, getLocation, type Location } from '../data/locations';
 import { subServices, type SubService } from '../data/subservices';
 
 /** The service slugs a given location offers (defaults to all). */
@@ -36,9 +34,7 @@ export const servicesForLocation = (loc: Location): Service[] =>
  */
 export const relatedServices = (serviceSlug: string, limit = 4): Service[] => {
   const svc = getService(serviceSlug);
-  const curated = (svc?.related ?? [])
-    .map(getService)
-    .filter((s): s is Service => Boolean(s));
+  const curated = (svc?.related ?? []).map(getService).filter((s): s is Service => Boolean(s));
   if (curated.length >= limit) return curated.slice(0, limit);
   const backfill = services.filter(
     (s) => s.slug !== serviceSlug && !curated.some((c) => c.slug === s.slug),
@@ -46,17 +42,26 @@ export const relatedServices = (serviceSlug: string, limit = 4): Service[] => {
   return [...curated, ...backfill].slice(0, limit);
 };
 
-/** Cities where a given service is available ("related locations" for a service). */
-export const locationsForService = (serviceSlug: string, limit?: number): Location[] => {
-  const result = locations.filter((l) => isServiceAvailable(l, serviceSlug));
+/**
+ * Cities to LINK to from a service or sub-service page's service-area section.
+ *
+ * Built from `cityLocations`, so the HQ city is excluded by construction and a
+ * service page can never link to a city page that does not exist.
+ */
+export const linkableCitiesForService = (serviceSlug: string, limit?: number): Location[] => {
+  const result = cityLocations.filter((l) => isServiceAvailable(l, serviceSlug));
   return limit ? result.slice(0, limit) : result;
 };
 
-/** Nearby cities for a location, resolved from its `nearby` slugs. */
+/**
+ * Nearby cities for a location. Filtered against `cityLocations`, so a city
+ * whose `nearby` list names Hyde Park (most do, it is central) does not produce
+ * a link to a page that is not generated.
+ */
 export const nearbyCities = (citySlug: string, limit = 4): Location[] => {
   const loc = getLocation(citySlug);
   return (loc?.nearby ?? [])
-    .map(getLocation)
+    .map((slug) => cityLocations.find((c) => c.slug === slug))
     .filter((l): l is Location => Boolean(l))
     .slice(0, limit);
 };
