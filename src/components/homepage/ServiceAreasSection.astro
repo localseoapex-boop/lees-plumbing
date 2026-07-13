@@ -28,7 +28,7 @@ const { id, heading, intro, areas, headquartersLabel = 'Headquarters' } = Astro.
 const headingId = `${id}-heading`;
 ---
 
-<section class="areas" aria-labelledby={headingId}>
+<section class="areas" {id} aria-labelledby={headingId}>
   <div class="container">
     <header class="section-head">
       <h2 id={headingId}>{heading}</h2>
@@ -56,6 +56,9 @@ const headingId = `${id}-heading`;
   .areas {
     background: var(--color-white);
     padding: var(--section-y) 0;
+    /* The section is an in-page anchor target on the service hubs, so keep the
+       heading clear of the viewport top when a CTA jumps here. */
+    scroll-margin-top: 1.5rem;
   }
   .section-head {
     max-width: 62ch;

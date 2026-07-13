@@ -1,0 +1,255 @@
+---
+/**
+ * ServiceHero.astro — the conversion hero for hub AND sub-service pages.
+ *
+ * One component serves both tiers and both trades. The difference between a hub
+ * hero and a sub-service hero is entirely in the props (heading, lede, and where
+ * the secondary CTA jumps to), not in the markup, so there is no Plumbing hero
+ * and no HVAC hero to keep in sync.
+ *
+ * THE OFFER SLOT: `offer` is a deliberately reserved structural area. No offer
+ * exists today, and inventing a coupon would be putting a false promise in front
+ * of a customer. So when `offer` is null the panel falls back to the two facts we
+ * can actually stand behind, the phone number and the office hours, both read
+ * from office data. That reads as an intentional "here is how to reach us" panel
+ * rather than an empty box or a development placeholder. When a real offer
+ * exists, pass it in and it takes the same slot with no layout change and no
+ * redesign of the hero.
+ *
+ * Renders the page's single H1. Nothing else on these pages emits one.
+ */
+interface Props {
+  eyebrow: string;
+  /** The page's one and only H1. */
+  heading: string;
+  lede: string;
+  phone: string;
+  phoneDisplay: string;
+  hours: string;
+  /** In-page anchor, e.g. "#services" or "#about-this-service". */
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  /** A real, confirmed offer. Null renders the contact panel instead. */
+  offer?: { title: string; body: string } | null;
+}
+
+const {
+  eyebrow,
+  heading,
+  lede,
+  phone,
+  phoneDisplay,
+  hours,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+  offer = null,
+} = Astro.props;
+---
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow-light">{eyebrow}</p>
+      <h1>{heading}</h1>
+      <p class="hero-lede">{lede}</p>
+
+      <div class="hero-actions">
+        <a class="btn-primary" href={`tel:${phone}`}>Call to Schedule</a>
+        <a class="btn-ghost" href={secondaryCtaHref}>{secondaryCtaLabel}</a>
+      </div>
+
+      <a class="hero-phone" href={`tel:${phone}`}>
+        <span class="hero-phone-label">Call</span>
+        <span class="hero-phone-number">{phoneDisplay}</span>
+      </a>
+    </div>
+
+    <aside class="hero-panel" aria-label={offer ? 'Current offer' : 'Contact details'}>
+      {
+        offer ? (
+          <>
+            <p class="panel-kicker">Current Offer</p>
+            <p class="panel-title">{offer.title}</p>
+            <p class="panel-body">{offer.body}</p>
+          </>
+        ) : (
+          <>
+            <p class="panel-kicker">Speak With Us</p>
+            <a class="panel-phone" href={`tel:${phone}`}>
+              {phoneDisplay}
+            </a>
+            <p class="panel-body">{hours}</p>
+            <p class="panel-body">Based in Hyde Park, serving Cache Valley.</p>
+          </>
+        )
+      }
+    </aside>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: center;
+  }
+
+  .eyebrow-light {
+    margin: 0 0 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f0a3a3;
+  }
+  h1 {
+    color: var(--color-white);
+    font-size: clamp(2.25rem, 4.4vw, 3.5rem);
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  .hero-lede {
+    margin: 0;
+    max-width: 56ch;
+    color: #c9cccc;
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.75rem;
+  }
+  .btn-primary,
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.9rem 1.6rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .btn-primary {
+    background: var(--color-red);
+    color: var(--color-white);
+    border: 2px solid var(--color-red);
+  }
+  .btn-primary:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+  }
+  .btn-ghost {
+    border: 2px solid #3a4040;
+    color: var(--color-white);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-white);
+  }
+  .btn-primary:focus-visible,
+  .btn-ghost:focus-visible,
+  .hero-phone:focus-visible,
+  .panel-phone:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+
+  /* The number itself, stated plainly. A tel: link on mobile, a readable number
+     on desktop where tapping it does nothing useful. */
+  .hero-phone {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    text-decoration: none;
+  }
+  .hero-phone-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: #8d9292;
+  }
+  .hero-phone-number {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-white);
+  }
+  .hero-phone:hover .hero-phone-number {
+    color: #f0a3a3;
+  }
+
+  /* Reserved offer area. Sized and styled to hold a real offer later without
+     the hero needing to change shape. */
+  .hero-panel {
+    padding: clamp(1.5rem, 2.5vw, 2rem);
+    background: #0d1111;
+    border: 1px solid #232828;
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-lg);
+  }
+  .panel-kicker {
+    margin: 0 0 0.75rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 700;
+    color: #f0a3a3;
+  }
+  .panel-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-white);
+  }
+  .panel-phone {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 700;
+    color: var(--color-white);
+    text-decoration: none;
+  }
+  .panel-phone:hover {
+    color: #f0a3a3;
+  }
+  .panel-body {
+    margin: 0 0 0.4rem;
+    color: #b3b7b7;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .panel-body:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+  }
+  @media (max-width: 480px) {
+    .hero-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .btn-primary,
+    .btn-ghost {
+      text-align: center;
+    }
+  }
+</style>

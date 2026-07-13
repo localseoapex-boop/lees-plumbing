@@ -1,0 +1,128 @@
+---
+/**
+ * ServiceFinalCta.astro — closing call to action for hub and sub-service pages.
+ *
+ * Carries the phone number, the office hours, and one secondary link back into
+ * the page (the service directory on a hub, the parent hub on a sub-service
+ * page), so the page never dead-ends.
+ *
+ * Hours come from office data via formatHours(), never hardcoded. There is no
+ * mention of coupons, financing, or emergency availability here, because none of
+ * those are things the business has confirmed it offers.
+ */
+interface Props {
+  heading: string;
+  body: string;
+  phone: string;
+  phoneDisplay: string;
+  hours: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+}
+
+const { heading, body, phone, phoneDisplay, hours, secondaryLabel, secondaryHref } = Astro.props;
+---
+
+<section class="final-cta" aria-labelledby="final-cta-heading">
+  <div class="container cta-inner">
+    <div class="cta-copy">
+      <h2 id="final-cta-heading">{heading}</h2>
+      <p>{body}</p>
+      <p class="cta-hours">{hours}</p>
+    </div>
+
+    <div class="cta-actions">
+      <a class="btn-primary" href={`tel:${phone}`}>Call to Schedule</a>
+      <a class="cta-phone" href={`tel:${phone}`}>{phoneDisplay}</a>
+      <a class="cta-secondary" href={secondaryHref}>{secondaryLabel}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .final-cta {
+    background: var(--color-red);
+    color: var(--color-white);
+    padding: var(--section-y) 0;
+  }
+  .cta-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .cta-copy {
+    max-width: 56ch;
+  }
+  h2 {
+    color: var(--color-white);
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .cta-copy p {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #ffe4e4;
+  }
+  .cta-hours {
+    margin-top: 0.75rem !important;
+    font-weight: 600;
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 0.9rem 1.75rem;
+    background: var(--color-white);
+    color: var(--color-dark);
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.18s ease;
+  }
+  .btn-primary:hover {
+    background: #f2f2f2;
+  }
+  .cta-phone {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-white);
+    text-decoration: none;
+  }
+  .cta-phone:hover {
+    text-decoration: underline;
+  }
+  .cta-secondary {
+    color: #ffe4e4;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .cta-secondary:hover {
+    color: var(--color-white);
+  }
+  .btn-primary:focus-visible,
+  .cta-phone:focus-visible,
+  .cta-secondary:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 760px) {
+    .cta-actions {
+      width: 100%;
+    }
+    .btn-primary {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

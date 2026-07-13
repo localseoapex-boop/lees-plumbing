@@ -1,0 +1,178 @@
+---
+/**
+ * SubserviceDirectory.astro — the hub's complete, grouped list of sub-services.
+ *
+ * This is the most important internal-linking block on the site. It is what
+ * passes authority from a hub down to every sub-service page beneath it, and it
+ * is why a hub page is worth having at all.
+ *
+ * COMPLETENESS is not this component's job to enforce. The groups arrive already
+ * resolved, and data/service-content.ts fails the BUILD if any sub-service in a
+ * category is missing from its hub's directory, lists a slug from the other
+ * category, or appears twice. That guard is what makes "no partial list" a
+ * structural guarantee rather than a thing someone has to remember.
+ *
+ * Both the title and the "View Service" action are links to the same href, which
+ * gives the card two real targets without an icon-only or unlabelled control.
+ * The whole card is not a link, so the title stays the accessible name.
+ *
+ * The `id` is the anchor target for the hub hero's "Explore Services" CTA.
+ */
+export interface DirectoryEntry {
+  name: string;
+  description: string;
+  href: string;
+}
+
+export interface ResolvedGroup {
+  title: string;
+  entries: DirectoryEntry[];
+}
+
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  groups: ResolvedGroup[];
+}
+
+const { id, heading, intro, groups } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="directory" id={id} aria-labelledby={headingId}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    {
+      groups.map((group) => (
+        <div class="group">
+          <h3 class="group-title">{group.title}</h3>
+          <ul class="card-grid">
+            {group.entries.map((entry) => (
+              <li class="card">
+                <h4 class="card-title">
+                  <a href={entry.href}>{entry.name}</a>
+                </h4>
+                <p class="card-body">{entry.description}</p>
+                <a class="card-action" href={entry.href}>
+                  View Service
+                  <span aria-hidden="true">&rsaquo;</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .directory {
+    background: var(--color-surface-alt);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--section-y) 0;
+    scroll-margin-top: 1.5rem;
+  }
+  .section-head {
+    max-width: 62ch;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .section-intro {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .group + .group {
+    margin-top: clamp(2rem, 3.5vw, 2.75rem);
+  }
+  .group-title {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--color-red);
+    /* Sized to the text rather than the column, so the rule reads as an
+       underline on the group name and not as a full-width divider. */
+    display: inline-block;
+  }
+
+  .card-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  /* Compact on purpose. Twelve plumbing services have to fit without the page
+     turning into an endless scroll of oversized cards. */
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.35rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .card:hover {
+    border-color: var(--color-red);
+    box-shadow: var(--shadow-md);
+  }
+  .card-title {
+    font-size: 1.2rem;
+    margin: 0 0 0.4rem;
+  }
+  .card-title a {
+    color: var(--color-dark);
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: var(--color-red);
+  }
+  .card-title a:focus-visible,
+  .card-action:focus-visible {
+    outline: 3px solid var(--color-red);
+    outline-offset: 3px;
+  }
+  .card-body {
+    margin: 0 0 1rem;
+    flex: 1;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+  .card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-red);
+    text-decoration: none;
+  }
+  .card-action:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

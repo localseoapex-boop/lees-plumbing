@@ -1,0 +1,83 @@
+---
+/**
+ * SignsSection.astro — "Signs You May Need ..." card grid.
+ *
+ * The heading is a PROP, not a constant, and that is the point. "Signs You May
+ * Need Water Heater Repair" is right for a repair page and wrong for an
+ * installation or maintenance page, which need "Signs It May Be Time to Replace
+ * Your Water Heater" or "When to Schedule ...". Forcing repair wording onto an
+ * installation page would read as though nobody looked at it. Each sub-service
+ * supplies its own heading in data/service-content.ts.
+ */
+import type { ContentPoint } from '../../data/service-content';
+
+interface Props {
+  id: string;
+  heading: string;
+  items: ContentPoint[];
+}
+
+const { id, heading, items } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="signs" aria-labelledby={headingId}>
+  <div class="container">
+    <h2 id={headingId}>{heading}</h2>
+
+    <ul class="signs-grid">
+      {
+        items.map((item) => (
+          <li class="sign">
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .signs {
+    background: var(--color-surface);
+    padding: var(--section-y) 0;
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 clamp(1.75rem, 3.5vw, 2.5rem);
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  .signs-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .sign {
+    padding: 1.4rem 1.5rem;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-red);
+    border-radius: var(--radius-lg);
+  }
+  .sign h3 {
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem;
+  }
+  .sign p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 560px) {
+    .signs-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

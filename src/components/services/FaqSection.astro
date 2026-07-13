@@ -1,0 +1,87 @@
+---
+/**
+ * FaqSection.astro — always-visible question and answer list.
+ *
+ * NO JAVASCRIPT, and no accordion. An accordion here would add interaction cost
+ * and a hydration boundary to buy nothing: the answers are short, and hiding
+ * them behind a click makes them harder to read and harder for a crawler to
+ * treat as primary content. A visible <dl> is the simpler and better answer, and
+ * the brief explicitly permits it. Everything below is static markup.
+ *
+ * NO FAQPage SCHEMA is emitted, deliberately. The site's current schema strategy
+ * is a LocalBusiness graph plus one Service node per page, and bolting FAQPage
+ * onto it would mean changing that strategy, which this phase is not scoped to
+ * do. See the phase report. The visible content is complete and correct on its
+ * own, so schema can be added later without any change to this markup.
+ */
+import type { FaqItem } from '../../data/service-content';
+
+interface Props {
+  id: string;
+  heading: string;
+  items: FaqItem[];
+}
+
+const { id, heading, items } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="faq" aria-labelledby={headingId}>
+  <div class="container">
+    <h2 id={headingId}>{heading}</h2>
+
+    <dl class="faq-list">
+      {
+        items.map((item) => (
+          <div class="faq-item">
+            <dt>{item.question}</dt>
+            <dd>{item.answer}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .faq {
+    background: var(--color-surface);
+    padding: var(--section-y) 0;
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 clamp(1.75rem, 3.5vw, 2.5rem);
+    text-wrap: balance;
+  }
+
+  .faq-list {
+    margin: 0;
+    padding: 0;
+    max-width: 76ch;
+  }
+  .faq-item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .faq-item:first-child {
+    padding-top: 0;
+  }
+  .faq-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  dt {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-dark);
+    margin-bottom: 0.6rem;
+  }
+  dd {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+  }
+</style>

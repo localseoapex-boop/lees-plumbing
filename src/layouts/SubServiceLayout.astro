@@ -1,20 +1,61 @@
 ---
 /**
- * SubServiceLayout.astro — template for /services/[category]/[subservice] (req #3).
+ * SubServiceLayout.astro — the SUB-SERVICE template (/services/[cat]/[sub]).
  *
- * Data-driven from a parent Service + a SubService. Builds a 4-level breadcrumb
- * (Home › Services › Category › Sub-service, req #7), Service JSON-LD scoped to
- * the sub-service (req #8), and internal links to sibling sub-services and to
- * this sub-service in each city that offers the parent category.
+ * A different composition from ServiceLayout on purpose. A hub sells a category
+ * and routes you onward, so it leads with a directory. A sub-service page serves
+ * someone who already knows what is wrong: it confirms they are in the right
+ * place, converts, and then earns the ranking with original, specific content.
+ * So this template carries the three blocks a hub does not have (signs, what to
+ * expect, common causes) and has no directory of its own.
+ *
+ * Section order:
+ *   1. Hero (conversion)      7. Reviews
+ *   2. Supporting content     8. Service areas
+ *   3. Trust                  9. Related services
+ *   4. Signs                 10. FAQs
+ *   5. What to expect        11. Final CTA
+ *   6. Common causes
+ *
+ * Every heading that could read awkwardly on an installation or maintenance page
+ * (signs, causes) is supplied per-service by data/service-content.ts rather than
+ * being hardcoded here. This layout assembles components and holds no page copy.
+ *
+ * Used ONLY by /services/[category]/[subservice]. The 180 location sub-service
+ * pages render through LocationSubServiceLayout and are deliberately NOT given
+ * this framework, which would have produced 180 near-duplicate long-form pages.
  */
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
-import InternalLinks from '../components/InternalLinks.astro';
+
+import ServiceHero from '../components/services/ServiceHero.astro';
+import SupportingContent from '../components/services/SupportingContent.astro';
+import SignsSection from '../components/services/SignsSection.astro';
+import ExpectSection from '../components/services/ExpectSection.astro';
+import CausesSection from '../components/services/CausesSection.astro';
+import RelatedServicesSection from '../components/services/RelatedServicesSection.astro';
+import FaqSection from '../components/services/FaqSection.astro';
+import ServiceFinalCta from '../components/services/ServiceFinalCta.astro';
+
+// Reused as-is from the homepage framework, same as the hub template.
+import TrustSection from '../components/homepage/TrustSection.astro';
+import ReviewsSection from '../components/homepage/ReviewsSection.astro';
+import ServiceAreasSection from '../components/homepage/ServiceAreasSection.astro';
+
 import { BUSINESS, SITE } from '../config/site';
+import { primaryOffice, formatHours } from '../data/offices';
 import type { Service } from '../data/services';
-import type { SubService } from '../data/subservices';
-import { subServicesForCategory, locationsForService } from '../lib/links';
+import { subServices, type SubService } from '../data/subservices';
+import { locationsForService } from '../lib/links';
 import { serviceUrl, subServiceUrl, locationSubServiceUrl, absoluteUrl } from '../lib/urls';
+import {
+  getSubServiceContent,
+  getHubContent,
+  EXPECT_STEPS,
+  TRUST_HEADING,
+  TRUST_CARDS,
+  REVIEWS,
+} from '../data/service-content';
 
 interface Props {
   service: Service;
@@ -23,8 +64,25 @@ interface Props {
 
 const { service, subService } = Astro.props;
 
+// Both are guarded at build time in data/service-content.ts. These checks are
+// what prove it to TypeScript.
+const content = getSubServiceContent(subService.slug);
+if (!content) {
+  throw new Error(`SubServiceLayout: no content for sub-service "${subService.slug}".`);
+}
+const hub = getHubContent(service.slug);
+if (!hub) {
+  throw new Error(`SubServiceLayout: no hub content for category "${service.slug}".`);
+}
+
 const title = subService.name;
 const description = subService.description;
+const hours = formatHours(primaryOffice.hours[0]);
+
+const heroHeading = `${subService.name} in Hyde Park, Utah`;
+const heroLede = `${subService.tagline} Based in Hyde Park and serving homeowners across Cache Valley.`;
+const supportingHeading =
+  content.supportingHeading ?? `Professional ${subService.name} for Hyde Park and Cache Valley`;
 
 const crumbs = [
   { name: 'Home', href: '/' },
@@ -33,17 +91,37 @@ const crumbs = [
   { name: subService.name },
 ];
 
-// Sibling sub-services within the same category.
-const siblingLinks = subServicesForCategory(service.slug)
-  .filter((s) => s.slug !== subService.slug)
-  .map((s) => ({ label: s.name, href: subServiceUrl(service.slug, s.slug), description: s.tagline }));
+// Curated siblings only. Nothing is backfilled to pad the grid, and the build
+// rejects a related slug that does not exist or points at this page itself. The
+// parent hub is appended last as the route back up.
+const relatedLinks = [
+  ...content.related.map((slug) => {
+    const sibling = subServices.find((s) => s.slug === slug)!;
+    return {
+      name: sibling.name,
+      description: sibling.tagline,
+      href: subServiceUrl(sibling.parent, sibling.slug),
+    };
+  }),
+  {
+    name: `All ${service.name} Services`,
+    description: service.tagline,
+    href: serviceUrl(service.slug),
+    isParent: true,
+  },
+];
 
-// This sub-service in every city that offers the parent category (req #4 + #9).
-const areaLinks = locationsForService(service.slug).map((loc) => ({
-  label: `${subService.name} in ${loc.city}, ${loc.region}`,
+// Service areas point at the LOCATION-SUB-SERVICE page, so Water Heater Repair
+// links to /locations/hyde-park-ut/plumbing/water-heater-repair. Those routes
+// already exist for every city that offers the parent category.
+const areas = locationsForService(service.slug).map((loc) => ({
+  city: loc.city,
+  region: loc.region,
   href: locationSubServiceUrl(loc.slug, service.slug, subService.slug),
+  isHeadquarters: loc.slug === 'hyde-park-ut',
 }));
 
+// Unchanged: one Service node scoped to this sub-service. No FAQPage schema.
 const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
@@ -56,28 +134,70 @@ const serviceSchema = {
 ---
 
 <BaseLayout {title} {description}>
-  <article class="container page">
+  <div class="container crumb-bar">
     <Breadcrumbs items={crumbs} />
+  </div>
 
-    <header class="page-hero">
-      <p class="eyebrow">{service.name}</p>
-      <h1>{subService.name}</h1>
-      <p class="lede">{subService.tagline}</p>
-      <a class="cta" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phoneDisplay}</a>
-    </header>
+  <ServiceHero
+    eyebrow="Based in Hyde Park, Serving Cache Valley"
+    heading={heroHeading}
+    lede={heroLede}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+    secondaryCtaLabel="Learn About This Service"
+    secondaryCtaHref="#about-service"
+  />
 
-    <div class="page-body">
-      <p>{subService.intro}</p>
-      <h2>What's included</h2>
-      <ul>
-        {subService.features.map((f) => <li>{f}</li>)}
-      </ul>
-      <slot />
-    </div>
+  <SupportingContent
+    id="about-service"
+    heading={supportingHeading}
+    paragraphs={content.supportingParagraphs}
+  />
 
-    <InternalLinks title={`More ${service.name} services`} links={siblingLinks} />
-    <InternalLinks title={`${subService.name} in your area`} links={areaLinks} />
+  <TrustSection id="why-us" heading={TRUST_HEADING} intro={hub.trustIntro} cards={TRUST_CARDS} />
 
-    <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} is:inline />
-  </article>
+  <SignsSection id="signs" heading={content.signsHeading} items={content.signs} />
+
+  <ExpectSection id="expect" steps={EXPECT_STEPS} note={content.expectNote} />
+
+  <CausesSection id="causes" heading={content.causesHeading} items={content.causes} />
+
+  <ReviewsSection
+    id="reviews"
+    heading={REVIEWS.heading}
+    items={[]}
+    isPlaceholder={REVIEWS.isPlaceholder}
+    emptyMessage={REVIEWS.emptyMessage}
+  />
+
+  <ServiceAreasSection
+    id="areas"
+    heading={`${subService.name} Across Cache Valley`}
+    intro={`Our office is in Hyde Park and we serve the surrounding communities. Choose your city to see ${subService.name.toLowerCase()} there.`}
+    {areas}
+  />
+
+  <RelatedServicesSection id="related" heading="Related Services" links={relatedLinks} />
+
+  <FaqSection id="faqs" heading={`${subService.name} Questions`} items={content.faqs} />
+
+  <ServiceFinalCta
+    heading={`Need ${subService.name} in Cache Valley?`}
+    body={`Give us a call and tell us what is going on. We will let you know how we can help.`}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+    secondaryLabel={`See all ${service.name.toLowerCase()} services`}
+    secondaryHref={serviceUrl(service.slug)}
+  />
+
+  <script type="application/ld+json" set:html={JSON.stringify(serviceSchema)} is:inline />
 </BaseLayout>
+
+<style>
+  .crumb-bar {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+</style>

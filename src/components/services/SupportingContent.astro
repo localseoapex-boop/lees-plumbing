@@ -1,0 +1,58 @@
+---
+/**
+ * SupportingContent.astro — the first section after the hero on both tiers.
+ *
+ * This is the main educational and search-facing block. It is deliberately plain
+ * prose in a readable measure rather than a card grid, because its job is to be
+ * read. All copy arrives through props from data/service-content.ts, so this
+ * component holds no page-specific text of its own.
+ *
+ * The `id` is the anchor target for the sub-service hero's "Learn About This
+ * Service" CTA, so it must stay stable.
+ */
+interface Props {
+  id: string;
+  heading: string;
+  paragraphs: string[];
+}
+
+const { id, heading, paragraphs } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="supporting" id={id} aria-labelledby={headingId}>
+  <div class="container">
+    <h2 id={headingId}>{heading}</h2>
+    <div class="prose">
+      {paragraphs.map((text) => <p>{text}</p>)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .supporting {
+    background: var(--color-surface);
+    padding: var(--section-y) 0;
+    /* Offset for the in-page anchor jump so the heading is not tucked under the
+       top of the viewport when the CTA lands here. */
+    scroll-margin-top: 1.5rem;
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 1.5rem;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+  .prose {
+    max-width: 68ch;
+  }
+  .prose p {
+    margin: 0 0 1.25rem;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--color-text);
+  }
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+</style>

@@ -1,0 +1,110 @@
+---
+/**
+ * ExpectSection.astro — "What to Expect During Service".
+ *
+ * Deliberately NOT called "Our Process". The steps describe a normal
+ * diagnose-explain-then-do-the-agreed-work sequence and commit to no timeline,
+ * price, or operational promise that has not been confirmed by the business.
+ * The shared steps live in EXPECT_STEPS in data/service-content.ts, so a change
+ * to how the work is described happens in exactly one place.
+ *
+ * `note` is the one per-service escape hatch, for a genuine service-specific
+ * caveat (hydro jetting wanting a camera look at pipe condition first, for
+ * instance). It cannot replace the sequence, only add a line to it.
+ *
+ * The numbers are decorative and come from CSS counters, so screen readers get
+ * the ordered list semantics from <ol> rather than hearing a number read twice.
+ */
+import type { ContentPoint } from '../../data/service-content';
+
+interface Props {
+  id: string;
+  heading?: string;
+  steps: ContentPoint[];
+  note?: string;
+}
+
+const { id, heading = 'What to Expect During Service', steps, note } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="expect" aria-labelledby={headingId}>
+  <div class="container">
+    <h2 id={headingId}>{heading}</h2>
+
+    <ol class="steps">
+      {
+        steps.map((step) => (
+          <li class="step">
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    {note && <p class="expect-note">{note}</p>}
+  </div>
+</section>
+
+<style>
+  .expect {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: var(--section-y) 0;
+  }
+  h2 {
+    color: var(--color-white);
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 clamp(1.75rem, 3.5vw, 2.5rem);
+    text-wrap: balance;
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+  .step {
+    counter-increment: step;
+    padding-top: 2.75rem;
+    position: relative;
+    border-top: 1px solid #2b3131;
+  }
+  .step::before {
+    content: counter(step);
+    position: absolute;
+    top: 0.9rem;
+    left: 0;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-red);
+  }
+  .step h3 {
+    color: var(--color-white);
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem;
+  }
+  .step p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #b3b7b7;
+  }
+
+  .expect-note {
+    margin: clamp(1.75rem, 3vw, 2.25rem) 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #2b3131;
+    max-width: 70ch;
+    color: #c9cccc;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+</style>
