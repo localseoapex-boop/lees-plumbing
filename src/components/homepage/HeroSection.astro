@@ -1,0 +1,228 @@
+---
+/**
+ * HeroSection.astro — the homepage hero. Dark, high-contrast, two-column.
+ *
+ * Holds the page's single <h1>. Every string is a prop, so a different trade or
+ * business reuses this component untouched.
+ *
+ * The media slot ALWAYS reserves its aspect ratio, whether or not an image
+ * exists. That is deliberate: dropping a real photo in later cannot shift the
+ * layout, so CLS stays at zero either way.
+ *
+ * With no image configured, the slot renders a BRANDED treatment (wordmark,
+ * rule, and quiet diagonal linework built from the design tokens) rather than a
+ * development placeholder. It is intentional, understated, and ships no external
+ * request and no JavaScript. Set `media.src` and it is replaced by the photo.
+ */
+interface Props {
+  eyebrow: string;
+  heading: string;
+  body: string;
+  /** `href` is already resolved by the caller (a path, or a tel: link). */
+  primaryCta: { label: string; href: string };
+  /** tel: target, e.g. "+1-435-563-0611". */
+  phone: string;
+  /** Display number, e.g. "435-563-0611". */
+  phoneDisplay: string;
+  secondaryCtaPrefix: string;
+  media: { src: string | null; alt: string; fallbackTagline?: string };
+  /** Wordmark shown in the branded fallback when there is no image. */
+  brand: string;
+}
+
+const {
+  eyebrow,
+  heading,
+  body,
+  primaryCta,
+  phone,
+  phoneDisplay,
+  secondaryCtaPrefix,
+  media,
+  brand,
+} = Astro.props;
+---
+
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <p class="hero-eyebrow">{eyebrow}</p>
+      <h1>{heading}</h1>
+      <p class="hero-body">{body}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href={primaryCta.href}>{primaryCta.label}</a>
+        <a class="btn btn-ghost" href={`tel:${phone}`}>
+          {secondaryCtaPrefix}
+          {phoneDisplay}
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-media">
+      {
+        media.src ? (
+          <img src={media.src} alt={media.alt} width="640" height="480" fetchpriority="high" />
+        ) : (
+          <div class="hero-brandmark" role="presentation">
+            <div class="brandmark-inner">
+              <span class="brandmark-name">{brand}</span>
+              <span class="brandmark-rule" />
+              {media.fallbackTagline && (
+                <span class="brandmark-tagline">{media.fallbackTagline}</span>
+              )}
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .hero-eyebrow {
+    margin: 0 0 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f0a3a3;
+  }
+  .hero h1 {
+    color: var(--color-white);
+    font-size: clamp(2.5rem, 5.2vw, 4rem);
+    line-height: 1.08;
+    margin: 0 0 1.25rem;
+    text-wrap: balance;
+  }
+  .hero-body {
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    line-height: 1.7;
+    color: #c9cccc;
+    max-width: 56ch;
+    margin: 0 0 2rem;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.95rem 1.6rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .btn-primary {
+    background: var(--color-red);
+    color: var(--color-white);
+    border-color: var(--color-red);
+  }
+  .btn-primary:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+  }
+  .btn-ghost {
+    color: var(--color-white);
+    border-color: #3d4242;
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-white);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Reserved media slot. Aspect ratio is fixed so a real image can drop in
+     later without moving anything below it. */
+  .hero-media {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Branded fallback. Quiet diagonal linework over a raised panel, with the
+     wordmark centered. Pure CSS: no image request, no script. */
+  .hero-brandmark {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    border: 1px solid #232828;
+    border-radius: var(--radius-lg);
+    background-color: #0d1111;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.022) 0,
+      rgba(255, 255, 255, 0.022) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  }
+  .brandmark-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .brandmark-name {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.6vw, 2.9rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-white);
+  }
+  .brandmark-rule {
+    width: 56px;
+    height: 3px;
+    margin: 1.1rem 0;
+    border-radius: 2px;
+    background: var(--color-red);
+  }
+  .brandmark-tagline {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8b9090;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+    }
+    /* Copy first on mobile. The reserved slot shrinks but never disappears, so
+       the mobile and desktop layouts stay consistent. */
+    .hero-media {
+      order: 2;
+      aspect-ratio: 16 / 9;
+    }
+  }
+  @media (max-width: 480px) {
+    .hero-actions .btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

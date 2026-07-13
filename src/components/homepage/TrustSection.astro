@@ -1,0 +1,98 @@
+---
+/**
+ * TrustSection.astro — four-card trust block ("Why Homeowners Choose ...").
+ *
+ * Sits BETWEEN the two service sections. It is not the About section: it is a
+ * short confidence beat and a visual break before the secondary trade is
+ * introduced. Kept intentionally short so the page does not sag in the middle.
+ */
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  cards: readonly { title: string; body: string }[];
+}
+
+const { id, heading, intro, cards } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="trust-section" aria-labelledby={headingId}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    <ul class="trust-grid">
+      {
+        cards.map((card) => (
+          <li class="trust-card">
+            <h3>{card.title}</h3>
+            <p>{card.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .trust-section {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: clamp(3rem, 5.5vw, 4.5rem) 0;
+  }
+  .section-head {
+    max-width: 60ch;
+    margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+  }
+  h2 {
+    color: var(--color-white);
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .section-intro {
+    margin: 0;
+    color: #c9cccc;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+  .trust-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  .trust-card {
+    padding: 1.5rem;
+    background: #0d1111;
+    border: 1px solid #232828;
+    border-radius: var(--radius-lg);
+  }
+  .trust-card h3 {
+    color: var(--color-white);
+    font-size: 1.4rem;
+    margin: 0 0 0.6rem;
+  }
+  .trust-card p {
+    margin: 0;
+    color: #b3b7b7;
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 1000px) {
+    .trust-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .trust-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

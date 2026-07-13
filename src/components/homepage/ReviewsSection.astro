@@ -1,0 +1,228 @@
+---
+/**
+ * ReviewsSection.astro — three review cards with source and star rating.
+ *
+ * Honesty guard: while `isPlaceholder` is true this section renders ONLY its
+ * heading plus a short "coming soon" line. No names, quotes, stars, or source
+ * labels are output, because inventing any of them would put fake testimonials
+ * in front of customers. The card markup below is fully preserved and switches
+ * on by itself the moment real entries are supplied and the flag is cleared.
+ *
+ * Deliberately emits NO Review or AggregateRating schema. Marking up reviews as
+ * structured data before they are real is a manual-action risk with Google, and
+ * schema is out of scope for this phase in any case.
+ *
+ * Stars are inline SVG (no icon font, no JS). The rating is announced once via
+ * an accessible label, and the stars themselves are hidden from screen readers
+ * so they are not read out as five separate graphics.
+ */
+export interface Review {
+  quote: string;
+  author: string;
+  location?: string;
+  rating: number;
+  source: string;
+}
+
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  items: readonly Review[];
+  isPlaceholder?: boolean;
+  /** Rendered instead of the cards while isPlaceholder is true. */
+  emptyMessage?: string;
+  ctaLabel?: string;
+  ctaHref?: string | null;
+}
+
+const {
+  id,
+  heading,
+  intro,
+  items,
+  isPlaceholder = false,
+  emptyMessage,
+  ctaLabel,
+  ctaHref,
+} = Astro.props;
+const headingId = `${id}-heading`;
+const MAX_STARS = 5;
+
+// One switch decides the whole section: real reviews, or the awaiting-reviews
+// line. There is no state in which invented review content can render.
+const hasReviews = !isPlaceholder && items.length > 0;
+---
+
+<section class="reviews" aria-labelledby={headingId}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {hasReviews && intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    {!hasReviews && emptyMessage && <p class="reviews-empty">{emptyMessage}</p>}
+
+    {
+      hasReviews && (
+        <ul class="review-grid">
+          {items.map((review) => (
+            <li class="review-card">
+              <div
+                class="stars"
+                role="img"
+                aria-label={`${review.rating} out of ${MAX_STARS} stars`}
+              >
+                {Array.from({ length: MAX_STARS }).map((_, i) => (
+                  <svg
+                    class:list={['star', i < review.rating && 'filled']}
+                    viewBox="0 0 20 20"
+                    width="18"
+                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M10 1.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.6 7.7l5.8-.8z" />
+                  </svg>
+                ))}
+              </div>
+
+              <blockquote>
+                <p>{review.quote}</p>
+              </blockquote>
+
+              <footer class="review-meta">
+                <span class="review-author">{review.author}</span>
+                {review.location && <span class="review-location">{review.location}</span>}
+                <span class="review-source">via {review.source}</span>
+              </footer>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      hasReviews && ctaLabel && ctaHref && (
+        <div class="section-cta">
+          <a class="btn-outline" href={ctaHref}>
+            {ctaLabel}
+          </a>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .reviews {
+    background: var(--color-surface-alt);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--section-y) 0;
+  }
+  .section-head {
+    max-width: 60ch;
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+  }
+  .section-intro {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  /* Awaiting-reviews state. Reads as a normal line of site copy, not as a
+     development notice. */
+  .reviews-empty {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .review-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  .review-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.6rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .stars {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 1rem;
+  }
+  .star {
+    fill: var(--color-border);
+  }
+  .star.filled {
+    fill: var(--color-red);
+  }
+  blockquote {
+    margin: 0 0 1.25rem;
+    flex: 1;
+  }
+  blockquote p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text);
+  }
+  .review-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+    font-size: 0.85rem;
+  }
+  .review-author {
+    font-weight: 600;
+    color: var(--color-dark);
+  }
+  .review-location,
+  .review-source {
+    color: var(--color-muted);
+  }
+
+  .section-cta {
+    margin-top: 2rem;
+  }
+  .btn-outline {
+    display: inline-block;
+    padding: 0.9rem 1.6rem;
+    border: 2px solid var(--color-red);
+    border-radius: var(--radius-sm);
+    color: var(--color-red);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+  .btn-outline:hover {
+    background: var(--color-red);
+    color: var(--color-white);
+  }
+
+  @media (max-width: 900px) {
+    .review-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

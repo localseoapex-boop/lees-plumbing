@@ -1,15 +1,101 @@
 ---
 /**
- * Homepage (/) — uses BaseLayout directly (it's not a service/city/blog page).
+ * Homepage (/) — assembles the reusable homepage framework.
  *
- * Passes the geo-targeted title WITHOUT the brand: BaseHead appends "| {brand}"
- * for any title that isn't the bare brand name, so the rendered title is
- * "Plumber in Hyde Park, UT | Lee's Plumbing" and the brand is never doubled.
- * Cards link into the two service categories and the service-area hub for
- * internal-link equity.
+ * This file contains NO copy and NO markup of its own. Its only jobs are:
+ *   1. resolve content from config/homepage.ts against the service + location
+ *      data built in Phase 1, and
+ *   2. hand the result to the generic components in components/homepage/.
+ *
+ * That split is the whole point of the framework: a different business swaps
+ * config/homepage.ts plus its data files and gets this homepage for free,
+ * without editing a single component.
+ *
+ * SEO notes:
+ *   - The <h1> lives in HeroSection and is the ONLY h1 on the page. Section
+ *     headings are <h2>, card titles <h3>.
+ *   - Title is passed WITHOUT the brand: BaseHead appends "| {brand}" so the
+ *     rendered title stays "Plumber in Hyde Park, UT | Lee's Plumbing".
+ *   - Featured services are resolved from the sub-service catalog by slug, so
+ *     every card links to a page that is guaranteed to exist.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { BUSINESS } from '../config/site';
+import HeroSection from '../components/homepage/HeroSection.astro';
+import TrustStrip from '../components/homepage/TrustStrip.astro';
+import ServiceSection from '../components/homepage/ServiceSection.astro';
+import TrustSection from '../components/homepage/TrustSection.astro';
+import ReviewsSection from '../components/homepage/ReviewsSection.astro';
+import AboutSection from '../components/homepage/AboutSection.astro';
+import ServiceAreasSection from '../components/homepage/ServiceAreasSection.astro';
+import FinalCTASection from '../components/homepage/FinalCTASection.astro';
+
+import { SITE, BUSINESS } from '../config/site';
+import {
+  HERO,
+  TRUST_STRIP,
+  PLUMBING_SECTION,
+  HVAC_SECTION,
+  WHY_US,
+  REVIEWS,
+  ABOUT,
+  SERVICE_AREAS,
+  FINAL_CTA,
+  type ServiceSectionContent,
+} from '../config/homepage';
+import { getService } from '../data/services';
+import { getSubService } from '../data/subservices';
+import { locations } from '../data/locations';
+import { primaryOffice, formatHours } from '../data/offices';
+import { serviceUrl, subServiceUrl, cityUrl } from '../lib/urls';
+
+/**
+ * Turn a configured section into rendered cards + CTA target. Any featured slug
+ * that does not resolve to a real sub-service is DROPPED rather than rendered
+ * as a dead link, so a typo in the config can never ship a broken internal link.
+ */
+function resolveServiceSection(content: ServiceSectionContent) {
+  const service = getService(content.serviceSlug);
+  if (!service) throw new Error(`Unknown service slug: ${content.serviceSlug}`);
+
+  const cards = content.featured.flatMap((item) => {
+    const sub = getSubService(content.serviceSlug, item.slug);
+    if (!sub) return [];
+    return [
+      {
+        name: sub.name,
+        href: subServiceUrl(content.serviceSlug, sub.slug),
+        blurb: item.blurb ?? sub.tagline,
+      },
+    ];
+  });
+
+  return { cards, ctaHref: serviceUrl(service.slug) };
+}
+
+const plumbing = resolveServiceSection(PLUMBING_SECTION);
+const hvac = resolveServiceSection(HVAC_SECTION);
+
+// Every city in the catalog gets a homepage link. HQ is flagged for emphasis.
+const areas = locations.map((loc) => ({
+  city: loc.city,
+  region: loc.region,
+  href: cityUrl(loc.slug),
+  isHeadquarters: loc.slug === SERVICE_AREAS.headquartersSlug,
+}));
+
+const hours = primaryOffice.hours.map((spec) => formatHours(spec));
+
+/**
+ * Scheduling CTA. No booking or contact page exists yet, so a null href falls
+ * back to the phone from the central business config rather than pointing the
+ * customer at a page that cannot schedule anything. Give HERO.primaryCta a real
+ * href once that page exists and this fallback stops applying. The number is
+ * resolved from BUSINESS, never hardcoded in a component.
+ */
+const heroPrimaryCta = {
+  label: HERO.primaryCta.label,
+  href: HERO.primaryCta.href ?? `tel:${BUSINESS.phone}`,
+};
 
 const title = 'Plumber in Hyde Park, UT';
 const description =
@@ -17,93 +103,77 @@ const description =
 ---
 
 <BaseLayout {title} {description}>
-  <section class="hero container">
-    <h1>Trusted Plumbing and HVAC Services in Hyde Park, Utah</h1>
-    <p class="lede">
-      Plumbing, heating, and cooling services for homeowners in Hyde Park and communities across
-      Cache Valley.
-    </p>
-    <div class="hero-actions">
-      <a class="btn primary" href={`tel:${BUSINESS.phone}`}>Call {BUSINESS.phoneDisplay}</a>
-      <a class="btn" href="/services/plumbing">View plumbing services</a>
-    </div>
-  </section>
+  <HeroSection
+    eyebrow={HERO.eyebrow}
+    heading={HERO.heading}
+    body={HERO.body}
+    primaryCta={heroPrimaryCta}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    secondaryCtaPrefix={HERO.secondaryCtaPrefix}
+    media={HERO.media}
+    brand={SITE.name}
+  />
 
-  <section class="container grid">
-    <a class="card" href="/services/plumbing">
-      <h2>Plumbing</h2>
-      <p>Leaks, water heaters, pipes, fixtures, and drains.</p>
-    </a>
-    <a class="card" href="/services/hvac">
-      <h2>Heating &amp; Cooling</h2>
-      <p>Furnaces, air conditioners, heat pumps, and maintenance.</p>
-    </a>
-    <a class="card" href="/locations">
-      <h2>Service Areas</h2>
-      <p>Serving Hyde Park, Logan, and communities across Cache Valley.</p>
-    </a>
-  </section>
+  <TrustStrip items={TRUST_STRIP} />
+
+  <ServiceSection
+    id="plumbing"
+    heading={PLUMBING_SECTION.heading}
+    intro={PLUMBING_SECTION.intro}
+    cards={plumbing.cards}
+    ctaLabel={PLUMBING_SECTION.ctaLabel}
+    ctaHref={plumbing.ctaHref}
+    emphasis="primary"
+  />
+
+  <TrustSection id="why-us" heading={WHY_US.heading} intro={WHY_US.intro} cards={WHY_US.cards} />
+
+  <ServiceSection
+    id="hvac"
+    heading={HVAC_SECTION.heading}
+    intro={HVAC_SECTION.intro}
+    cards={hvac.cards}
+    ctaLabel={HVAC_SECTION.ctaLabel}
+    ctaHref={hvac.ctaHref}
+    emphasis="secondary"
+  />
+
+  <ReviewsSection
+    id="reviews"
+    heading={REVIEWS.heading}
+    intro={REVIEWS.intro}
+    items={REVIEWS.items}
+    isPlaceholder={REVIEWS.isPlaceholder}
+    emptyMessage={REVIEWS.emptyMessage}
+    ctaLabel={REVIEWS.ctaLabel}
+    ctaHref={REVIEWS.ctaHref}
+  />
+
+  <AboutSection
+    id="about"
+    heading={ABOUT.heading}
+    paragraphs={ABOUT.paragraphs}
+    highlights={ABOUT.highlights}
+    ctaLabel={ABOUT.ctaLabel}
+    ctaHref={ABOUT.ctaHref}
+  />
+
+  <ServiceAreasSection
+    id="service-areas"
+    heading={SERVICE_AREAS.heading}
+    intro={SERVICE_AREAS.intro}
+    areas={areas}
+    headquartersLabel={SERVICE_AREAS.headquartersLabel}
+  />
+
+  <FinalCTASection
+    id="final-cta"
+    heading={FINAL_CTA.heading}
+    body={FINAL_CTA.body}
+    ctaPrefix={FINAL_CTA.ctaPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+  />
 </BaseLayout>
-
-<style>
-  .hero {
-    padding: 4rem 1rem 2rem;
-    text-align: center;
-  }
-  .hero h1 {
-    font-size: 3rem;
-    margin: 0 0 1rem;
-  }
-  .lede {
-    font-size: 1.25rem;
-    color: var(--color-muted);
-    max-width: 60ch;
-    margin: 0 auto 1.5rem;
-  }
-  .hero-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .btn {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-  }
-  .btn.primary {
-    background: var(--accent);
-    color: var(--color-white);
-  }
-  .btn.primary:hover {
-    background: var(--accent-dark);
-    border-color: var(--accent-dark);
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-    padding-top: 2rem;
-  }
-  .card {
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 0.2s;
-  }
-  .card:hover {
-    border-color: var(--accent);
-  }
-  .card h2 {
-    margin: 0 0 0.5rem;
-  }
-  .card p {
-    margin: 0;
-    color: var(--color-muted);
-  }
-</style>

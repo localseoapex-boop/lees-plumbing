@@ -1,0 +1,129 @@
+---
+/**
+ * ServiceAreasSection.astro — responsive grid of linked city cards.
+ *
+ * Every city page in the location architecture gets a real, crawlable link from
+ * the homepage, which is what makes this section worth its space for local SEO.
+ * Cards, not a bullet list: each one is a full-size tap target.
+ *
+ * The headquarters city is flagged by the caller and rendered with a badge and
+ * a red border, so the physical office reads as the anchor of the service area.
+ */
+export interface AreaCard {
+  city: string;
+  region: string;
+  href: string;
+  isHeadquarters?: boolean;
+}
+
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  areas: AreaCard[];
+  headquartersLabel?: string;
+}
+
+const { id, heading, intro, areas, headquartersLabel = 'Headquarters' } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class="areas" aria-labelledby={headingId}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    <ul class="area-grid">
+      {
+        areas.map((area) => (
+          <li>
+            <a class:list={['area-card', area.isHeadquarters && 'is-hq']} href={area.href}>
+              <span class="area-city">
+                {area.city}, {area.region}
+              </span>
+              {area.isHeadquarters && <span class="area-badge">{headquartersLabel}</span>}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .areas {
+    background: var(--color-white);
+    padding: var(--section-y) 0;
+  }
+  .section-head {
+    max-width: 62ch;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .section-intro {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .area-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .area-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Wrap rather than squeeze: on a narrow track the badge drops to its own
+       line instead of crushing the city name into two cramped lines. */
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    height: 100%;
+    padding: 1.15rem 1.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--color-dark);
+    font-weight: 600;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
+  }
+  .area-card:hover {
+    border-color: var(--color-red);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .area-card:focus-visible {
+    outline: 3px solid var(--color-red);
+    outline-offset: 3px;
+  }
+  .area-card.is-hq {
+    border-color: var(--color-red);
+    border-width: 2px;
+  }
+  .area-badge {
+    flex-shrink: 0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: var(--color-red);
+    color: var(--color-white);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+</style>

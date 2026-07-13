@@ -1,0 +1,72 @@
+---
+/**
+ * TrustStrip.astro — compact four-item band directly under the hero.
+ *
+ * Its job is structural as much as persuasive: it separates the dark hero from
+ * the light page body and gives the eye a resting point. Kept to one line of
+ * copy per item so it never grows into a content section.
+ */
+interface Props {
+  items: readonly { label: string; detail?: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="trust-strip" aria-label="Why work with us">
+  <ul class="container strip-inner">
+    {
+      items.map((item) => (
+        <li>
+          <span class="strip-label">{item.label}</span>
+          {item.detail && <span class="strip-detail">{item.detail}</span>}
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .trust-strip {
+    background: var(--color-surface-alt);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .strip-inner {
+    list-style: none;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding-top: 1.75rem;
+    padding-bottom: 1.75rem;
+  }
+  .strip-inner li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--color-red);
+  }
+  .strip-label {
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--color-dark);
+  }
+  .strip-detail {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 860px) {
+    .strip-inner {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+  }
+  @media (max-width: 460px) {
+    .strip-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
