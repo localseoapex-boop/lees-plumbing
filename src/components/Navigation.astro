@@ -1,15 +1,36 @@
 ---
 /**
- * Navigation.astro — site header + primary nav.
+ * Navigation.astro — site header + primary nav, with one dropdown.
  *
- * Pulls links from NAV_LINKS so the menu is edited in one place. Highlights the
- * active link by matching the current path against each href exactly or as a
- * path prefix — the nav now links directly to individual service categories, so
- * a coarse "first path segment" match would light up both service links at once.
- * A prominent "Call" CTA is standard for home-service sites where phone calls
- * are the main conversion.
+ * Links come from NAV_LINKS so the menu is edited in one place. An entry with
+ * `children` renders as a dropdown; everything else renders as a plain link.
+ *
+ * THE DROPDOWN, and why it is built this way:
+ *
+ * The trigger is a real <button>, not a link. A link that also opens a menu is
+ * the classic broken pattern: keyboard users activate it and get navigated away
+ * instead of opening the menu. "About Us" is a menu, not a page, so it is a
+ * button and it has no href.
+ *
+ * Opening is CSS-FIRST and works with no JavaScript at all:
+ *   - :has(:focus-visible) opens it when a KEYBOARD user tabs in. Not
+ *     :focus-within, which would also fire on a tap and fight the tap-to-toggle
+ *     below, leaving touch users unable to open the menu at all.
+ *   - :hover opens it on hover-capable devices only, gated behind a media query
+ *     so a touch device never opens the menu from a stray hover
+ *   - [data-open='true'] opens it on click / tap, and [data-open='false'] force
+ *     closes it, beating both of the above when the user explicitly dismissed it
+ *
+ * The script is 30 lines and does only what CSS cannot: toggle on click (touch
+ * and mouse), close on Escape and return focus to the trigger, close on an
+ * outside click, and keep aria-expanded truthful while the menu is open by
+ * hover. Without that last part the button would announce "collapsed" to a
+ * screen reader while the menu was visibly open. No library, no framework.
+ *
+ * If the script fails to load, hover and keyboard focus still open the menu and
+ * every link inside it is still reachable. The nav degrades, it does not break.
  */
-import { SITE, BUSINESS, NAV_LINKS } from '../config/site';
+import { SITE, BUSINESS, NAV_LINKS, isNavGroup } from '../config/site';
 
 const currentPath = Astro.url.pathname;
 const normalize = (path: string) => (path.length > 1 ? path.replace(/\/$/, '') : path);
@@ -20,6 +41,10 @@ const isActive = (href: string) => {
   if (target === '/') return path === '/';
   return path === target || path.startsWith(`${target}/`);
 };
+
+/** A group is "current" when the open page is one of its children. */
+const groupHasActiveChild = (children: readonly { href: string }[]) =>
+  children.some((child) => isActive(child.href));
 ---
 
 <header class="site-header">
@@ -28,13 +53,56 @@ const isActive = (href: string) => {
 
     <ul class="nav-links">
       {
-        NAV_LINKS.map((link) => (
-          <li>
-            <a href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
-              {link.label}
-            </a>
-          </li>
-        ))
+        NAV_LINKS.map((item, i) =>
+          isNavGroup(item) ? (
+            <li class="nav-group" data-nav-group>
+              <button
+                type="button"
+                class="nav-trigger"
+                id={`nav-trigger-${i}`}
+                aria-expanded="false"
+                aria-controls={`nav-menu-${i}`}
+                data-nav-trigger
+                data-current={groupHasActiveChild(item.children) ? 'true' : undefined}
+              >
+                {item.label}
+                <svg
+                  class="nav-caret"
+                  width="10"
+                  height="6"
+                  viewBox="0 0 10 6"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    d="M1 1l4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <ul class="nav-menu" id={`nav-menu-${i}`} aria-labelledby={`nav-trigger-${i}`}>
+                {item.children.map((child) => (
+                  <li>
+                    <a href={child.href} aria-current={isActive(child.href) ? 'page' : undefined}>
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li>
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ),
+        )
       }
     </ul>
 
@@ -42,10 +110,77 @@ const isActive = (href: string) => {
   </nav>
 </header>
 
+<script>
+  // Progressive enhancement only. Everything below has a CSS fallback.
+  const groups = document.querySelectorAll<HTMLElement>('[data-nav-group]');
+
+  groups.forEach((group) => {
+    const trigger = group.querySelector<HTMLButtonElement>('[data-nav-trigger]');
+    if (!trigger) return;
+
+    const setOpen = (open: boolean) => {
+      group.dataset.open = String(open);
+      trigger.setAttribute('aria-expanded', String(open));
+    };
+
+    const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    trigger.addEventListener('click', () => {
+      // On a hovering pointer the menu is ALREADY open just from the cursor
+      // being here. Toggling on click would snap it shut under the user's mouse
+      // the instant they clicked the thing they were trying to open, so a click
+      // on an already-hover-opened menu does nothing. Moving the pointer away
+      // closes it, which is what a mouse user expects.
+      if (canHover() && group.matches(':hover') && group.dataset.open === 'true') return;
+      setOpen(group.dataset.open !== 'true');
+    });
+
+    // Keep aria-expanded honest while the menu is open by hover or by focus, so
+    // a screen reader is never told "collapsed" about a menu that is plainly
+    // visible. These mirror the :hover and :has(:focus-visible) rules in the CSS.
+    group.addEventListener('mouseenter', () => {
+      if (canHover()) setOpen(true);
+    });
+    group.addEventListener('mouseleave', () => {
+      if (canHover()) setOpen(false);
+    });
+    // Open on KEYBOARD focus only. The :focus-visible test is what makes this
+    // safe: a tap also focuses the button, and if we opened on any focus at all
+    // then the click that follows the tap would toggle the menu straight back
+    // shut and a touch user could never open it. :focus-visible does not match
+    // a touch or mouse focus, so this fires for the keyboard and nothing else.
+    group.addEventListener('focusin', () => {
+      if (trigger.matches(':focus-visible')) setOpen(true);
+    });
+
+    // Escape closes and puts focus back where the user left it.
+    group.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && group.dataset.open === 'true') {
+        setOpen(false);
+        trigger.focus();
+      }
+    });
+
+    // Tabbing out of the group closes it.
+    group.addEventListener('focusout', (event) => {
+      if (!group.contains(event.relatedTarget as Node)) setOpen(false);
+    });
+
+    // A tap or click anywhere else closes it. This is what makes the menu
+    // dismissible on touch, where there is no "mouse leave".
+    document.addEventListener('click', (event) => {
+      if (!group.contains(event.target as Node)) setOpen(false);
+    });
+  });
+</script>
+
 <style>
   .site-header {
     border-bottom: 1px solid var(--color-border);
     background: var(--color-white);
+    /* The dropdown escapes the header, so the header must sit above the page. */
+    position: relative;
+    z-index: 20;
   }
   .nav {
     max-width: 1100px;
@@ -61,25 +196,144 @@ const isActive = (href: string) => {
     font-size: 1.5rem;
     color: var(--color-dark);
     text-decoration: none;
+    white-space: nowrap;
   }
   .nav-links {
     display: flex;
+    align-items: center;
     gap: 1.25rem;
     list-style: none;
-    margin: 0;
+    margin: 0 0 0 auto;
     padding: 0;
-    margin-left: auto;
   }
-  .nav-links a {
+  .nav-links > li {
+    position: relative;
+  }
+  .nav-links a,
+  .nav-trigger {
     color: var(--color-dark);
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
   }
-  .nav-links a:hover,
-  .nav-links a[aria-current='page'] {
+  .nav-links > li > a:hover,
+  .nav-links > li > a[aria-current='page'] {
     color: var(--color-red);
   }
+
+  /* Trigger: a button styled to sit flush with the links beside it. */
+  .nav-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: inherit;
+  }
+  .nav-trigger:hover,
+  .nav-trigger[data-current='true'] {
+    color: var(--color-red);
+  }
+  .nav-trigger:focus-visible,
+  .nav-links a:focus-visible {
+    outline: 2px solid var(--color-red);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .nav-caret {
+    transition: transform 0.18s ease;
+  }
+  .nav-group[data-open='true'] .nav-caret {
+    transform: rotate(180deg);
+  }
+
+  /* The menu. Hidden by default, revealed by the three conditions below. */
+  .nav-menu {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    z-index: 30;
+    min-width: 260px;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease,
+      visibility 0.16s;
+  }
+  /* A hover bridge across the gap, so the menu does not snap shut when the
+     pointer travels from the trigger down to the first item. */
+  .nav-group::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 0.6rem;
+  }
+
+  /* 1. clicked or tapped open. 2. a KEYBOARD user has tabbed inside.
+     :has(:focus-visible), not :focus-within, is deliberate. A tap focuses the
+     button too, and :focus-within would therefore open the menu on tap, only for
+     the click that follows the tap to toggle it shut again. :focus-visible
+     matches keyboard focus and not touch focus, which is exactly the
+     distinction this menu needs. It is also the no-JavaScript keyboard path. */
+  .nav-group[data-open='true'] > .nav-menu,
+  .nav-group:has(:focus-visible) > .nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  /* 3. hovered, but ONLY on devices that really have a hovering pointer. */
+  @media (hover: hover) and (pointer: fine) {
+    .nav-group:hover > .nav-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+
+  /* An EXPLICIT close beats hover and focus-within.
+     Without this, clicking the trigger to dismiss a menu that hover had already
+     opened would set aria-expanded="false" while :hover kept the menu plainly
+     visible: the button would announce "collapsed" about an open menu, which is
+     worse than having no aria at all. This rule is last so it wins the cascade
+     at equal specificity, which keeps the visible state and the announced state
+     telling the same story. */
+  .nav-group[data-open='false'] > .nav-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+  }
+
+  .nav-menu a {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.925rem;
+    line-height: 1.45;
+  }
+  .nav-menu a:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-red);
+  }
+  .nav-menu a[aria-current='page'] {
+    color: var(--color-red);
+    font-weight: 600;
+  }
+
   .cta {
     background: var(--color-red);
     color: var(--color-white);
@@ -91,9 +345,14 @@ const isActive = (href: string) => {
     white-space: nowrap;
   }
   .cta:hover {
-    background: #b01f1f;
+    background: var(--accent-dark);
   }
-  @media (max-width: 640px) {
+
+  /* Below the desktop breakpoint the nav wraps to its own row and the dropdown
+     stops being a floating panel: it expands INLINE, pushing the rest of the
+     page down. A floating panel anchored to a wrapped row is unusable on a
+     narrow screen. */
+  @media (max-width: 860px) {
     .nav {
       flex-wrap: wrap;
       gap: 0.75rem;
@@ -103,6 +362,35 @@ const isActive = (href: string) => {
       order: 3;
       width: 100%;
       flex-wrap: wrap;
+      gap: 0.75rem 1.1rem;
+    }
+    .nav-links > li {
+      position: static;
+    }
+    .nav-group {
+      /* Take the full row so the expanded menu has somewhere to go. */
+      width: 100%;
+    }
+    .nav-menu {
+      position: static;
+      min-width: 0;
+      margin-top: 0.5rem;
+      box-shadow: none;
+      transform: none;
+      /* Collapse the box entirely when closed, so it takes no vertical space. */
+      display: none;
+    }
+    .nav-group[data-open='true'] > .nav-menu,
+    .nav-group:has(:focus-visible) > .nav-menu {
+      display: block;
+      transform: none;
+    }
+    /* Same explicit-close override as on desktop. */
+    .nav-group[data-open='false'] > .nav-menu {
+      display: none;
+    }
+    .nav-group::after {
+      display: none;
     }
   }
 </style>

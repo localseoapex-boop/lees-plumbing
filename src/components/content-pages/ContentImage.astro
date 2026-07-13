@@ -1,0 +1,93 @@
+---
+/**
+ * ContentImage.astro — one media slot. Photo if we have one, branded panel if not.
+ *
+ * Every media slot on the new pages goes through this component, which is what
+ * makes "no hardcoded image paths in components" true: callers pass an
+ * `ImageAsset | null` resolved from config/images.ts and never a string.
+ *
+ * The rules from the brief are enforced HERE, once, instead of in each caller:
+ *   - never stretched: object-fit: contain inside a fixed-ratio box, so the
+ *     image keeps its own proportions no matter what ratio the slot asks for.
+ *   - never enlarged: the <img> is capped at its own intrinsic width, so a
+ *     653px-wide photo is never blown up to fill a 1440px column.
+ *   - never shifts: the slot reserves `ratio` whether or not a photo exists.
+ *
+ * `fit="cover"` is available for the rare slot that genuinely wants to fill the
+ * box (a hero), but it is opt-in, and the intrinsic-width cap still applies.
+ */
+import type { ImageAsset } from '../../config/images';
+import BrandPanel from './BrandPanel.astro';
+
+interface Props {
+  /** Resolved from config/images.ts. `null` renders the branded fallback. */
+  asset: ImageAsset | null;
+  /** Caption for the fallback panel when `asset` is null. */
+  fallbackCaption?: string;
+  tone?: 'dark' | 'light';
+  ratio?: string;
+  fit?: 'contain' | 'cover';
+  /** Set on the LCP image only. */
+  priority?: boolean;
+}
+
+const {
+  asset,
+  fallbackCaption,
+  tone = 'light',
+  ratio = '4 / 3',
+  fit = 'contain',
+  priority = false,
+} = Astro.props;
+---
+
+{
+  asset ? (
+    <div
+      class:list={['media-slot', tone]}
+      style={`--slot-ratio: ${ratio}; --asset-max-width: ${asset.width}px; --object-fit: ${fit};`}
+    >
+      <img
+        src={asset.src}
+        alt={asset.alt}
+        width={asset.width}
+        height={asset.height}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding={priority ? 'sync' : 'async'}
+        fetchpriority={priority ? 'high' : undefined}
+      />
+    </div>
+  ) : (
+    <BrandPanel caption={fallbackCaption} {tone} {ratio} />
+  )
+}
+
+<style>
+  .media-slot {
+    aspect-ratio: var(--slot-ratio);
+    width: 100%;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+  .media-slot.light {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+  }
+  .media-slot.dark {
+    background: #0d1111;
+    border: 1px solid #232828;
+  }
+  .media-slot img {
+    /* Cap at the file's own pixel width. This is what prevents a low-resolution
+       photo from being enlarged into a soft, blocky mess. */
+    max-width: min(100%, var(--asset-max-width));
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: var(--object-fit);
+    display: block;
+    border-radius: calc(var(--radius-lg) - 1px);
+  }
+</style>

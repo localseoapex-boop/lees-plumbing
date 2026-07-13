@@ -1,0 +1,232 @@
+---
+/**
+ * ContactForm.astro — the contact form UI. NOT WIRED TO ANY DELIVERY ENDPOINT.
+ *
+ * ============================================================================
+ * READ THIS BEFORE ENABLING THE FORM.
+ * ============================================================================
+ * This project is a STATIC Astro build with no server adapter, no API route, and
+ * no form provider. There is nowhere for a submission to go. So the form is
+ * rendered COMPLETE and ACCESSIBLE, but its <fieldset> is `disabled` and it has
+ * no `action` and no submit handler.
+ *
+ * That is a deliberate choice, and it is the honest one. The alternatives were
+ * all worse:
+ *   - an enabled button with no action would POST to the current page, look like
+ *     it worked, and drop the message on the floor.
+ *   - a scripted "thanks, we got it" message would be a lie.
+ *   - a mailto: action fails silently for anyone without a configured mail
+ *     client, which is most people on most phones.
+ * A customer with a burst pipe must never be left believing they have contacted
+ * a plumber when they have not. Until there is a real endpoint, the phone number
+ * and the email address above this form ARE the contact path, and they are shown
+ * first and prominently for exactly that reason.
+ *
+ * TO ACTIVATE, once a delivery endpoint exists:
+ *   1. remove the `disabled` attribute from the <fieldset> below,
+ *   2. set `action` (and `method="POST"`) on the <form>,
+ *   3. delete the .form-notice block,
+ *   4. add a real success/error state driven by the endpoint's response.
+ * The field names below are already the ones the endpoint should expect.
+ * ============================================================================
+ *
+ * Accessibility: every control has a real <label> bound by `for`/`id`, required
+ * fields are marked with both the `required` attribute and a visible asterisk
+ * explained in the legend, and the disabled state is announced because a
+ * disabled fieldset propagates to its controls.
+ */
+interface Props {
+  /** Option lists come from the page, which reads them from central config. */
+  serviceOptions: readonly string[];
+  cityOptions: readonly string[];
+}
+
+const { serviceOptions, cityOptions } = Astro.props;
+---
+
+<form class="contact-form" novalidate aria-describedby="form-notice">
+  <p class="form-notice" id="form-notice" role="note">
+    <strong>Online form submission is not available yet.</strong>
+    This form is not connected to a delivery system, so it cannot send a message. To
+    reach us today, please call or email using the details above. We would rather tell
+    you this plainly than take a message we would never receive.
+  </p>
+
+  <fieldset disabled>
+    <legend class="sr-only">Contact Lee's Plumbing</legend>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="cf-name">Name <span class="req" aria-hidden="true">*</span></label>
+        <input type="text" id="cf-name" name="name" autocomplete="name" required />
+      </div>
+
+      <div class="field">
+        <label for="cf-email">Email <span class="req" aria-hidden="true">*</span></label>
+        <input type="email" id="cf-email" name="email" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label for="cf-phone">Phone <span class="req" aria-hidden="true">*</span></label>
+        <input type="tel" id="cf-phone" name="phone" autocomplete="tel" required />
+      </div>
+
+      <div class="field">
+        <label for="cf-service">Service Needed</label>
+        <select id="cf-service" name="service">
+          <option value="">Select a service</option>
+          {serviceOptions.map((option) => <option value={option}>{option}</option>)}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="cf-city">City</label>
+        <select id="cf-city" name="city">
+          <option value="">Select your city</option>
+          {cityOptions.map((option) => <option value={option}>{option}</option>)}
+        </select>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" rows="6"></textarea>
+    </div>
+
+    <button type="submit" class="form-submit">Send Message</button>
+  </fieldset>
+</form>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .contact-form {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* The honest notice. Styled as a real piece of the design, not a warning
+     sticker, but impossible to miss. */
+  .form-notice {
+    margin: 0 0 1.75rem;
+    padding: 1rem 1.15rem;
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-alt);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+  }
+  .form-notice strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--color-dark);
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1rem;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .field-full {
+    margin-top: 1.1rem;
+  }
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 0.4rem;
+  }
+  .req {
+    color: var(--color-red);
+  }
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--color-text);
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    width: 100%;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  textarea {
+    resize: vertical;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-red);
+    box-shadow: 0 0 0 3px rgba(210, 39, 39, 0.15);
+  }
+  /* The disabled state has to LOOK disabled, or it is just another way of
+     misleading someone. */
+  fieldset:disabled input,
+  fieldset:disabled select,
+  fieldset:disabled textarea {
+    background: var(--color-surface-alt);
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+
+  .form-submit {
+    margin-top: 1.5rem;
+    padding: 0.95rem 2rem;
+    background: var(--color-red);
+    color: var(--color-white);
+    border: 0;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+  }
+  .form-submit:hover {
+    background: var(--accent-dark);
+  }
+  fieldset:disabled .form-submit {
+    background: #b9bcbc;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 640px) {
+    .field-grid {
+      grid-template-columns: 1fr;
+    }
+    .form-submit {
+      width: 100%;
+    }
+  }
+</style>

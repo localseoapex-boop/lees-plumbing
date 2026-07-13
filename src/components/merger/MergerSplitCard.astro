@@ -1,0 +1,88 @@
+---
+/**
+ * MergerSplitCard.astro — the elevated split card under the hero.
+ *
+ * Lifted deliberately into the boundary between the dark hero and the white body
+ * with a negative top margin, so it overlaps both. That overlap is what makes it
+ * read as "elevated" rather than as just another band, and it is the strongest
+ * structural move on the page: the reassurance message ("local commitment isn't
+ * changing") is the one thing every visitor must read, so it gets the treatment
+ * that pulls the eye.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
+interface Props {
+  heading: string;
+  paragraphs: readonly string[];
+  asset: ImageAsset | null;
+  fallbackCaption?: string;
+}
+
+const { heading, paragraphs, asset, fallbackCaption } = Astro.props;
+---
+
+<section class="split-band" aria-labelledby="commitment-heading">
+  <div class="container">
+    <div class="split-card">
+      <div class="card-copy">
+        <h2 id="commitment-heading">{heading}</h2>
+        {paragraphs.map((text) => <p>{text}</p>)}
+      </div>
+
+      <div class="card-media">
+        <ContentImage asset={asset} {fallbackCaption} tone="light" ratio="4 / 3" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .split-band {
+    background: var(--color-surface);
+    /* Room for the card to sit in, after it has been pulled upward. */
+    padding: 0 0 var(--section-y);
+    /* The card overlaps the hero above it, so this band must sit ON TOP of the
+       hero in the stacking order. Without this the negative margin pulls the
+       card UNDER the hero's background and the first line of the heading is
+       clipped clean off. */
+    position: relative;
+    z-index: 2;
+  }
+  .split-card {
+    /* The overlap into the dark hero above. */
+    margin-top: clamp(-5rem, -6vw, -3rem);
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: clamp(1.75rem, 4vw, 3.25rem);
+    align-items: center;
+
+    padding: clamp(1.75rem, 4vw, 3rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+  h2 {
+    font-size: clamp(1.6rem, 2.8vw, 2.25rem);
+    line-height: 1.22;
+    margin: 0 0 1.35rem;
+    text-wrap: balance;
+  }
+  .card-copy p {
+    margin: 0 0 1.1rem;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+    max-width: 62ch;
+  }
+  .card-copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 900px) {
+    .split-card {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

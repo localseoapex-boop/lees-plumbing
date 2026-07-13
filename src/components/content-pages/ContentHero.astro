@@ -1,0 +1,95 @@
+---
+/**
+ * ContentHero.astro — the compact hero for informational pages.
+ *
+ * Deliberately lighter than the homepage and service heroes: an informational
+ * page is not a conversion page, so this states what the page is and gets out of
+ * the way. It holds the page's single <h1>.
+ *
+ * The media slot is optional. When `asset` is omitted the hero is a single
+ * centered column rather than a two-column split with an empty box in it.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from './ContentImage.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  lede?: string;
+  /** Omit entirely for a text-only hero. `null` renders a branded panel. */
+  asset?: ImageAsset | null;
+  fallbackCaption?: string;
+}
+
+const { eyebrow, heading, lede, asset, fallbackCaption } = Astro.props;
+const hasMedia = asset !== undefined;
+---
+
+<section class="content-hero">
+  <div class:list={['container', 'hero-inner', { split: hasMedia }]}>
+    <div class="hero-copy">
+      {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
+      <h1>{heading}</h1>
+      {lede && <p class="hero-lede">{lede}</p>}
+    </div>
+
+    {
+      hasMedia && (
+        <div class="hero-media">
+          <ContentImage
+            asset={asset ?? null}
+            {fallbackCaption}
+            tone="dark"
+            ratio="16 / 9"
+            priority={true}
+          />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .content-hero {
+    background: var(--color-dark);
+    color: var(--color-white);
+    padding: clamp(2.75rem, 5vw, 4rem) 0;
+  }
+  .hero-inner.split {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: center;
+  }
+  .hero-eyebrow {
+    margin: 0 0 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f0a3a3;
+  }
+  h1 {
+    color: var(--color-white);
+    font-size: clamp(2.25rem, 4.4vw, 3.4rem);
+    line-height: 1.1;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .hero-lede {
+    margin: 1.15rem 0 0;
+    font-size: clamp(1.05rem, 1.4vw, 1.175rem);
+    line-height: 1.7;
+    color: #c9cccc;
+    max-width: 58ch;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner.split {
+      grid-template-columns: 1fr;
+    }
+    .hero-media {
+      order: 2;
+    }
+  }
+</style>

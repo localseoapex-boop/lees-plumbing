@@ -1,0 +1,106 @@
+---
+/**
+ * /lees-plumbing-now-any-hour-services — the Any Hour partnership landing page.
+ *
+ * THE ONLY PAGE IN THE SITE THAT MAY MENTION ANY HOUR SERVICES.
+ *
+ * It is also the only module that imports config/merger.ts and MERGER_IMAGES, so
+ * the isolation rule is enforced by the import graph: grep for either import and
+ * you have a complete list of every page the partnership can reach. It currently
+ * returns this file and nothing else.
+ *
+ * The one permitted exception outside this page is the dropdown item in
+ * config/site.ts that links here by name. Nothing else in the site chrome,
+ * schema, metadata, or copy refers to the partnership.
+ *
+ * Layout (matching the reference): dark hero, elevated split card, alternating
+ * "What This Means for You", alternating "Why We Teamed Up", full-width red CTA.
+ */
+import MergerLayout from '../layouts/MergerLayout.astro';
+import MergerHero from '../components/merger/MergerHero.astro';
+import MergerSplitCard from '../components/merger/MergerSplitCard.astro';
+import MergerAlternating, {
+  type AlternatingRow,
+} from '../components/merger/MergerAlternating.astro';
+import MergerCta from '../components/merger/MergerCta.astro';
+
+import { BUSINESS } from '../config/site';
+import { MERGER_PAGE } from '../config/merger';
+import { MERGER_IMAGES } from '../config/images';
+
+// "What This Means for You" — one row per benefit. Media alternates
+// automatically. No real technician photography exists, so each row falls back
+// to a branded panel with a caption naming what it stands for.
+const benefitRows: AlternatingRow[] = MERGER_PAGE.whatThisMeans.benefits.map((benefit, i) => ({
+  heading: benefit.heading,
+  body: [benefit.body],
+  asset: i === 0 ? MERGER_IMAGES.technicianPhoto : MERGER_IMAGES.teamPhoto,
+  fallbackCaption: ['Expanded Home Services', 'A Larger Team', 'More Scheduling Support'][i],
+}));
+
+// "Why We Teamed Up" — two rows.
+//
+// The FIRST row carries no h3 of its own: its copy runs directly under the
+// section's h2, and giving it a heading would print "Why We Teamed Up" twice on
+// the page. It pairs with the real co-branded lockup, the one piece of genuine
+// partnership artwork we have. The second row keeps its own heading and
+// alternates to the opposite side.
+const whyRows: AlternatingRow[] = [
+  {
+    body: MERGER_PAGE.whyWeTeamedUp.paragraphs,
+    asset: MERGER_IMAGES.partnershipLogo,
+    variant: 'logo',
+  },
+  {
+    heading: MERGER_PAGE.stillLees.heading,
+    body: MERGER_PAGE.stillLees.paragraphs,
+    asset: MERGER_IMAGES.teamPhoto,
+    fallbackCaption: 'Still Serving Cache Valley',
+  },
+];
+---
+
+<MergerLayout title={MERGER_PAGE.title} description={MERGER_PAGE.description}>
+  <MergerHero
+    eyebrow={MERGER_PAGE.hero.eyebrow}
+    heading={MERGER_PAGE.hero.heading}
+    lede={MERGER_PAGE.hero.lede}
+    vehicles={MERGER_IMAGES.heroVehicles}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+  />
+
+  <MergerSplitCard
+    heading={MERGER_PAGE.commitment.heading}
+    paragraphs={MERGER_PAGE.commitment.paragraphs}
+    asset={MERGER_IMAGES.teamPhoto}
+    fallbackCaption="Local Service, Cache Valley"
+  />
+
+  <MergerAlternating
+    id="what-this-means"
+    heading={MERGER_PAGE.whatThisMeans.heading}
+    intro={MERGER_PAGE.whatThisMeans.intro}
+    rows={benefitRows}
+    surface="alt"
+  />
+
+  <MergerAlternating
+    id="why-we-teamed-up"
+    heading={MERGER_PAGE.whyWeTeamedUp.heading}
+    rows={whyRows}
+    surface="white"
+  />
+
+  <MergerCta
+    heading={MERGER_PAGE.finalCta.heading}
+    body={MERGER_PAGE.finalCta.body}
+    servicesLabel={MERGER_PAGE.finalCta.servicesLabel}
+    services={MERGER_PAGE.finalCta.services}
+    buttonPrefix={MERGER_PAGE.finalCta.buttonPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    asset={MERGER_IMAGES.ctaTechnician}
+    fallbackCaption="Plumbing • Drains • HVAC"
+  />
+</MergerLayout>

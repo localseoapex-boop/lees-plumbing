@@ -1,0 +1,98 @@
+---
+/**
+ * /offers — current offers.
+ *
+ * The coupon is the real artwork from the client, rendered at its own aspect
+ * ratio and never enlarged past its intrinsic 1037px width, so it stays crisp
+ * and is never stretched.
+ *
+ * The terms below the coupon are rendered as HTML TEXT, not as part of the
+ * image, so they are selectable, translatable, and readable by a screen reader.
+ * They are transcribed exactly from the red bar printed on the coupon itself.
+ * Nothing has been added: the coupon states no expiration date, no code, and no
+ * further restrictions, so the page states none either.
+ */
+import ContentLayout from '../layouts/ContentLayout.astro';
+import ContentSection from '../components/content-pages/ContentSection.astro';
+import ContentImage from '../components/content-pages/ContentImage.astro';
+import ContentCTA from '../components/content-pages/ContentCTA.astro';
+
+import { BUSINESS } from '../config/site';
+import { OFFERS_PAGE } from '../config/content-pages';
+import { OFFERS_IMAGES } from '../config/images';
+import { primaryOffice, formatHours } from '../data/offices';
+
+const hours = primaryOffice.hours.map((spec) => formatHours(spec));
+const crumbs = [{ name: 'Home', href: '/' }, { name: 'Offers' }];
+
+const coupon = OFFERS_IMAGES.coupon;
+// Render the coupon in a slot with the artwork's own proportions, so it is
+// neither letterboxed nor cropped.
+const couponRatio = `${coupon.width} / ${coupon.height}`;
+---
+
+<ContentLayout
+  title={OFFERS_PAGE.title}
+  description={OFFERS_PAGE.description}
+  {crumbs}
+  eyebrow={OFFERS_PAGE.eyebrow}
+  heading={OFFERS_PAGE.heading}
+  lede={OFFERS_PAGE.lede}
+>
+  <ContentSection
+    id="intro"
+    heading={OFFERS_PAGE.intro.heading}
+    paragraphs={OFFERS_PAGE.intro.paragraphs}
+    surface="white"
+  />
+
+  <section class="coupon-band" aria-labelledby="coupon-heading">
+    <div class="container coupon-inner">
+      <h2 id="coupon-heading">{OFFERS_PAGE.coupon.heading}</h2>
+
+      <div class="coupon-frame">
+        <ContentImage asset={coupon} ratio={couponRatio} fit="contain" tone="light" />
+      </div>
+
+      {/* Terms as real HTML, below the image. */}
+      <p class="coupon-terms">{OFFERS_PAGE.coupon.terms}</p>
+    </div>
+  </section>
+
+  <ContentCTA
+    heading={OFFERS_PAGE.cta.heading}
+    body={OFFERS_PAGE.cta.body}
+    ctaPrefix={OFFERS_PAGE.cta.ctaPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+  />
+</ContentLayout>
+
+<style>
+  .coupon-band {
+    background: var(--color-surface-alt);
+    padding: var(--section-y) 0;
+  }
+  .coupon-inner {
+    max-width: 820px;
+    text-align: center;
+  }
+  .coupon-band h2 {
+    font-size: clamp(1.85rem, 3.2vw, 2.6rem);
+    margin: 0 0 1.75rem;
+  }
+  /* Cap the frame at the artwork's intrinsic width so the coupon is never
+     scaled up and never softens. */
+  .coupon-frame {
+    max-width: 1037px;
+    margin: 0 auto;
+  }
+  .coupon-terms {
+    margin: 1.5rem auto 0;
+    max-width: 60ch;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+  }
+</style>

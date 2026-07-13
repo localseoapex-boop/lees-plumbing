@@ -1,0 +1,46 @@
+---
+/**
+ * MergerLayout.astro — the DEDICATED layout for the Any Hour landing page.
+ *
+ * Separate from ContentLayout on purpose, for two reasons:
+ *
+ *   1. Shape. This is a campaign landing page, not an informational page. It
+ *      leads with a large dark hero, runs an elevated split card and two
+ *      alternating narrative sections, and closes on a full-width red CTA. It
+ *      carries no breadcrumb and no sidebar, because it has one job: explain the
+ *      partnership and produce a phone call.
+ *
+ *   2. Isolation. Keeping it on its own template means the merger page shares no
+ *      markup with About, Contact, Offers, the homepage, or the service and
+ *      location pages. Any Hour content cannot leak into them through a shared
+ *      component, because there is no shared component.
+ *
+ * It renders the standard site chrome (nav, footer, LocalBusiness schema) via
+ * BaseLayout, and it emits NO schema of its own. The business named in the
+ * schema is Lee's Plumbing, unchanged.
+ */
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout {title} {description}>
+  <div class="merger-page">
+    <slot />
+  </div>
+</BaseLayout>
+
+<style>
+  /* The landing page runs edge to edge. Sections own their own backgrounds and
+     vertical rhythm, so this wrapper only establishes the stacking context. */
+  .merger-page {
+    position: relative;
+    isolation: isolate;
+    overflow-x: clip;
+  }
+</style>

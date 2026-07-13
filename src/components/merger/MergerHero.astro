@@ -1,0 +1,151 @@
+---
+/**
+ * MergerHero.astro — the large dark hero on the merger landing page.
+ *
+ * The <h1> is REAL HTML TEXT. This matters: the three banner PNGs in the photo
+ * library have the identical sentence baked into their pixels, so using one as
+ * the hero would either duplicate the headline visibly or replace an indexable,
+ * screen-readable <h1> with a picture of words. Neither is acceptable. The
+ * banners are therefore unused, and the hero is built from type plus the real
+ * vehicle photograph.
+ *
+ * The photo is 653px wide, which is too small to stretch across a full-bleed
+ * hero. Rather than enlarge it into a blurry background, it sits in a contained,
+ * elevated media panel beside the copy at close to its native size, over a dark
+ * background with quiet diagonal linework. It stays sharp.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
+interface Props {
+  eyebrow: string;
+  heading: string;
+  lede: string;
+  vehicles: ImageAsset | null;
+  phone: string;
+  phoneDisplay: string;
+}
+
+const { eyebrow, heading, lede, vehicles, phone, phoneDisplay } = Astro.props;
+---
+
+<section class="merger-hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <p class="hero-eyebrow">{eyebrow}</p>
+      <h1>{heading}</h1>
+      <p class="hero-lede">{lede}</p>
+      <a class="hero-cta" href={`tel:${phone}`}>Call {phoneDisplay}</a>
+    </div>
+
+    <div class="hero-media">
+      <ContentImage
+        asset={vehicles}
+        fallbackCaption="Serving Cache Valley"
+        tone="dark"
+        ratio="16 / 9"
+        priority={true}
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .merger-hero {
+    position: relative;
+    background-color: var(--color-dark);
+    color: var(--color-white);
+    padding: clamp(3.5rem, 8vw, 6.5rem) 0;
+    overflow: hidden;
+  }
+  /* Quiet diagonal linework, the same treatment used on the branded fallback
+     panels, so the hero and the panels inside it read as one surface. */
+  .merger-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.02) 0,
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 14px
+    );
+    pointer-events: none;
+  }
+  /* A soft red bloom anchored behind the copy. Pure CSS, no asset. */
+  .merger-hero::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -10%;
+    width: 55%;
+    height: 130%;
+    background: radial-gradient(closest-side, rgba(210, 39, 39, 0.16), transparent);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+
+  .hero-eyebrow {
+    margin: 0 0 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f0a3a3;
+  }
+  h1 {
+    color: var(--color-white);
+    font-size: clamp(2.35rem, 4.8vw, 3.9rem);
+    line-height: 1.08;
+    margin: 0 0 1.25rem;
+    text-wrap: balance;
+  }
+  .hero-lede {
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+    line-height: 1.7;
+    color: #c9cccc;
+    max-width: 48ch;
+    margin: 0 0 2rem;
+  }
+  .hero-cta {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: var(--color-red);
+    color: var(--color-white);
+    border-radius: var(--radius-sm);
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.18s ease;
+  }
+  .hero-cta:hover {
+    background: var(--accent-dark);
+  }
+  .hero-cta:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+    }
+    .hero-media {
+      order: 2;
+    }
+  }
+  @media (max-width: 480px) {
+    .hero-cta {
+      display: block;
+      text-align: center;
+    }
+  }
+</style>

@@ -1,0 +1,83 @@
+---
+/**
+ * ContentMap.astro — responsive Google Map embed for the physical office.
+ *
+ * The query is built from data/offices.ts, so the pin and the address printed
+ * beside it are the same record. It maps the PHYSICAL street address and never
+ * the mailing P.O. Box: a P.O. Box is not a location, and dropping a map pin on
+ * one would be wrong for customers and wrong for local SEO.
+ *
+ * Uses the keyless /maps?output=embed endpoint, so there is no API key to leak,
+ * no billing to configure, and no third-party script on the page. It is a lazy
+ * iframe, which keeps it off the critical path.
+ *
+ * The iframe carries a `title`, which is what a screen reader announces in place
+ * of the map. The address is also rendered as text in ContactDetails, so the
+ * information is never locked inside the embed.
+ */
+import { primaryOffice } from '../../data/offices';
+
+const { address, name } = primaryOffice;
+const query = `${address.street}, ${address.city}, ${address.region} ${address.postalCode}`;
+const embedSrc = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+---
+
+<div class="map-block">
+  <div class="map-frame">
+    <iframe
+      src={embedSrc}
+      title={`Google Map showing the location of Lee's Plumbing, ${query}`}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen></iframe>
+  </div>
+  <p class="map-caption">
+    <span>{name}: {query}</span>
+    <a href={directionsHref} target="_blank" rel="noopener noreferrer">Get directions</a>
+  </p>
+</div>
+
+<style>
+  .map-frame {
+    /* Ratio is reserved, so the lazy iframe cannot shift the page when it
+       loads. */
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+  }
+  .map-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .map-caption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0.9rem 0 0;
+    font-size: 0.95rem;
+    color: var(--color-muted);
+  }
+  .map-caption a {
+    color: var(--color-red);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .map-caption a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .map-frame {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

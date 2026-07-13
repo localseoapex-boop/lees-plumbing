@@ -1,0 +1,142 @@
+---
+/**
+ * /contact-us — Contact Lee's Plumbing.
+ *
+ * Holds no business data. The phone, email, physical address, mailing P.O. Box,
+ * and hours all resolve from data/offices.ts + config/site.ts through
+ * ContactDetails and ContentMap, so this page cannot drift from the footer or
+ * the LocalBusiness schema.
+ *
+ * FORM STATUS: the form is UI ONLY. No delivery endpoint exists in this project,
+ * so the form's fieldset is disabled and it carries a visible notice saying so.
+ * Nothing on this page claims a message was sent. See ContactForm.astro for the
+ * full reasoning and the steps to activate it.
+ */
+import ContentLayout from '../layouts/ContentLayout.astro';
+import ContentCTA from '../components/content-pages/ContentCTA.astro';
+import ContactForm from '../components/content-pages/ContactForm.astro';
+import ContactDetails from '../components/content-pages/ContactDetails.astro';
+import ContentMap from '../components/content-pages/ContentMap.astro';
+
+import { BUSINESS } from '../config/site';
+import { CONTACT_PAGE } from '../config/content-pages';
+import { primaryOffice, formatHours } from '../data/offices';
+
+const hours = primaryOffice.hours.map((spec) => formatHours(spec));
+const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
+---
+
+<ContentLayout
+  title={CONTACT_PAGE.title}
+  description={CONTACT_PAGE.description}
+  {crumbs}
+  eyebrow={CONTACT_PAGE.eyebrow}
+  heading={CONTACT_PAGE.heading}
+  lede={CONTACT_PAGE.lede}
+>
+  {/* Scheduling expectation, set before anyone fills anything in. */}
+  <section class="notice-band" aria-labelledby="notice-heading">
+    <div class="container notice-inner">
+      <h2 id="notice-heading">{CONTACT_PAGE.notice.heading}</h2>
+      <p>{CONTACT_PAGE.notice.body}</p>
+    </div>
+  </section>
+
+  <section class="contact-band" aria-labelledby="contact-heading">
+    <div class="container contact-inner">
+      <div class="contact-col">
+        <h2 id="contact-heading">{CONTACT_PAGE.details.heading}</h2>
+        {/* Phone and email lead, because they are the only channels that
+            actually reach us today. */}
+        <ContactDetails />
+      </div>
+
+      <div class="form-col">
+        <h2 id="form-heading">{CONTACT_PAGE.form.heading}</h2>
+        <p class="form-intro">{CONTACT_PAGE.form.intro}</p>
+        <ContactForm
+          serviceOptions={CONTACT_PAGE.form.serviceOptions}
+          cityOptions={CONTACT_PAGE.form.cityOptions}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="map-band" aria-labelledby="map-heading">
+    <div class="container">
+      <h2 id="map-heading">{CONTACT_PAGE.map.heading}</h2>
+      <p class="map-intro">{CONTACT_PAGE.map.intro}</p>
+      {/* Maps the PHYSICAL street address. The P.O. Box is never mapped. */}
+      <ContentMap />
+    </div>
+  </section>
+
+  <ContentCTA
+    heading={CONTACT_PAGE.cta.heading}
+    body={CONTACT_PAGE.cta.body}
+    ctaPrefix={CONTACT_PAGE.cta.ctaPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+  />
+</ContentLayout>
+
+<style>
+  .notice-band {
+    background: var(--color-surface-alt);
+    border-bottom: 1px solid var(--color-border);
+    padding: 2rem 0;
+  }
+  .notice-inner {
+    border-left: 4px solid var(--color-red);
+    padding-left: 1.25rem;
+  }
+  .notice-band h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.4rem;
+  }
+  .notice-band p {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.7;
+    max-width: 70ch;
+  }
+
+  .contact-band {
+    background: var(--color-surface);
+    padding: var(--section-y) 0;
+  }
+  .contact-inner {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+  .contact-band h2,
+  .map-band h2 {
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+    margin: 0 0 1.5rem;
+  }
+  .form-intro {
+    margin: -0.75rem 0 1.5rem;
+    color: var(--color-muted);
+    line-height: 1.7;
+  }
+
+  .map-band {
+    background: var(--color-surface-alt);
+    padding: var(--section-y) 0;
+  }
+  .map-intro {
+    margin: -0.75rem 0 1.75rem;
+    color: var(--color-muted);
+    line-height: 1.7;
+    max-width: 65ch;
+  }
+
+  @media (max-width: 900px) {
+    .contact-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

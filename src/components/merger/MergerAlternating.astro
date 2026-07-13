@@ -1,0 +1,186 @@
+---
+/**
+ * MergerAlternating.astro — an alternating two-column narrative section.
+ *
+ * Renders a section heading, an optional intro, and a stack of rows. Each row
+ * flips the media to the opposite side of the one before it, which is the
+ * rhythm the reference design uses for both "What This Means for You" and "Why
+ * We Teamed Up". Both sections on the page are this one component with different
+ * content, which is why there is no third merger section component.
+ *
+ * The flip is done in CSS, not by reordering the DOM, so the reading order stays
+ * heading-then-copy for every row regardless of which side the media landed on.
+ *
+ * Row headings are h3 beneath the section's h2. Nothing here emits an h1.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
+export interface AlternatingRow {
+  /**
+   * Optional. A row omits its heading when its copy runs directly under the
+   * SECTION heading and giving it one would just repeat that heading back.
+   */
+  heading?: string;
+  /** One or more paragraphs of body copy. */
+  body: readonly string[];
+  /** `null` renders the branded fallback panel. */
+  asset: ImageAsset | null;
+  fallbackCaption?: string;
+  /** Render the media as a contained logo lockup rather than a filled panel. */
+  variant?: 'panel' | 'logo';
+}
+
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  rows: AlternatingRow[];
+  surface?: 'white' | 'alt';
+}
+
+const { id, heading, intro, rows, surface = 'white' } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section class:list={['alt-section', surface]} aria-labelledby={headingId} {id}>
+  <div class="container">
+    <header class="section-head">
+      <h2 id={headingId}>{heading}</h2>
+      {intro && <p class="section-intro">{intro}</p>}
+    </header>
+
+    <div class="rows">
+      {
+        rows.map((row) => (
+          <div class="row">
+            <div class="row-copy">
+              {row.heading && <h3>{row.heading}</h3>}
+              {row.body.map((text) => (
+                <p>{text}</p>
+              ))}
+            </div>
+
+            <div class:list={['row-media', row.variant ?? 'panel']}>
+              {row.variant === 'logo' && row.asset ? (
+                // The co-branded lockup is artwork with its own whitespace. It
+                // gets a plain, generous surface instead of a cropped photo box,
+                // and it is never stretched: width is capped at its own size.
+                <div class="logo-frame">
+                  <img
+                    src={row.asset.src}
+                    alt={row.asset.alt}
+                    width={row.asset.width}
+                    height={row.asset.height}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              ) : (
+                <ContentImage
+                  asset={row.asset}
+                  fallbackCaption={row.fallbackCaption}
+                  tone="light"
+                  ratio="4 / 3"
+                />
+              )}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .alt-section {
+    padding: var(--section-y) 0;
+  }
+  .alt-section.white {
+    background: var(--color-surface);
+  }
+  .alt-section.alt {
+    background: var(--color-surface-alt);
+  }
+
+  .section-head {
+    max-width: 62ch;
+    margin-bottom: clamp(2.5rem, 5vw, 3.75rem);
+  }
+  h2 {
+    font-size: clamp(2rem, 3.6vw, 2.9rem);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .section-intro {
+    margin: 1.15rem 0 0;
+    font-size: 1.1rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+  }
+
+  .rows {
+    display: grid;
+    gap: clamp(3rem, 6vw, 5rem);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  /* The alternation. Every even row puts its media on the left. Source order is
+     untouched, so copy is still read before media in every row. */
+  .row:nth-child(even) .row-copy {
+    order: 2;
+  }
+  .row:nth-child(even) .row-media {
+    order: 1;
+  }
+
+  h3 {
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    line-height: 1.25;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  .row-copy p {
+    margin: 0 0 1.1rem;
+    font-size: 1.075rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+    max-width: 58ch;
+  }
+  .row-copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .logo-frame {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .logo-frame img {
+    width: 100%;
+    /* Never scaled beyond its native width, never distorted. */
+    max-width: 420px;
+    height: auto;
+    object-fit: contain;
+  }
+
+  @media (max-width: 900px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+    /* One column: media always follows its copy, whichever side it took. */
+    .row:nth-child(even) .row-copy,
+    .row:nth-child(even) .row-media {
+      order: initial;
+    }
+  }
+</style>

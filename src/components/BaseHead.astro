@@ -39,9 +39,15 @@ const {
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(image, Astro.site);
 
-// Title pattern: page-specific text + brand. A page may pass the brand alone to
-// suppress the suffix, which avoids ever doubling the brand name in a title.
-const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
+// Title pattern: page-specific text + brand. The brand is NEVER doubled: a page
+// whose title already contains the brand (because the brand reads naturally
+// inside it, e.g. "About Lee's Plumbing | Hyde Park, UT") is used verbatim
+// rather than having "| Lee's Plumbing" bolted on a second time.
+//
+// This is a no-op for every page that existed before the informational pages
+// were added: none of their titles contain the brand in the part they pass in,
+// so all of them still render as "{page} | {brand}" exactly as before.
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
 ---
 
 <!-- Essential -->

@@ -1,0 +1,62 @@
+---
+/**
+ * ContentLayout.astro — the template for INFORMATIONAL pages.
+ *
+ * Used by /about, /contact-us, and /offers. These pages share a shape: a
+ * breadcrumb, a compact hero holding the single <h1>, a stack of content
+ * sections, and a closing phone CTA. This layout owns the breadcrumb and the
+ * hero so no page has to rebuild them, and the page supplies the sections
+ * through the <slot />.
+ *
+ * It is NOT used by the merger landing page. That page has its own layout
+ * (MergerLayout) because it is a campaign page with a different visual
+ * structure, and because keeping it on a separate template is part of how the
+ * Any Hour content stays isolated from the rest of the site.
+ *
+ * This layout emits NO schema of its own. The LocalBusiness graph comes from
+ * BaseLayout and is deliberately left untouched.
+ */
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs, { type Crumb } from '../components/Breadcrumbs.astro';
+import ContentHero from '../components/content-pages/ContentHero.astro';
+import type { ImageAsset } from '../config/images';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Trail for the breadcrumb + BreadcrumbList schema. Last item = this page. */
+  crumbs: Crumb[];
+  eyebrow?: string;
+  /** The page's single <h1>. */
+  heading: string;
+  lede?: string;
+  /** Omit for a text-only hero. `null` renders the branded fallback panel. */
+  heroAsset?: ImageAsset | null;
+  heroFallbackCaption?: string;
+}
+
+const { title, description, crumbs, eyebrow, heading, lede, heroAsset, heroFallbackCaption } =
+  Astro.props;
+
+// `heroAsset` must stay UNDEFINED when the caller omitted it, because
+// ContentHero distinguishes "no media slot at all" from "media slot with no
+// photo". Spreading conditionally is what preserves that distinction.
+const heroMedia = 'heroAsset' in Astro.props ? { asset: heroAsset } : {};
+---
+
+<BaseLayout {title} {description}>
+  <div class="container crumb-bar">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <ContentHero {eyebrow} {heading} {lede} {...heroMedia} fallbackCaption={heroFallbackCaption} />
+
+  <slot />
+</BaseLayout>
+
+<style>
+  .crumb-bar {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+</style>

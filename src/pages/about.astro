@@ -1,0 +1,164 @@
+---
+/**
+ * /about — About Lee's Plumbing.
+ *
+ * Assembles the content-page framework from config. This file holds NO copy: all
+ * of it comes from ABOUT_PAGE in config/content-pages.ts, and every image path
+ * comes from ABOUT_IMAGES in config/images.ts.
+ *
+ * The Any Hour partnership is NOT mentioned here, by design. This page is about
+ * Lee's Plumbing. The partnership lives on its own page and is linked only from
+ * the About Us dropdown.
+ *
+ * The single <h1> is rendered by ContentLayout's hero. Section headings are h2,
+ * and the expertise / brand group titles are h3.
+ */
+import ContentLayout from '../layouts/ContentLayout.astro';
+import ContentSection from '../components/content-pages/ContentSection.astro';
+import ContentCTA from '../components/content-pages/ContentCTA.astro';
+
+import { BUSINESS } from '../config/site';
+import { ABOUT_PAGE } from '../config/content-pages';
+import { ABOUT_IMAGES } from '../config/images';
+import { primaryOffice, formatHours } from '../data/offices';
+
+const hours = primaryOffice.hours.map((spec) => formatHours(spec));
+const crumbs = [{ name: 'Home', href: '/' }, { name: "About Lee's Plumbing" }];
+---
+
+<ContentLayout
+  title={ABOUT_PAGE.title}
+  description={ABOUT_PAGE.description}
+  {crumbs}
+  eyebrow={ABOUT_PAGE.eyebrow}
+  heading={ABOUT_PAGE.heading}
+  lede={ABOUT_PAGE.lede}
+  heroAsset={ABOUT_IMAGES.hero}
+>
+  <ContentSection
+    id="history"
+    heading={ABOUT_PAGE.history.heading}
+    paragraphs={ABOUT_PAGE.history.paragraphs}
+    surface="white"
+  />
+
+  <ContentSection
+    id="remodels"
+    heading={ABOUT_PAGE.remodels.heading}
+    paragraphs={ABOUT_PAGE.remodels.paragraphs}
+    asset={ABOUT_IMAGES.remodel}
+    fallbackCaption="Remodel Work"
+    media="right"
+    surface="alt"
+  />
+
+  <ContentSection
+    id="showroom"
+    heading={ABOUT_PAGE.showroom.heading}
+    paragraphs={ABOUT_PAGE.showroom.paragraphs}
+    closing={ABOUT_PAGE.showroom.closing}
+    asset={ABOUT_IMAGES.showroom}
+    fallbackCaption="Hyde Park Showroom"
+    media="left"
+    surface="white"
+  />
+
+  <ContentSection id="expertise" heading={ABOUT_PAGE.expertise.heading} surface="alt">
+    <p>{ABOUT_PAGE.expertise.intro}</p>
+
+    <div class="expertise-grid">
+      {
+        ABOUT_PAGE.expertise.groups.map((group) => (
+          <div class="expertise-card">
+            <h3>{group.title}</h3>
+            <ul>
+              {group.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </ContentSection>
+
+  <ContentSection id="brands" heading={ABOUT_PAGE.brands.heading} surface="white">
+    <p>{ABOUT_PAGE.brands.intro}</p>
+
+    {/* Names only. No logos are reproduced and no dealer status is claimed. */}
+    <ul class="brand-list">
+      {ABOUT_PAGE.brands.items.map((brand) => <li>{brand}</li>)}
+    </ul>
+  </ContentSection>
+
+  <ContentCTA
+    heading={ABOUT_PAGE.cta.heading}
+    body={ABOUT_PAGE.cta.body}
+    ctaPrefix={ABOUT_PAGE.cta.ctaPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+  />
+</ContentLayout>
+
+<style>
+  .expertise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .expertise-card {
+    padding: 1.6rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .expertise-card h3 {
+    margin: 0 0 1rem;
+    font-size: 1.3rem;
+  }
+  .expertise-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .expertise-card li {
+    position: relative;
+    padding-left: 1.3rem;
+    font-size: 0.95rem;
+    color: var(--color-dark);
+  }
+  .expertise-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-red);
+  }
+
+  .brand-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+  }
+  .brand-list li {
+    padding: 0.65rem 1.25rem;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+</style>

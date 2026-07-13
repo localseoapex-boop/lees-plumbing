@@ -54,16 +54,56 @@ export const BUSINESS = {
   areaServed: locations.map((l) => l.city),
 } as const;
 
-/** Primary navigation links rendered in the header. */
-export const NAV_LINKS = [
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+/**
+ * A top-level nav entry: either a plain link, or a group that opens a dropdown.
+ * A group has no href of its own. "About Us" is a menu, not a destination, and
+ * giving it a link as well as a submenu is the classic way to build a nav item
+ * that is impossible to operate by keyboard.
+ */
+export type NavItem = NavLink | { label: string; children: readonly NavLink[] };
+
+export const isNavGroup = (item: NavItem): item is { label: string; children: readonly NavLink[] } =>
+  'children' in item;
+
+/**
+ * Primary navigation.
+ *
+ * The merger page is reachable from the About Us dropdown and from nowhere else
+ * in the site chrome. That single dropdown item is the ONLY place the Any Hour
+ * name is allowed to appear outside the merger page itself (see config/merger.ts).
+ *
+ * Blog is no longer a top-level item. It is still linked from the footer, so the
+ * blog index and its posts keep an internal link and do not become orphans.
+ */
+export const NAV_LINKS: readonly NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Plumbing', href: '/plumbing' },
   { label: 'Heating & Cooling', href: '/heating-cooling' },
   { label: 'Service Areas', href: '/locations' },
-  { label: 'Blog', href: '/blog' },
+  {
+    label: 'About Us',
+    children: [
+      { label: "About Lee's Plumbing", href: '/about' },
+      { label: "Lee's Plumbing Now Any Hour Services", href: '/lees-plumbing-now-any-hour-services' },
+    ],
+  },
+  { label: 'Offers', href: '/offers' },
+  { label: 'Contact Us', href: '/contact-us' },
 ] as const;
 
-/** Footer link groups. */
+/**
+ * Footer link groups.
+ *
+ * The merger page is deliberately ABSENT. It is a campaign landing page, not a
+ * piece of site furniture, and putting it in the footer would sitewide-link the
+ * Any Hour name onto all 38 pages, which is exactly what the isolation rule
+ * exists to prevent.
+ */
 export const FOOTER_LINKS = [
   {
     title: 'Services',
@@ -75,6 +115,9 @@ export const FOOTER_LINKS = [
   {
     title: 'Company',
     links: [
+      { label: "About Lee's Plumbing", href: '/about' },
+      { label: 'Offers', href: '/offers' },
+      { label: 'Contact Us', href: '/contact-us' },
       { label: 'Service Areas', href: '/locations' },
       { label: 'Blog', href: '/blog' },
     ],

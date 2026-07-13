@@ -1,0 +1,108 @@
+---
+/**
+ * BrandPanel.astro — the branded fallback for a media slot with no photograph.
+ *
+ * This is NOT a development placeholder. It is a finished, intentional piece of
+ * design: the wordmark, a red rule, an optional caption, and quiet diagonal
+ * linework built from the brand tokens. It ships no image request and no script.
+ * It follows the same visual language as the homepage hero's fallback so the two
+ * read as one system.
+ *
+ * It is entirely decorative. The information it carries (the brand name) is
+ * already in the page's text and its heading, so the whole panel is hidden from
+ * assistive technology with aria-hidden. A screen reader hears nothing here,
+ * which is correct: there is no photo to describe.
+ *
+ * `tone` picks the surface so the panel can sit on a light section or inside the
+ * dark hero without fighting the background.
+ */
+import { SITE } from '../../config/site';
+
+interface Props {
+  /** Small caps line under the rule, e.g. "Showroom". Optional. */
+  caption?: string;
+  /** 'dark' for dark sections and the red CTA, 'light' for white/alt sections. */
+  tone?: 'dark' | 'light';
+  /** Any valid aspect-ratio value. Matches the photo it stands in for. */
+  ratio?: string;
+}
+
+const { caption, tone = 'light', ratio = '4 / 3' } = Astro.props;
+---
+
+<div class:list={['brand-panel', tone]} style={`--panel-ratio: ${ratio};`} aria-hidden="true">
+  <div class="panel-inner">
+    <span class="panel-name">{SITE.name}</span>
+    <span class="panel-rule"></span>
+    {caption && <span class="panel-caption">{caption}</span>}
+  </div>
+</div>
+
+<style>
+  .brand-panel {
+    /* The ratio is always reserved, so swapping in a real photo later cannot
+       shift the layout. Zero CLS either way. */
+    aspect-ratio: var(--panel-ratio);
+    width: 100%;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    /* Quiet diagonal linework. No dashed border anywhere. */
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--panel-line) 0,
+      var(--panel-line) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  }
+  .brand-panel.light {
+    --panel-line: rgba(5, 7, 7, 0.035);
+    background-color: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+  }
+  .brand-panel.dark {
+    --panel-line: rgba(255, 255, 255, 0.022);
+    background-color: #0d1111;
+    border: 1px solid #232828;
+  }
+
+  .panel-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .panel-name {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .light .panel-name {
+    color: var(--color-dark);
+  }
+  .dark .panel-name {
+    color: var(--color-white);
+  }
+  .panel-rule {
+    width: 56px;
+    height: 3px;
+    margin: 1rem 0;
+    border-radius: 2px;
+    background: var(--color-red);
+  }
+  .panel-caption {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .light .panel-caption {
+    color: var(--color-muted);
+  }
+  .dark .panel-caption {
+    color: #8b9090;
+  }
+</style>

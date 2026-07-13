@@ -1,0 +1,183 @@
+---
+/**
+ * MergerCta.astro — the full-width red closing CTA.
+ *
+ * The diagonal linework is CSS, generated from the brand red with a repeating
+ * gradient. No image, no asset request, and it scales to any width without ever
+ * tiling visibly.
+ *
+ * The service list is rendered as a plain list of NAMES. None of them are links:
+ * this site has no Electrical page and no Insulation page, and linking to pages
+ * that do not exist would ship dead links. They are named because the partnership
+ * genuinely offers them, and that is the whole point of the page.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
+interface Props {
+  heading: string;
+  body: string;
+  servicesLabel: string;
+  services: readonly string[];
+  buttonPrefix: string;
+  phone: string;
+  phoneDisplay: string;
+  asset: ImageAsset | null;
+  fallbackCaption?: string;
+}
+
+const {
+  heading,
+  body,
+  servicesLabel,
+  services,
+  buttonPrefix,
+  phone,
+  phoneDisplay,
+  asset,
+  fallbackCaption,
+} = Astro.props;
+---
+
+<section class="merger-cta" aria-labelledby="merger-cta-heading">
+  <div class="container cta-inner">
+    <div class="cta-copy">
+      <h2 id="merger-cta-heading">{heading}</h2>
+      <p class="cta-body">{body}</p>
+
+      <p class="services-label">{servicesLabel}</p>
+      <ul class="services">
+        {services.map((service) => <li>{service}</li>)}
+      </ul>
+
+      <a class="cta-button" href={`tel:${phone}`}>
+        {buttonPrefix}
+        {' '}
+        {phoneDisplay}
+      </a>
+    </div>
+
+    <div class="cta-media">
+      <ContentImage asset={asset} {fallbackCaption} tone="dark" ratio="4 / 3" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .merger-cta {
+    position: relative;
+    background-color: var(--color-red);
+    color: var(--color-white);
+    padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+    overflow: hidden;
+  }
+  /* Subtle diagonal linework across the red field. */
+  .merger-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 2px,
+      transparent 2px,
+      transparent 16px
+    );
+    pointer-events: none;
+  }
+  /* A darker wash from the corner, so the red has depth instead of reading flat. */
+  .merger-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(5, 7, 7, 0.22), transparent 60%);
+    pointer-events: none;
+  }
+
+  .cta-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+
+  h2 {
+    color: var(--color-white);
+    font-size: clamp(2.25rem, 4.4vw, 3.4rem);
+    line-height: 1.12;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  .cta-body {
+    margin: 0 0 1.75rem;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.92);
+    max-width: 50ch;
+  }
+
+  .services-label {
+    margin: 0 0 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+  }
+  .services li {
+    padding: 0.45rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 1.1rem 2.25rem;
+    background: var(--color-white);
+    color: var(--color-red);
+    border-radius: var(--radius-sm);
+    font-size: 1.075rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+  .cta-button:hover {
+    background: var(--color-dark);
+    color: var(--color-white);
+  }
+  .cta-button:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 900px) {
+    .cta-inner {
+      grid-template-columns: 1fr;
+    }
+    .cta-media {
+      order: 2;
+    }
+  }
+  @media (max-width: 480px) {
+    .cta-button {
+      display: block;
+      text-align: center;
+    }
+  }
+</style>

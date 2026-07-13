@@ -1,0 +1,106 @@
+---
+/**
+ * ContactDetails.astro — the business NAP block on the contact page.
+ *
+ * Holds NO business data of its own. Everything is read from data/offices.ts and
+ * config/site.ts, which is the same source the footer and the LocalBusiness
+ * schema read from. That is the point: the address a customer reads here and the
+ * address Google reads from the schema cannot drift apart, because they are the
+ * same object.
+ *
+ * The physical address and the mailing P.O. Box are rendered under SEPARATE
+ * labels. They are different things: the P.O. Box is where mail goes, the street
+ * address is where the business is. Only the street address is ever mapped or
+ * put in schema.
+ */
+import { MAILING_ADDRESS } from '../../config/site';
+import { primaryOffice, formatHours } from '../../data/offices';
+
+const office = primaryOffice;
+const hours = office.hours.map((spec) => formatHours(spec));
+---
+
+<div class="contact-details">
+  <div class="detail-block">
+    <h3>Call Us</h3>
+    <p class="detail-primary">
+      <a href={`tel:${office.phone}`}>{office.phoneDisplay}</a>
+    </p>
+    <p class="detail-note">The fastest way to reach us.</p>
+  </div>
+
+  <div class="detail-block">
+    <h3>Email</h3>
+    <p class="detail-primary">
+      <a href={`mailto:${office.email}`}>{office.email}</a>
+    </p>
+  </div>
+
+  <div class="detail-block">
+    <h3>Physical Address</h3>
+    <address>
+      {office.address.street}<br />
+      {office.address.city}, {office.address.region} {office.address.postalCode}
+    </address>
+    <p class="detail-note">Our office and showroom in Hyde Park.</p>
+  </div>
+
+  <div class="detail-block">
+    <h3>Mailing Address</h3>
+    <address>
+      {MAILING_ADDRESS.street}<br />
+      {MAILING_ADDRESS.city}, {MAILING_ADDRESS.region} {MAILING_ADDRESS.postalCode}
+    </address>
+    <p class="detail-note">For mail only. Please do not use this for service visits.</p>
+  </div>
+
+  <div class="detail-block">
+    <h3>Hours</h3>
+    {hours.map((line) => <p class="detail-hours">{line}</p>)}
+  </div>
+</div>
+
+<style>
+  .contact-details {
+    display: grid;
+    gap: 1.75rem;
+  }
+  .detail-block h3 {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 0.5rem;
+  }
+  .detail-primary {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .detail-primary a {
+    color: var(--color-red);
+    text-decoration: none;
+    word-break: break-word;
+  }
+  .detail-primary a:hover {
+    text-decoration: underline;
+  }
+  address {
+    font-style: normal;
+    line-height: 1.7;
+    font-size: 1.05rem;
+    color: var(--color-dark);
+  }
+  .detail-hours {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-dark);
+  }
+  .detail-note {
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+</style>

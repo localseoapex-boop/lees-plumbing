@@ -1,0 +1,134 @@
+---
+/**
+ * ContentSection.astro — one titled band of prose on an informational page.
+ *
+ * The workhorse of the content-page framework. It renders a heading, some
+ * paragraphs, an optional closing line, and an optional media slot beside them.
+ * Everything past the heading is optional, so the same component covers a plain
+ * text section, a split text-plus-image section, and a section whose body is
+ * arbitrary markup passed through the <slot />.
+ *
+ * `surface` alternates the background so consecutive sections separate visually
+ * without needing a divider. `media="left"` flips the split, which is what makes
+ * an alternating page rhythm possible with one component.
+ *
+ * This is intentionally NOT a page builder. It is one section with a few knobs.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from './ContentImage.astro';
+
+interface Props {
+  id: string;
+  heading: string;
+  /** Rendered as <p> in order, above the <slot />. */
+  paragraphs?: readonly string[];
+  /** Emphasized closing line under the paragraphs. */
+  closing?: string;
+  /** Omit for a full-width text section. `null` renders a branded panel. */
+  asset?: ImageAsset | null;
+  fallbackCaption?: string;
+  /** Which side the media sits on. Alternate it down the page. */
+  media?: 'left' | 'right';
+  surface?: 'white' | 'alt';
+  /** Render the heading as h3 in the rare nested case. Defaults to h2. */
+  level?: 'h2' | 'h3';
+}
+
+const {
+  id,
+  heading,
+  paragraphs = [],
+  closing,
+  asset,
+  fallbackCaption,
+  media = 'right',
+  surface = 'white',
+  level = 'h2',
+} = Astro.props;
+
+const headingId = `${id}-heading`;
+const hasMedia = asset !== undefined;
+const Heading = level;
+---
+
+<section class:list={['content-section', surface]} aria-labelledby={headingId} {id}>
+  <div class:list={['container', 'section-inner', { split: hasMedia, 'media-left': media === 'left' }]}>
+    <div class="section-copy">
+      <Heading id={headingId}>{heading}</Heading>
+      {paragraphs.map((text) => <p>{text}</p>)}
+      <slot />
+      {closing && <p class="section-closing">{closing}</p>}
+    </div>
+
+    {
+      hasMedia && (
+        <div class="section-media">
+          <ContentImage asset={asset ?? null} {fallbackCaption} tone="light" ratio="4 / 3" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .content-section {
+    padding: var(--section-y) 0;
+  }
+  .content-section.white {
+    background: var(--color-surface);
+  }
+  .content-section.alt {
+    background: var(--color-surface-alt);
+  }
+
+  .section-inner.split {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  /* The flip that produces the alternating rhythm. Source order stays
+     copy-then-media, so the reading order is correct at every width. */
+  .section-inner.split.media-left .section-copy {
+    order: 2;
+  }
+  .section-inner.split.media-left .section-media {
+    order: 1;
+  }
+
+  h2,
+  h3 {
+    font-size: clamp(1.85rem, 3.2vw, 2.6rem);
+    margin: 0 0 1.25rem;
+    text-wrap: balance;
+  }
+  .section-copy :global(p) {
+    margin: 0 0 1.1rem;
+    font-size: 1.075rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+    max-width: 64ch;
+  }
+  .section-copy :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .section-closing {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-dark) !important;
+    margin-top: 1.5rem !important;
+  }
+
+  @media (max-width: 900px) {
+    .section-inner.split {
+      grid-template-columns: 1fr;
+    }
+    /* On one column the media always follows the copy, whichever side it took
+       on desktop. */
+    .section-inner.split.media-left .section-copy,
+    .section-inner.split.media-left .section-media {
+      order: initial;
+    }
+  }
+</style>
