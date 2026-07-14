@@ -1,0 +1,104 @@
+---
+/**
+ * BrandLogo.astro — the one place the brand identity is rendered.
+ *
+ * Used by the header and the footer. It has TWO modes and prefers the first:
+ *
+ *   1. A real logo file, when one exists in BRAND_IMAGES for this surface.
+ *   2. A LOCKUP: the genuine red pipe-wrench mark plus the company name set in
+ *      the brand heading font. This is what ships today, because Lee's has no
+ *      standalone logo file (see the note in config/images.ts).
+ *
+ * The switch is automatic. Drop a real logo into BRAND_IMAGES.logoOnLight /
+ * logoOnDark and every place the brand appears updates at once, with no
+ * component edits anywhere.
+ *
+ * `tone` picks the surface. It matters: the real Lee's wordmark is black type,
+ * so the footer will need a knockout variant. In lockup mode the wrench is red
+ * on both surfaces (it is transparent artwork) and the wordmark takes the colour
+ * of the surface it sits on.
+ *
+ * SIZING is driven by two inherited custom properties, NOT by props:
+ *   --brand-mark-height   height of the wrench mark   (default 30px)
+ *   --brand-word-size     font-size of the wordmark   (default 1.5rem)
+ * Custom properties inherit, so a caller can set them on its own wrapper and
+ * change them per breakpoint in a media query. Inline styles would have won the
+ * cascade and made the header impossible to size responsively.
+ *
+ * The mark keeps its aspect ratio (height is set, width is auto against the
+ * intrinsic 177x192) so it can never be stretched, and at ~30px it renders at a
+ * sixth of its native height, so it stays crisp on any display.
+ *
+ * ACCESSIBLE NAME. The company name is emitted exactly once in either mode:
+ *   - logo mode: the <img> carries alt="Lee's Plumbing".
+ *   - lockup mode: the mark is alt="" (decorative) and the name is real text.
+ */
+import { SITE } from '../config/site';
+import { BRAND_IMAGES } from '../config/images';
+
+interface Props {
+  /** 'light' = dark artwork on a white surface. 'dark' = knockout on black. */
+  tone?: 'light' | 'dark';
+}
+
+const { tone = 'light' } = Astro.props;
+
+const logo = tone === 'dark' ? BRAND_IMAGES.logoOnDark : BRAND_IMAGES.logoOnLight;
+const mark = BRAND_IMAGES.mark;
+---
+
+{
+  logo ? (
+    <img
+      class="brand-logo"
+      src={logo.src}
+      alt={SITE.name}
+      width={logo.width}
+      height={logo.height}
+    />
+  ) : (
+    <span class:list={['brand-lockup', tone]}>
+      {mark && (
+        <img class="brand-mark" src={mark.src} alt="" width={mark.width} height={mark.height} />
+      )}
+      <span class="brand-word">{SITE.name}</span>
+    </span>
+  )
+}
+
+<style>
+  .brand-logo {
+    display: block;
+    height: calc(var(--brand-mark-height, 30px) + 8px);
+    width: auto;
+    max-width: 100%;
+  }
+
+  .brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    line-height: 1;
+  }
+  .brand-mark {
+    display: block;
+    flex: none;
+    height: var(--brand-mark-height, 30px);
+    /* Auto against the intrinsic 177x192, so the mark can never be stretched
+       and never enlarged past its own pixels. */
+    width: auto;
+  }
+  .brand-word {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--brand-word-size, 1.5rem);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .brand-lockup.light .brand-word {
+    color: var(--color-dark);
+  }
+  .brand-lockup.dark .brand-word {
+    color: var(--color-white);
+  }
+</style>

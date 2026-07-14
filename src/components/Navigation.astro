@@ -31,6 +31,7 @@
  * every link inside it is still reachable. The nav degrades, it does not break.
  */
 import { SITE, BUSINESS, NAV_LINKS, isNavGroup } from '../config/site';
+import BrandLogo from './BrandLogo.astro';
 
 const currentPath = Astro.url.pathname;
 const normalize = (path: string) => (path.length > 1 ? path.replace(/\/$/, '') : path);
@@ -49,7 +50,9 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
 
 <header class="site-header" data-site-header>
   <nav class="nav" aria-label="Primary">
-    <a href="/" class="brand">{SITE.name}</a>
+    <a href="/" class="brand" aria-label={`${SITE.name} home`}>
+      <BrandLogo tone="light" />
+    </a>
 
     {/*
       The menu button is rendered ALWAYS but is invisible until the script marks
@@ -278,13 +281,21 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     align-items: center;
     gap: 1.5rem;
   }
+  /* The brand is now a logo lockup, not a text node. It is sized through the two
+     inherited custom properties BrandLogo reads, which is what lets the media
+     queries below shrink it on narrow phones. */
   .brand {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--color-dark);
+    --brand-mark-height: 30px;
+    --brand-word-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
     text-decoration: none;
     white-space: nowrap;
+  }
+  .brand:focus-visible {
+    outline: 2px solid var(--color-red);
+    outline-offset: 4px;
+    border-radius: 2px;
   }
   .nav-links {
     display: flex;
@@ -303,6 +314,12 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
+    /* The logo lockup is wider than the old text brand, and without this the
+       flex line shrank the links until their labels wrapped: "Heating & /
+       Cooling" over two lines at 1440. A nav label is an atom and must never
+       break. There is room for all seven on one line; they just needed to be
+       told not to fold. */
+    white-space: nowrap;
   }
   .nav-links > li > a:hover,
   .nav-links > li > a[aria-current='page'] {
@@ -440,7 +457,14 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
      The links move to their own full-width row and the dropdown stops being a
      floating panel: it expands INLINE. A floating panel anchored to a wrapped
      row is unusable on a narrow screen. */
-  @media (max-width: 860px) {
+  /* The collapse breakpoint is 1080px, not 860px.
+     The logo lockup is wider than the text brand it replaced, and the seven nav
+     labels must not wrap (a nav label is an atom). Between 861 and ~1080 the
+     brand, the seven links and the call button no longer fit on one line, so the
+     old 860 breakpoint left the header overflowing the viewport. Collapsing at
+     the width where the desktop nav actually stops fitting is the honest fix:
+     tablets get the hamburger, which is where they were heading anyway. */
+  @media (max-width: 1080px) {
     .nav {
       flex-wrap: wrap;
       gap: 0.75rem;
@@ -602,8 +626,11 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
       padding: 0.6rem 1rem;
       gap: 0.5rem;
     }
+    /* The lockup shrinks through the custom properties BrandLogo reads. A
+       font-size here would no longer reach the wordmark, which sets its own. */
     .brand {
-      font-size: 1.2rem;
+      --brand-mark-height: 26px;
+      --brand-word-size: 1.2rem;
     }
     .cta {
       padding: 0.5rem 0.7rem;
@@ -618,16 +645,21 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
      its full label; the brand and the padding give up the millimetres. */
   @media (max-width: 360px) {
     .nav {
-      padding: 0.6rem 0.75rem;
-      gap: 0.4rem;
+      padding: 0.6rem 0.5rem;
+      gap: 0.3rem;
     }
+    /* The lockup costs ~26px of width over the old text-only brand, which was
+       enough to push the three header controls past the 296px available at 320
+       and wrap the bar back to two rows. The mark and the wordmark both give up
+       a little here so the bar stays on one line. */
     .brand {
-      font-size: 1.05rem;
+      --brand-mark-height: 20px;
+      --brand-word-size: 0.95rem;
     }
     .cta {
-      padding: 0.45rem 0.55rem;
-      font-size: 0.78rem;
-      margin-right: 0.25rem;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.75rem;
+      margin-right: 0.15rem;
     }
   }
 </style>

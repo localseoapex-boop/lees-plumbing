@@ -13,6 +13,7 @@
  */
 import { SITE, FOOTER_LINKS, MAILING_ADDRESS } from '../config/site';
 import { offices, formatHours } from '../data/offices';
+import BrandLogo from './BrandLogo.astro';
 
 const year = new Date().getFullYear();
 ---
@@ -20,7 +21,12 @@ const year = new Date().getFullYear();
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-brand-col">
-      <p class="footer-brand">{SITE.name}</p>
+      {/* tone="dark" so a knockout logo is used the moment one exists. Until
+          then the wrench mark sits on the dark surface and the wordmark renders
+          white, which is why the mark needed to be transparent artwork. */}
+      <div class="footer-brand">
+        <BrandLogo tone="dark" />
+      </div>
       <p class="footer-tagline">{SITE.description}</p>
     </div>
 
@@ -90,11 +96,9 @@ const year = new Date().getFullYear();
     min-width: 220px;
   }
   .footer-brand {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    color: var(--color-white);
-    margin: 0 0 0.5rem;
-    font-size: 1.35rem;
+    --brand-mark-height: 28px;
+    --brand-word-size: 1.35rem;
+    margin: 0 0 0.75rem;
   }
   .footer-tagline {
     margin: 0;
@@ -105,6 +109,12 @@ const year = new Date().getFullYear();
     font-style: normal;
     line-height: 1.7;
     font-size: 0.9rem;
+    /* PRE-EXISTING BUG, fixed here. "leesplumbinginc@hotmail.com" is a single
+       228px unbreakable token, and in a narrow footer column it pushed the whole
+       document past the viewport and produced horizontal scroll on phones around
+       the 480px mark. An email address has no spaces to wrap at, so it needs
+       explicit permission to break. */
+    overflow-wrap: anywhere;
   }
   .footer-hours {
     margin: 0.5rem 0 0;

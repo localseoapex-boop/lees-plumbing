@@ -77,6 +77,56 @@ export interface ImageAsset {
 const ORIGINALS = '/images/lees-original-photos';
 
 /**
+ * BRAND IDENTITY. The header and footer logo.
+ *
+ * THERE IS NO CLEAN LEE'S LOGO FILE. The real logo (red pipe wrench + the LEE'S
+ * PLUMBING INCORPORATED wordmark and ripple) exists only baked into the coupon
+ * artwork and painted on the side of the trucks. Neither is extractable at
+ * quality, and neither has transparency. So until the client supplies a proper
+ * logo pack, the header and footer render a LOCKUP built from real parts:
+ *
+ *   - `mark`: the genuine red pipe-wrench mark from the Lee's logo. Real, and
+ *     transparent, so it sits correctly on both the white header and the black
+ *     footer.
+ *   - the wordmark: "Lee's Plumbing" set in Cormorant Garamond, which is already
+ *     the brand heading font and already how the header has always rendered.
+ *
+ * Nothing is redrawn, regenerated, or invented. A generated wordmark is a fake
+ * wordmark, and putting one on a real company's site is not a design shortcut,
+ * it is a forgery.
+ *
+ * WHAT TO ASK THE CLIENT FOR, and how to switch it on:
+ * Two variants are needed, because the footer is #050707 and the real wordmark
+ * is black type: a dark-on-light version for the header and a light-on-dark
+ * (knockout) version for the footer. SVG is ideal. When they arrive, fill in
+ * `logoOnLight` and `logoOnDark` below and change NOTHING else: BrandLogo prefers
+ * a full logo whenever one exists and falls back to the lockup when it does not.
+ *
+ * NOTE: /images/lees-original-photos/lees-x-any-hour-logo.png is the CO-BRANDED
+ * Lee's x Any Hour lockup. It must NEVER be used here. Putting it in the site
+ * chrome would stamp "Any Hour" onto all 38 pages and destroy the merger
+ * isolation the whole architecture is built to preserve. It belongs to the
+ * merger page and nowhere else.
+ */
+export const BRAND_IMAGES = {
+  /** REAL. The pipe-wrench mark. Transparent, so it works on any surface. */
+  mark: {
+    src: '/images/brand/lees-wrench-mark.png',
+    /* Decorative: the wordmark beside it already carries the company name, so a
+       screen reader would otherwise hear the name twice. */
+    alt: '',
+    width: 177,
+    height: 192,
+    provenance: 'real',
+  } satisfies ImageAsset as ImageAsset | null,
+
+  /** Awaiting the real logo pack. Dark artwork, for the white header. */
+  logoOnLight: null as ImageAsset | null,
+  /** Awaiting the real logo pack. Knockout artwork, for the dark footer. */
+  logoOnDark: null as ImageAsset | null,
+} as const;
+
+/**
  * The company vehicles. The single most useful real photograph we have: it is
  * on-brand, shows the wordmark and the phone number, and needs no people in it.
  * Reused across About and the merger hero.
