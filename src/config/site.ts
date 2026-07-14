@@ -81,7 +81,11 @@ export const isNavGroup = (item: NavItem): item is { label: string; children: re
  * blog index and its posts keep an internal link and do not become orphans.
  */
 export const NAV_LINKS: readonly NavItem[] = [
-  { label: 'Home', href: '/' },
+  // No "Home" link. The logo is the home link, which is a convention every
+  // visitor already knows, and a redundant Home item spends a slot in a
+  // seven-item bar that has no room to spare. The brand link carries
+  // aria-current="page" on the homepage so the current location is still
+  // announced.
   { label: 'Plumbing', href: '/plumbing' },
   { label: 'Heating & Cooling', href: '/heating-cooling' },
   { label: 'Service Areas', href: '/locations' },

@@ -50,7 +50,16 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
 
 <header class="site-header" data-site-header>
   <nav class="nav" aria-label="Primary">
-    <a href="/" class="brand" aria-label={`${SITE.name} home`}>
+    {/* The logo IS the home link, so it also carries the current-page state.
+        Without this, the homepage would be the one page with nothing in the nav
+        marked as current, and a screen reader user would lose that cue entirely
+        now that the redundant "Home" item is gone. */}
+    <a
+      href="/"
+      class="brand"
+      aria-label={`${SITE.name} home`}
+      aria-current={isActive('/') ? 'page' : undefined}
+    >
       <BrandLogo tone="light" />
     </a>
 
