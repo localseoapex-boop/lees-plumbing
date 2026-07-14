@@ -29,7 +29,7 @@ import AboutSection from '../components/homepage/AboutSection.astro';
 import ServiceAreasSection from '../components/homepage/ServiceAreasSection.astro';
 import FinalCTASection from '../components/homepage/FinalCTASection.astro';
 
-import { SITE, BUSINESS } from '../config/site';
+import { BUSINESS } from '../config/site';
 import {
   HERO,
   TRUST_STRIP,
@@ -42,6 +42,7 @@ import {
   FINAL_CTA,
   type ServiceSectionContent,
 } from '../config/homepage';
+import { HOMEPAGE_IMAGES } from '../config/images';
 import { getService } from '../data/services';
 import { getSubService } from '../data/subservices';
 import { locations, HQ_CITY_SLUG, hasCityPage } from '../data/locations';
@@ -89,11 +90,11 @@ const areas = locations.map((loc) => ({
 const hours = primaryOffice.hours.map((spec) => formatHours(spec));
 
 /**
- * Scheduling CTA. No booking or contact page exists yet, so a null href falls
- * back to the phone from the central business config rather than pointing the
- * customer at a page that cannot schedule anything. Give HERO.primaryCta a real
- * href once that page exists and this fallback stops applying. The number is
- * resolved from BUSINESS, never hardcoded in a component.
+ * Scheduling CTA. Now resolves to the contact page. The `?? tel:` fallback is
+ * kept deliberately: it is the framework's safety net, so a future Local SEO
+ * Apex business that launches before its contact page exists still gets a
+ * working CTA instead of a link to nowhere. The number is resolved from
+ * BUSINESS, never hardcoded in a component.
  */
 const heroPrimaryCta = {
   label: HERO.primaryCta.label,
@@ -114,8 +115,7 @@ const description =
     phone={BUSINESS.phone}
     phoneDisplay={BUSINESS.phoneDisplay}
     secondaryCtaPrefix={HERO.secondaryCtaPrefix}
-    media={HERO.media}
-    brand={SITE.name}
+    background={{ desktop: HOMEPAGE_IMAGES.heroDesktop, mobile: HOMEPAGE_IMAGES.heroMobile }}
   />
 
   <TrustStrip items={TRUST_STRIP} />

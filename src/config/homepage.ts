@@ -41,26 +41,24 @@ export const HERO = {
   heading: 'Plumbing and HVAC Services in Hyde Park, Utah',
   body: "Lee's Plumbing is a Hyde Park based company serving homeowners throughout Cache Valley. We handle plumbing repairs and installations along with heating and cooling work, from a leaking pipe or water heater to a furnace or air conditioner that has stopped keeping up.",
   /**
-   * Scheduling CTA. `href: null` means "no scheduling destination exists yet",
-   * and the page falls back to the business phone from config/site.ts. Once a
-   * real contact or booking page exists, set href to its path (and restore a
-   * label like "Schedule Service") and the fallback stops applying. The number
-   * is never hardcoded here.
+   * PRIMARY action: send a request. Points at the contact page, which now
+   * exists. Previously this fell back to the phone because no such page had been
+   * built, which left the hero offering two buttons that dialled the SAME
+   * number: a choice that was not a choice. The label says "Schedule" and the
+   * destination schedules, so the button keeps its promise.
+   *
+   * The phone lives on the SECONDARY action, giving the hero two genuinely
+   * different speeds: call now if it is urgent, send a request if it is not.
    */
-  primaryCta: { label: 'Call to Schedule', href: null as string | null },
+  primaryCta: { label: 'Schedule Service', href: '/contact-us' as string | null },
   /** The phone CTA label is built from office data at render time. */
   secondaryCtaPrefix: 'Call',
   /**
-   * Hero image. No artwork ships yet: when `src` is null the hero renders a
-   * branded CSS/SVG treatment instead. The slot reserves its aspect ratio
-   * either way, so dropping a real photo in later cannot shift the layout.
+   * The hero background image is NOT configured here. Copy lives in this file,
+   * assets live in config/images.ts (HOMEPAGE_IMAGES), and the page wires the
+   * two together. That separation is what lets a new business swap its
+   * photography without touching a line of copy, and vice versa.
    */
-  media: {
-    src: null as string | null,
-    alt: '',
-    /** Small caps line shown under the wordmark in the branded fallback. */
-    fallbackTagline: 'Plumbing • Heating & Cooling',
-  },
 } as const;
 
 /** Compact strip under the hero. Four items, factual only. */

@@ -1,19 +1,49 @@
 ---
 /**
- * HeroSection.astro — the homepage hero. Dark, high-contrast, two-column.
+ * HeroSection.astro — the homepage hero. Full-bleed image, copy layered over it.
  *
  * Holds the page's single <h1>. Every string is a prop, so a different trade or
  * business reuses this component untouched.
  *
- * The media slot ALWAYS reserves its aspect ratio, whether or not an image
- * exists. That is deliberate: dropping a real photo in later cannot shift the
- * layout, so CLS stays at zero either way.
+ * WHY AN <img> AND NOT background-image
+ * A CSS background-image is only discovered after the CSSOM is built, so the
+ * browser's preload scanner never sees it. On a hero, which is almost always the
+ * LCP element, that reliably costs hundreds of milliseconds. So this renders a
+ * real <img>, absolutely positioned behind the content with fetchpriority="high":
+ * it LOOKS like a background and BEHAVES like a priority image. Being out of
+ * flow, it also cannot contribute to layout shift.
  *
- * With no image configured, the slot renders a BRANDED treatment (wordmark,
- * rule, and quiet diagonal linework built from the design tokens) rather than a
- * development placeholder. It is intentional, understated, and ships no external
- * request and no JavaScript. Set `media.src` and it is replaced by the photo.
+ * READABILITY IS GUARANTEED BY THE SCRIM, NOT BY THE PHOTO
+ * The white text must stay legible over artwork nobody has seen yet. So the scrim
+ * is dimensioned against the WORST case: if the photo under the headline were
+ * pure white, the combined layers still resolve to roughly #2e2e2e, which puts
+ * white text at about 12:1. Legibility therefore never depends on the image being
+ * dark, and a future business can drop in a bright photo without breaking it.
+ *
+ * The horizontal gradient stops are anchored to --content-width with calc(), NOT
+ * to percentages. That matters: .container is a fixed width and centred, so the
+ * text block sits at 12-56% of a 1440px viewport but at 28-71% of a 2560px one.
+ * Percentage stops tuned for a laptop leave the text over a light region on a big
+ * monitor, at roughly 2.6:1. Deriving the stops from the same token the container
+ * uses makes the dark zone track the text at every width, and makes it correct
+ * for any future business that changes --content-width.
+ *
+ * THE IMAGE IS DECORATIVE, SO alt IS EMPTY
+ * The <h1> already carries the meaning, so a screen reader gains nothing from a
+ * description of the scene. For a generated image it is also a truthfulness
+ * control: alt text describing "our technician in Hyde Park" would turn an
+ * illustration into a claim about this business.
+ *
+ * NO IMAGE IS A SUPPORTED STATE, NOT A BROKEN ONE
+ * With `background` null (or if the file 404s) the hero renders on flat
+ * --color-dark and is a complete, premium hero. That is the launch state for any
+ * business whose photography is not ready, and it is why the text is never at
+ * risk of white-on-white.
+ *
+ * No JavaScript. No hydration. Pure CSS.
  */
+import type { ImageAsset } from '../../config/images';
+
 interface Props {
   eyebrow: string;
   heading: string;
@@ -25,79 +55,159 @@ interface Props {
   /** Display number, e.g. "435-563-0611". */
   phoneDisplay: string;
   secondaryCtaPrefix: string;
-  media: { src: string | null; alt: string; fallbackTagline?: string };
-  /** Wordmark shown in the branded fallback when there is no image. */
-  brand: string;
+  /**
+   * Art-directed background. Two crops, because one cannot serve both: a 16:9
+   * desktop frame centre-cropped to a tall phone viewport either decapitates the
+   * subject or buries them behind the headline. Null renders the dark fallback.
+   */
+  background?: {
+    desktop: ImageAsset | null;
+    mobile: ImageAsset | null;
+  } | null;
 }
 
-const {
-  eyebrow,
-  heading,
-  body,
-  primaryCta,
-  phone,
-  phoneDisplay,
-  secondaryCtaPrefix,
-  media,
-  brand,
-} = Astro.props;
+const { eyebrow, heading, body, primaryCta, phone, phoneDisplay, secondaryCtaPrefix, background } =
+  Astro.props;
+
+const desktop = background?.desktop ?? null;
+const mobile = background?.mobile ?? null;
+// The desktop crop is the one that must exist. A mobile-only asset would leave
+// every desktop visitor on the fallback, which is not a state worth supporting.
+const hasImage = desktop !== null;
 ---
 
-<section class="hero">
+<section class:list={['hero', { 'has-image': hasImage }]}>
+  {
+    hasImage && (
+      <Fragment>
+        <picture>
+          {mobile && <source media="(max-width: 599px)" srcset={mobile.src} />}
+          <img
+            class="hero-image"
+            src={desktop.src}
+            alt=""
+            width={desktop.width}
+            height={desktop.height}
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
+          />
+        </picture>
+        <div class="hero-scrim" aria-hidden="true" />
+      </Fragment>
+    )
+  }
+
   <div class="container hero-inner">
     <div class="hero-copy">
-      <p class="hero-eyebrow">{eyebrow}</p>
+      <p class="hero-eyebrow">
+        <span class="eyebrow-rule" aria-hidden="true" />
+        {eyebrow}
+      </p>
       <h1>{heading}</h1>
       <p class="hero-body">{body}</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href={primaryCta.href}>{primaryCta.label}</a>
-        <a class="btn btn-ghost" href={`tel:${phone}`}>
+        <a class="btn btn-secondary" href={`tel:${phone}`}>
           {secondaryCtaPrefix}
           {phoneDisplay}
         </a>
       </div>
-    </div>
-
-    <div class="hero-media">
-      {
-        media.src ? (
-          <img src={media.src} alt={media.alt} width="640" height="480" fetchpriority="high" />
-        ) : (
-          <div class="hero-brandmark" role="presentation">
-            <div class="brandmark-inner">
-              <span class="brandmark-name">{brand}</span>
-              <span class="brandmark-rule" />
-              {media.fallbackTagline && (
-                <span class="brandmark-tagline">{media.fallbackTagline}</span>
-              )}
-            </div>
-          </div>
-        )
-      }
     </div>
   </div>
 </section>
 
 <style>
   .hero {
-    background: var(--color-dark);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    /* The fallback, and the safety net. If no image is configured, or the file
+       fails to load, this is what the white text sits on. */
+    background-color: var(--color-dark);
     color: var(--color-white);
-    padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(3rem, 6vw, 4.5rem);
-  }
-  .hero-inner {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: clamp(2rem, 5vw, 4rem);
+    /* Flex, not grid. As a grid item the .container shrink-wraps to its content
+       and its `margin: 0 auto` then centres THAT, which pushes the copy inward
+       and breaks its alignment with the header above. Flex plus an explicit
+       width:100% on the child keeps .container behaving like it does everywhere
+       else on the site. */
+    display: flex;
     align-items: center;
+    min-height: clamp(520px, 68vh, 720px);
+    padding: clamp(3.5rem, 7vw, 5.5rem) 0;
   }
+
+  /* Out of flow, so it can never cause layout shift. */
+  .hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Subject sits in the right third; this keeps it there while the clean left
+       side stays under the headline. */
+    object-position: 70% 50%;
+    z-index: -2;
+  }
+
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+
+    /* Two layers, both the brand black at varying alpha. No new colour enters
+       the palette. The gradient sits on top of a flat base scrim; together they
+       hold ~0.82 effective alpha under the text and fall away to ~0.42 at the
+       right edge, so the photograph still breathes where nothing is written. */
+    --text-zone-mid: calc(50% - (var(--content-width) / 2) + 420px);
+    --text-zone-end: calc(50% - (var(--content-width) / 2) + 700px);
+
+    background-image: linear-gradient(
+      90deg,
+      rgba(5, 7, 7, 0.92) 0%,
+      rgba(5, 7, 7, 0.86) var(--text-zone-mid),
+      rgba(5, 7, 7, 0.72) var(--text-zone-end),
+      rgba(5, 7, 7, 0.28) calc(var(--text-zone-end) + 260px),
+      rgba(5, 7, 7, 0.1) 100%
+    );
+    background-color: rgba(5, 7, 7, 0.35);
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+  .hero-copy {
+    /* Tightened measure. This is what keeps the body copy supporting the
+       headline instead of competing with it, and it also guarantees the text can
+       never wander out of the dark zone of the gradient. */
+    max-width: 640px;
+  }
+
   .hero-eyebrow {
-    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.25rem;
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #f0a3a3;
+    /* Neutral, not the lightened red. Pink is the one thing a long-established
+       plumbing company should never look like, and reserving red for actions is
+       what makes the CTAs land. */
+    color: #c9cccc;
   }
+  /* The restrained red accent: a short rule, not the type itself. */
+  .eyebrow-rule {
+    flex: none;
+    width: 28px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-red);
+  }
+
   .hero h1 {
     color: var(--color-white);
     font-size: clamp(2.5rem, 5.2vw, 4rem);
@@ -106,12 +216,12 @@ const {
     text-wrap: balance;
   }
   .hero-body {
-    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    font-size: clamp(1.05rem, 1.4vw, 1.15rem);
     line-height: 1.7;
-    color: #c9cccc;
-    max-width: 56ch;
+    color: #d4d6d6;
     margin: 0 0 2rem;
   }
+
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
@@ -119,17 +229,18 @@ const {
   }
   .btn {
     display: inline-block;
-    padding: 0.95rem 1.6rem;
+    padding: 0.95rem 1.75rem;
     border-radius: var(--radius-sm);
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
     transition:
       background-color 0.18s ease,
       color 0.18s ease,
       border-color 0.18s ease;
   }
+  /* One dominant action. */
   .btn-primary {
     background: var(--color-red);
     color: var(--color-white);
@@ -139,86 +250,62 @@ const {
     background: var(--accent-dark);
     border-color: var(--accent-dark);
   }
-  .btn-ghost {
+  /* Genuinely quieter, but actually drawn. The previous #3d4242 border sat at
+     roughly 2:1 against the background and did no visual work at all, which read
+     as unfinished rather than as deliberately secondary. */
+  .btn-secondary {
     color: var(--color-white);
-    border-color: #3d4242;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.04);
   }
-  .btn-ghost:hover {
+  .btn-secondary:hover {
     border-color: var(--color-white);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  /* The bug this hero shipped with: no focus ring at all. Every other CTA in the
+     codebase has one. A keyboard user could not see either of the two most
+     important buttons on the site. */
+  .btn:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
   }
 
-  /* Reserved media slot. Aspect ratio is fixed so a real image can drop in
-     later without moving anything below it. */
-  .hero-media {
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-  .hero-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  /* Branded fallback. Quiet diagonal linework over a raised panel, with the
-     wordmark centered. Pure CSS: no image request, no script. */
-  .hero-brandmark {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-    padding: 2rem;
-    border: 1px solid #232828;
-    border-radius: var(--radius-lg);
-    background-color: #0d1111;
-    background-image: repeating-linear-gradient(
-      -45deg,
-      rgba(255, 255, 255, 0.022) 0,
-      rgba(255, 255, 255, 0.022) 1px,
-      transparent 1px,
-      transparent 12px
-    );
-  }
-  .brandmark-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .brandmark-name {
-    font-family: var(--font-heading);
-    font-size: clamp(2rem, 3.6vw, 2.9rem);
-    font-weight: 700;
-    line-height: 1.1;
-    color: var(--color-white);
-  }
-  .brandmark-rule {
-    width: 56px;
-    height: 3px;
-    margin: 1.1rem 0;
-    border-radius: 2px;
-    background: var(--color-red);
-  }
-  .brandmark-tagline {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #8b9090;
+  @media (max-width: 899px) {
+    .hero {
+      min-height: clamp(480px, 62vh, 620px);
+    }
+    /* The horizontal falloff is meaningless once the text spans the full width,
+       so the scrim runs vertically instead.
+       It is NOT uniform. A flat wash darkens the bottom of the frame just as
+       hard as the top, and since the subject of a vertical hero photo sits low
+       while the text sits high, that buries the subject for no benefit: the
+       photo degrades into texture. So the scrim stays heavy through the text and
+       LIFTS toward the base, which is the only region with nothing written over
+       it. Contrast where the text actually is remains ~0.82 effective, and the
+       bottom clears enough for the subject to read. */
+    .hero-scrim {
+      background-image: linear-gradient(
+        180deg,
+        rgba(5, 7, 7, 0.9) 0%,
+        rgba(5, 7, 7, 0.86) 40%,
+        rgba(5, 7, 7, 0.74) 70%,
+        rgba(5, 7, 7, 0.5) 100%
+      );
+      background-color: transparent;
+    }
+    .hero-image {
+      object-position: 65% 50%;
+    }
   }
 
-  @media (max-width: 900px) {
-    .hero-inner {
-      grid-template-columns: 1fr;
-    }
-    /* Copy first on mobile. The reserved slot shrinks but never disappears, so
-       the mobile and desktop layouts stay consistent. */
-    .hero-media {
-      order: 2;
-      aspect-ratio: 16 / 9;
+  @media (max-width: 599px) {
+    /* The mobile crop is composed with the subject low and the top clear, so it
+       needs no offset. */
+    .hero-image {
+      object-position: 50% 50%;
     }
   }
+
   @media (max-width: 480px) {
     .hero-actions .btn {
       width: 100%;

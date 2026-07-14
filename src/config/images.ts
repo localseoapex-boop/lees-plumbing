@@ -41,14 +41,37 @@
  * photography arrives, set the slot here and nothing else changes.
  */
 
+/**
+ * Where an image came from. This is not bookkeeping, it is a guardrail.
+ *
+ * The hybrid image strategy draws its line at EVIDENCE vs ILLUSTRATION, not at
+ * subject matter. An image that functions as a CLAIM (our truck, our team, our
+ * award, our completed work, our customer) must be `real`, because a generated
+ * version of it is a fabricated claim. An image that only supplies CONTEXT (what
+ * this trade looks like, what a home looks like) may be `ai`, because it asserts
+ * nothing.
+ *
+ * Recording provenance here makes the whole set auditable at a glance and stops
+ * a future editor from captioning an `ai` image as real work, or dropping a
+ * generated face next to a real testimonial.
+ */
+export type Provenance = 'real' | 'ai';
+
 export interface ImageAsset {
   /** Public path, e.g. "/images/offers/lees-coupon.jpg". */
   src: string;
-  /** Empty string ONLY for decorative images. These are all meaningful. */
+  /**
+   * Empty string ONLY for decorative images, where surrounding text already
+   * carries the meaning. For an `ai` image this is also a truthfulness control:
+   * alt text must describe a SCENE ("a technician installing a water heater"),
+   * never an EVENT ("our technician in Hyde Park"), which would turn an
+   * illustration into a claim.
+   */
   alt: string;
   /** Intrinsic pixel dimensions. Required so the browser reserves the box. */
   width: number;
   height: number;
+  provenance: Provenance;
 }
 
 const ORIGINALS = '/images/lees-original-photos';
@@ -68,7 +91,59 @@ const TRUCKS: ImageAsset = {
   alt: "Lee's Plumbing service trucks parked outside the Hyde Park shop",
   width: 653,
   height: 367,
+  provenance: 'real',
 };
+
+/**
+ * HOMEPAGE HERO. Full-bleed background behind the H1 (see HeroSection.astro).
+ *
+ * Both slots are `null` until the artwork exists, and the hero is DESIGNED to
+ * ship that way: with no image it renders on flat --color-dark and is a
+ * complete, premium hero on its own. That is the fallback for every future
+ * Local SEO Apex business that launches before its photography is ready.
+ *
+ * When the files land, set the two slots below and change NOTHING else.
+ *
+ * Required artwork (see docs/photography-style-guide.md):
+ *   desktop  2400x1350 (16:9)  subject in the RIGHT third, left 55-60% a clean
+ *                              mid-tone surface for the headline to sit on.
+ *   mobile   1200x1600 (3:4)   tighter crop, subject LOW, top ~45% kept clear.
+ *
+ * Both are `ai`: they illustrate the trade. They must therefore contain NO
+ * branding, no logo, no readable signage, and no company-specific claim, and
+ * their alt stays EMPTY because the <h1> already carries the meaning and a
+ * generated scene must not assert anything about this business.
+ */
+export const HOMEPAGE_IMAGES = {
+  /**
+   * Dimensions are the files' TRUE intrinsic sizes, read off the files
+   * themselves. The desktop frame is 1351px tall, not the 1350 that was
+   * specified: that is the encoder's rounding and it is recorded here as-is,
+   * because these numbers exist to tell the browser exactly what it is about to
+   * receive. A one-pixel lie is still a lie to the layout engine.
+   *
+   * Both are JPEG. These are photographs, and the first cut shipped as PNG at
+   * 1.65MB and 1.55MB, which on a real 4G connection is several seconds of
+   * staring at an empty hero. JPEG q82 carries the same image at 140KB and 75KB,
+   * a ~91% reduction with no visible difference, and both now sit inside the
+   * 250KB / 120KB budgets in docs/photography-style-guide.md.
+   */
+  heroDesktop: {
+    src: '/images/homepage/hero-technician-desktop.jpg',
+    alt: '',
+    width: 2400,
+    height: 1351,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+
+  heroMobile: {
+    src: '/images/homepage/hero-technician-mobile.jpg',
+    alt: '',
+    width: 1200,
+    height: 1600,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+} as const;
 
 export const ABOUT_IMAGES = {
   /** REAL. The trucks carry the compact About hero. */
@@ -91,6 +166,7 @@ export const OFFERS_IMAGES = {
     alt: "Lee's Plumbing coupon for $19.95 off any service",
     width: 1037,
     height: 418,
+    provenance: 'real',
   } satisfies ImageAsset,
 } as const;
 
@@ -115,6 +191,7 @@ export const MERGER_IMAGES = {
     alt: "Lee's Plumbing and Any Hour Services co-branded logo",
     width: 951,
     height: 206,
+    provenance: 'real',
   } satisfies ImageAsset,
   /** NULL. No technician photograph exists for the CTA. Branded fallback. */
   ctaTechnician: null as ImageAsset | null,
