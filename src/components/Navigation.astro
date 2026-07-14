@@ -47,11 +47,33 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
   children.some((child) => isActive(child.href));
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <nav class="nav" aria-label="Primary">
     <a href="/" class="brand">{SITE.name}</a>
 
-    <ul class="nav-links">
+    {/*
+      The menu button is rendered ALWAYS but is invisible until the script marks
+      the header as enhanced. That is what makes the no-JavaScript fallback safe:
+      a button that cannot work is a button nobody can see. See the header
+      comment for the full reasoning.
+    */}
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-expanded="false"
+      aria-controls="primary-nav"
+      data-nav-toggle
+    >
+      <span class="sr-only">Menu</span>
+      <span class="toggle-bars" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+
+    <ul class="nav-links" id="primary-nav">
       {
         NAV_LINKS.map((item, i) =>
           isNavGroup(item) ? (
@@ -111,7 +133,54 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
 </header>
 
 <script>
-  // Progressive enhancement only. Everything below has a CSS fallback.
+  // ---------------------------------------------------------------------------
+  // MOBILE MENU (the collapsed disclosure below 860px)
+  //
+  // The FIRST thing this does is mark the header as enhanced. Until that happens
+  // the CSS keeps the toggle button hidden and the link list visible, so a
+  // visitor whose JavaScript never ran sees the full navigation rather than a
+  // menu button that does nothing. The enhanced state is therefore only ever
+  // entered by a browser that is definitely running the code that powers it.
+  //
+  // This is a DISCLOSURE, not a modal. The menu expands in flow and pushes the
+  // page down: nothing is covering the content, so there is deliberately no
+  // focus trap, no scroll lock, and no aria-modal. Trapping focus here would
+  // actually be wrong, because the page behind is not inert.
+  // ---------------------------------------------------------------------------
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+
+  if (header && toggle) {
+    header.dataset.enhanced = 'true';
+
+    const setMenu = (open: boolean) => {
+      header.dataset.menuOpen = String(open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle.addEventListener('click', () => {
+      setMenu(header.dataset.menuOpen !== 'true');
+    });
+
+    // Escape closes and hands focus back to the button the user opened it with.
+    header.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && header.dataset.menuOpen === 'true') {
+        setMenu(false);
+        toggle.focus();
+      }
+    });
+
+    // A tap or click anywhere outside the header dismisses the menu.
+    document.addEventListener('click', (event) => {
+      if (header.dataset.menuOpen !== 'true') return;
+      if (!header.contains(event.target as Node)) setMenu(false);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // ABOUT DROPDOWN. Unchanged. It works identically inside the mobile menu,
+  // where it is a nested disclosure with its own button and its own aria state.
+  // ---------------------------------------------------------------------------
   const groups = document.querySelectorAll<HTMLElement>('[data-nav-group]');
 
   groups.forEach((group) => {
@@ -175,12 +244,31 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
 </script>
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .site-header {
     border-bottom: 1px solid var(--color-border);
     background: var(--color-white);
     /* The dropdown escapes the header, so the header must sit above the page. */
     position: relative;
     z-index: 20;
+  }
+
+  /* The menu button does not exist until the script says so. Without JavaScript
+     it stays hidden and the link list stays visible, so nothing is unreachable
+     and no dead control is ever shown. */
+  .nav-toggle {
+    display: none;
   }
   .nav {
     max-width: 1100px;
@@ -348,18 +436,72 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     background: var(--accent-dark);
   }
 
-  /* Below the desktop breakpoint the nav wraps to its own row and the dropdown
-     stops being a floating panel: it expands INLINE, pushing the rest of the
-     page down. A floating panel anchored to a wrapped row is unusable on a
-     narrow screen. */
+  /* Below the desktop breakpoint the nav becomes a COLLAPSED DISCLOSURE.
+     The links move to their own full-width row and the dropdown stops being a
+     floating panel: it expands INLINE. A floating panel anchored to a wrapped
+     row is unusable on a narrow screen. */
   @media (max-width: 860px) {
     .nav {
       flex-wrap: wrap;
       gap: 0.75rem;
+      /* Brand on the left, then the call CTA and the menu button pinned right. */
+      justify-content: space-between;
     }
+
+    /* The hamburger. 44x44 is the minimum comfortable touch target, and the
+       button is sized to it regardless of how small the glyph inside it is. */
+    [data-enhanced] .nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      flex: none;
+      padding: 0;
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      color: var(--color-dark);
+      cursor: pointer;
+      order: 3;
+    }
+    .nav-toggle:hover {
+      border-color: var(--color-dark);
+    }
+    .nav-toggle:focus-visible {
+      outline: 2px solid var(--color-red);
+      outline-offset: 3px;
+    }
+    .toggle-bars {
+      display: grid;
+      gap: 4px;
+      width: 20px;
+    }
+    .toggle-bars span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      border-radius: 2px;
+      background: currentColor;
+      transition:
+        transform 0.18s ease,
+        opacity 0.18s ease;
+    }
+    /* Bars fold into an X, so the control shows its own state and does not rely
+       on the label alone. */
+    [data-menu-open='true'] .toggle-bars span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+    [data-menu-open='true'] .toggle-bars span:nth-child(2) {
+      opacity: 0;
+    }
+    [data-menu-open='true'] .toggle-bars span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
     .nav-links {
       margin-left: 0;
-      order: 3;
+      order: 4;
       width: 100%;
       flex-wrap: wrap;
       gap: 0.75rem 1.1rem;
@@ -367,19 +509,77 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     .nav-links > li {
       position: static;
     }
+
+    /* THE COLLAPSE. Everything below is scoped to the ENHANCED state.
+       If the script never ran, the nav keeps exactly the behaviour it has today:
+       a wrapped row of links, all reachable. It is bulky, but it is whole, and
+       nothing in it is a control that cannot work.
+       Scoping matters: an un-enhanced visitor given the STACKED layout would get
+       a 563px header, which is worse than the 231px they have now. The stacked
+       list is only correct when it can actually be collapsed. */
+    [data-enhanced] .nav-links {
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      gap: 0;
+      padding-top: 0.25rem;
+    }
+    [data-enhanced][data-menu-open='true'] .nav-links {
+      display: flex;
+    }
+    [data-enhanced] .nav-links > li {
+      border-top: 1px solid var(--color-border);
+    }
+    [data-enhanced] .nav-links > li > a,
+    [data-enhanced] .nav-trigger {
+      display: flex;
+      width: 100%;
+      padding: 0.9rem 0.25rem;
+      font-size: 1rem;
+    }
+    [data-enhanced] .nav-trigger {
+      justify-content: space-between;
+    }
+
+    /* The call action stays in the header bar at ALL times, menu open or shut. A
+       homeowner with a burst pipe must never have to open a menu to find the
+       phone number. */
+    .cta {
+      order: 2;
+      margin-left: auto;
+      margin-right: 0.6rem;
+    }
+
     .nav-group {
-      /* Take the full row so the expanded menu has somewhere to go. */
       width: 100%;
     }
     .nav-menu {
       position: static;
       min-width: 0;
-      margin-top: 0.5rem;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      padding: 0 0 0 0.75rem;
+      border: 0;
+      border-left: 2px solid var(--color-border);
+      border-radius: 0;
       box-shadow: none;
       transform: none;
       /* Collapse the box entirely when closed, so it takes no vertical space. */
       display: none;
     }
+
+    /* NO-JAVASCRIPT: the About sub-links are shown expanded.
+       Without this they would be unreachable on a phone with JS disabled, since
+       the panel opens on :hover or :has(:focus-visible) and NEITHER matches a
+       tap. That gap exists in the current shipped nav; this closes it. */
+    .site-header:not([data-enhanced]) .nav-menu {
+      display: block;
+    }
+    .site-header:not([data-enhanced]) .nav-caret {
+      display: none;
+    }
+
     .nav-group[data-open='true'] > .nav-menu,
     .nav-group:has(:focus-visible) > .nav-menu {
       display: block;
@@ -391,6 +591,43 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     }
     .nav-group::after {
       display: none;
+    }
+  }
+
+  /* On the narrowest phones the brand, the call button and the menu button have
+     to share one row. The BRAND gives up the space, not the phone number: the
+     call action is the conversion and it keeps its full label. */
+  @media (max-width: 480px) {
+    .nav {
+      padding: 0.6rem 1rem;
+      gap: 0.5rem;
+    }
+    .brand {
+      font-size: 1.2rem;
+    }
+    .cta {
+      padding: 0.5rem 0.7rem;
+      font-size: 0.85rem;
+      margin-right: 0.4rem;
+    }
+  }
+
+  /* 320px, the narrowest phone still in real use. Without this tier the three
+     header controls no longer fit on one line and the bar wraps to two rows,
+     which is exactly the disease this change is curing. The call button keeps
+     its full label; the brand and the padding give up the millimetres. */
+  @media (max-width: 360px) {
+    .nav {
+      padding: 0.6rem 0.75rem;
+      gap: 0.4rem;
+    }
+    .brand {
+      font-size: 1.05rem;
+    }
+    .cta {
+      padding: 0.45rem 0.55rem;
+      font-size: 0.78rem;
+      margin-right: 0.25rem;
     }
   }
 </style>
