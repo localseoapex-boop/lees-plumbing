@@ -158,13 +158,51 @@ export interface Review {
 export const REVIEWS = {
   heading: 'What Homeowners Say',
   intro: 'Reviews from customers across Cache Valley.',
-  isPlaceholder: true,
+  /**
+   * LIVE. These are three real, verified Google reviews, reproduced verbatim.
+   *
+   * The excerpts are stored WITHOUT their enclosing curly quotation marks: the
+   * words are exactly as the customers wrote them, and <blockquote> is what marks
+   * the text as a quotation, so baking delimiters into the data would double up
+   * if the design ever adds a quote glyph.
+   *
+   * No dates. The source gave relative ones ("9 months ago"), and a hardcoded
+   * relative date is a string that silently rots: it is wrong within weeks and a
+   * lie within a year. No locations either, because none were supplied and
+   * inventing them would be fabricating detail about real people.
+   */
+  isPlaceholder: false,
   /** Shown in place of the cards while isPlaceholder is true. */
   emptyMessage: 'Customer reviews will be added here soon.',
-  ctaLabel: 'Read More Reviews',
-  /** Point this at a real Google review profile when one is available. */
-  ctaHref: null as string | null,
-  items: [] as Review[],
+  ctaLabel: 'Read All Google Reviews',
+  /** External. ReviewsSection detects the http(s) scheme and opens it safely. */
+  ctaHref:
+    "https://www.google.com/maps/place/Lee's+Plumbing+Inc/@41.7996163,-131.3506464,5z/data=!3m1!5s0x87547d4186bc26a3:0xd6760fbb89206d25!4m12!1m2!2m1!1slees+plumbing!3m8!1s0x87547d41a8637ce5:0xe1a12c574134d150!8m2!3d41.7996163!4d-111.8389277!9m1!1b1!15sCg1sZWVzIHBsdW1iaW5nWg8iDWxlZXMgcGx1bWJpbmeSAQdwbHVtYmVymgEkQ2hkRFNVaE5NRzluUzBWSlEwRm5TVU4yTUhCVGRUSlJSUkFC4AEA-gEECAAQIQ!16s%2Fg%2F1tjrqg8q?entry=ttu&g_ep=EgoyMDI2MDcxMi4wIKXMDSoASAFQAw%3D%3D" as
+      | string
+      | null,
+  items: [
+    {
+      quote:
+        'They not only had someone out to our home within 24 hours, with parts in hand and fixed the issue. The cost of the repair was much lower than the other company estimated. I could not believe how fast, efficient, honest, and helpful they were.',
+      author: 'R Roberts',
+      rating: 5,
+      source: 'Google',
+    },
+    {
+      quote:
+        "Lee's came and fixed the problem caused by another plumbing company. The work was done in a timely manner and the cost was reasonable. They have a loyal customer for future jobs.",
+      author: 'Mary Norton',
+      rating: 5,
+      source: 'Google',
+    },
+    {
+      quote:
+        'Lee arrived exactly when promised, solved the mystery with his advanced equipment, and fixed the problem permanently. He went beyond what we needed and left us very satisfied. Cleaned up all the mess.',
+      author: 'Ned Miller',
+      rating: 5,
+      source: 'Google',
+    },
+  ] as Review[],
 } as const;
 
 export const ABOUT = {

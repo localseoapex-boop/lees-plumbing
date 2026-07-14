@@ -52,6 +52,18 @@ const MAX_STARS = 5;
 // One switch decides the whole section: real reviews, or the awaiting-reviews
 // line. There is no state in which invented review content can render.
 const hasReviews = !isPlaceholder && items.length > 0;
+
+/**
+ * An off-site CTA is detected from the href itself rather than from a config
+ * flag. A flag is one more thing to remember and one more thing to get out of
+ * sync with the URL beside it; the scheme cannot lie. Every future Local SEO
+ * Apex business therefore gets safe external links with no configuration.
+ *
+ * rel="noopener" is the one that matters: without it the opened page can reach
+ * back through window.opener and navigate this one. noreferrer follows the
+ * convention already used for the map's directions link.
+ */
+const isExternalCta = Boolean(ctaHref) && /^https?:\/\//i.test(ctaHref ?? '');
 ---
 
 <section class="reviews" aria-labelledby={headingId}>
@@ -105,8 +117,17 @@ const hasReviews = !isPlaceholder && items.length > 0;
     {
       hasReviews && ctaLabel && ctaHref && (
         <div class="section-cta">
-          <a class="btn-outline" href={ctaHref}>
+          <a
+            class="btn-outline"
+            href={ctaHref}
+            target={isExternalCta ? '_blank' : undefined}
+            rel={isExternalCta ? 'noopener noreferrer' : undefined}
+          >
             {ctaLabel}
+            {/* A new tab opening unannounced is a surprise to a screen reader
+                user. This joins the accessible name without touching the
+                visible label. */}
+            {isExternalCta && <span class="sr-only"> (opens in a new tab)</span>}
           </a>
         </div>
       )
@@ -218,6 +239,24 @@ const hasReviews = !isPlaceholder && items.length > 0;
   .btn-outline:hover {
     background: var(--color-red);
     color: var(--color-white);
+  }
+  .btn-outline:focus-visible {
+    outline: 3px solid var(--color-dark);
+    outline-offset: 3px;
+  }
+
+  /* Carries the "opens in a new tab" hint into the accessible name while keeping
+     the visible label exactly as authored. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (max-width: 900px) {
