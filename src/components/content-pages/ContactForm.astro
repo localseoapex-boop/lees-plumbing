@@ -1,87 +1,117 @@
 ---
 /**
- * ContactForm.astro — the contact form UI. NOT WIRED TO ANY DELIVERY ENDPOINT.
+ * ContactForm.astro — the contact form. LIVE, submitting to an Activepieces webhook.
  *
  * ============================================================================
- * READ THIS BEFORE ENABLING THE FORM.
+ * WHAT THE BROWSER GUARANTEES, AND WHAT IT DOES NOT
  * ============================================================================
- * This project is a STATIC Astro build with no server adapter, no API route, and
- * no form provider. There is nowhere for a submission to go. So the form is
- * rendered COMPLETE and ACCESSIBLE, but its <fieldset> is `disabled` and it has
- * no `action` and no submit handler.
+ * Success is shown ONLY after the webhook answers with a 2xx. Not when fetch()
+ * is called, not when it resolves, and never optimistically. A network failure,
+ * a CORS rejection, a timeout, or any non-2xx status is an error, and the error
+ * state keeps every value the visitor typed and tells them to call instead. A
+ * customer with a burst pipe must never be left believing they reached a plumber
+ * when they did not. That principle survived the form being switched on.
  *
- * That is a deliberate choice, and it is the honest one. The alternatives were
- * all worse:
- *   - an enabled button with no action would POST to the current page, look like
- *     it worked, and drop the message on the floor.
- *   - a scripted "thanks, we got it" message would be a lie.
- *   - a mailto: action fails silently for anyone without a configured mail
- *     client, which is most people on most phones.
- * A customer with a burst pipe must never be left believing they have contacted
- * a plumber when they have not. Until there is a real endpoint, the phone number
- * and the email address above this form ARE the contact path, and they are shown
- * first and prominently for exactly that reason.
- *
- * TO ACTIVATE, once a delivery endpoint exists:
- *   1. remove the `disabled` attribute from the <fieldset> below,
- *   2. set `action` (and `method="POST"`) on the <form>,
- *   3. delete the .form-notice block,
- *   4. add a real success/error state driven by the endpoint's response.
- * The field names below are already the ones the endpoint should expect.
+ * REQUIRED ON THE ACTIVEPIECES SIDE. The webhook URL ships inside the JavaScript
+ * that every visitor downloads, because a browser-submitted form cannot hide the
+ * endpoint it posts to. Anyone can therefore POST anything to it, bypassing every
+ * check in this file. The measures below (honeypot, minimum completion time,
+ * maxlength, disabled-while-sending) are friction against casual bots. They are
+ * NOT security, and nothing here rate-limits anything: a browser cannot
+ * meaningfully rate-limit an attacker who is not using the browser. So the
+ * Activepieces flow MUST independently:
+ *   - reject any submission whose `honeypot` field is non-empty
+ *   - validate the required fields itself rather than trusting this form
+ *   - normalize and trim input again on arrival
+ *   - rate-limit and deduplicate submissions where it can
+ *   - ESCAPE user content before inserting it into an email, a sheet, a CRM, or
+ *     anywhere else, since `message` is attacker-controlled text
  * ============================================================================
  *
- * Accessibility: every control has a real <label> bound by `for`/`id`, required
- * fields are marked with both the `required` attribute and a visible asterisk
- * explained in the legend, and the disabled state is announced because a
- * disabled fieldset propagates to its controls.
+ * Accessibility: every control has a real <label> bound by for/id, all six
+ * fields are `required`, native browser validation is left switched on, and the
+ * status region is focused after both success and failure so a screen reader
+ * and a keyboard user are told the outcome. Status is never communicated by
+ * color alone: the text says what happened.
  */
 interface Props {
   /** Option lists come from the page, which reads them from central config. */
   serviceOptions: readonly string[];
   cityOptions: readonly string[];
+  /** Business contact details, passed in so this component holds no NAP data. */
+  phone: string;
+  phoneDisplay: string;
+  email: string;
 }
 
-const { serviceOptions, cityOptions } = Astro.props;
+const { serviceOptions, cityOptions, phone, phoneDisplay, email } = Astro.props;
 ---
 
-<form class="contact-form" novalidate aria-describedby="form-notice">
-  <p class="form-notice" id="form-notice" role="note">
-    <strong>Online form submission is not available yet.</strong>
-    This form is not connected to a delivery system, so it cannot send a message. To
-    reach us today, please call or email using the details above. We would rather tell
-    you this plainly than take a message we would never receive.
-  </p>
+<form class="contact-form" id="contact-form" novalidate={false}>
+  <noscript>
+    <p class="form-noscript">
+      Online form submission requires JavaScript. Please call
+      <a href={`tel:${phone}`}>{phoneDisplay}</a> or email
+      <a href={`mailto:${email}`}>{email}</a>.
+    </p>
+  </noscript>
 
-  <fieldset disabled>
+  <fieldset id="contact-fieldset">
     <legend class="sr-only">Contact Lee's Plumbing</legend>
 
     <div class="field-grid">
       <div class="field">
         <label for="cf-name">Name <span class="req" aria-hidden="true">*</span></label>
-        <input type="text" id="cf-name" name="name" autocomplete="name" required />
+        <input
+          type="text"
+          id="cf-name"
+          name="name"
+          autocomplete="name"
+          minlength="2"
+          maxlength="100"
+          required
+        />
       </div>
 
       <div class="field">
         <label for="cf-email">Email <span class="req" aria-hidden="true">*</span></label>
-        <input type="email" id="cf-email" name="email" autocomplete="email" required />
+        <input
+          type="email"
+          id="cf-email"
+          name="email"
+          autocomplete="email"
+          maxlength="254"
+          required
+        />
       </div>
 
       <div class="field">
+        {/* No strict pattern on purpose. Homeowners type spaces, parentheses,
+            dashes, and extensions, and a tight regex would reject real numbers
+            from real customers. Length bounds only. */}
         <label for="cf-phone">Phone <span class="req" aria-hidden="true">*</span></label>
-        <input type="tel" id="cf-phone" name="phone" autocomplete="tel" required />
+        <input
+          type="tel"
+          id="cf-phone"
+          name="phone"
+          autocomplete="tel"
+          minlength="7"
+          maxlength="30"
+          required
+        />
       </div>
 
       <div class="field">
-        <label for="cf-service">Service Needed</label>
-        <select id="cf-service" name="service">
+        <label for="cf-service">Service Needed <span class="req" aria-hidden="true">*</span></label>
+        <select id="cf-service" name="service" required>
           <option value="">Select a service</option>
           {serviceOptions.map((option) => <option value={option}>{option}</option>)}
         </select>
       </div>
 
       <div class="field">
-        <label for="cf-city">City</label>
-        <select id="cf-city" name="city">
+        <label for="cf-city">City <span class="req" aria-hidden="true">*</span></label>
+        <select id="cf-city" name="city" required>
           <option value="">Select your city</option>
           {cityOptions.map((option) => <option value={option}>{option}</option>)}
         </select>
@@ -89,13 +119,183 @@ const { serviceOptions, cityOptions } = Astro.props;
     </div>
 
     <div class="field field-full">
-      <label for="cf-message">Message</label>
-      <textarea id="cf-message" name="message" rows="6"></textarea>
+      <label for="cf-message">Message <span class="req" aria-hidden="true">*</span></label>
+      <textarea id="cf-message" name="message" rows="6" minlength="10" maxlength="2000" required
+      ></textarea>
     </div>
 
-    <button type="submit" class="form-submit">Send Message</button>
+    {/*
+      Honeypot. Positioned off-screen rather than display:none, because a
+      display:none field is the first thing a competent bot skips, and because
+      hiding it that way can confuse password managers and autofill. It is taken
+      out of the tab order, hidden from assistive technology, and told not to
+      autofill, so no human can reach it by mouse, keyboard, or screen reader. A
+      real submission therefore always leaves it empty.
+    */}
+    <div class="hp-wrap" aria-hidden="true">
+      <label for="cf-website">Website (leave this field empty)</label>
+      <input type="text" id="cf-website" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <button type="submit" class="form-submit" id="cf-submit">Send Request</button>
   </fieldset>
+
+  {/*
+    One status region for both outcomes. It is focused after success and after
+    failure so the result is announced and a keyboard user lands on it. `role` is
+    swapped between status (polite) and alert (assertive) by the script, because
+    a delivery failure deserves to interrupt and a success does not.
+  */}
+  <div
+    class="form-status"
+    id="cf-status"
+    role="status"
+    aria-live="polite"
+    tabindex="-1"
+    hidden
+  >
+  </div>
 </form>
+
+<script>
+  import { CONTACT_FORM } from '../../config/contact';
+
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const status = document.getElementById('cf-status');
+  const submit = document.getElementById('cf-submit') as HTMLButtonElement | null;
+
+  if (form && status && submit) {
+    // When the form became available to fill in. Compared against submit time to
+    // catch the instant-fill bots.
+    const loadedAt = Date.now();
+    let sending = false;
+
+    const IDLE_LABEL = 'Send Request';
+    const SENDING_LABEL = 'Sending...';
+
+    // Read from the phone link the server already rendered into the page, rather
+    // than hardcoding the number a second time in a script. One source of truth.
+    const phoneLink = document.querySelector<HTMLAnchorElement>('.detail-primary a[href^="tel:"]');
+    const PHONE_HREF = phoneLink?.getAttribute('href') ?? 'tel:+1-435-563-0611';
+    const PHONE_TEXT = phoneLink?.textContent?.trim() ?? '435-563-0611';
+
+    const SUCCESS_HTML = `<strong>Thank you. Your request has been sent to Lee's Plumbing.</strong>
+      Our team will follow up using the contact information you provided.
+      <span class="status-phone">For urgent help, call <a href="${PHONE_HREF}">${PHONE_TEXT}</a>.</span>`;
+
+    const ERROR_HTML = `<strong>We could not send your request.</strong>
+      Please try again or call Lee's Plumbing at <a href="${PHONE_HREF}">${PHONE_TEXT}</a>.`;
+
+    /** Render a status message. `tone` drives text, icon, AND role: never color alone. */
+    const showStatus = (tone: 'success' | 'error' | 'notice', html: string) => {
+      status.hidden = false;
+      status.className = `form-status ${tone}`;
+      // An error interrupts; a success or a nudge does not.
+      status.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      status.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
+      status.innerHTML = html;
+      status.focus();
+    };
+
+    const setSending = (isSending: boolean) => {
+      sending = isSending;
+      submit.disabled = isSending;
+      submit.textContent = isSending ? SENDING_LABEL : IDLE_LABEL;
+      form.setAttribute('aria-busy', String(isSending));
+    };
+
+    /** Trim, and drop anything that is empty or whitespace-only. */
+    const clean = (value: FormDataEntryValue | null): string =>
+      typeof value === 'string' ? value.trim() : '';
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Guard 1: a request is already in flight. This is what stops a double
+      // submission from an impatient double-click or a repeated Enter press.
+      if (sending) return;
+
+      // Guard 2: let the browser's own validation run and report first. Keeping
+      // native validation means the messages are localized and familiar.
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const data = new FormData(form);
+
+      // Guard 3: honeypot. A human never sees this field, so anything in it means
+      // a bot filled the form in. Say nothing about why, and do not tell the bot
+      // it was caught: just show the ordinary success state and send nothing.
+      const honeypot = clean(data.get('website'));
+      if (honeypot !== '') {
+        form.reset();
+        showStatus('success', SUCCESS_HTML);
+        return;
+      }
+
+      // Guard 4: filled in impossibly fast. Neutral wording, and it very
+      // deliberately does NOT claim the message was delivered.
+      if (Date.now() - loadedAt < CONTACT_FORM.minimumCompletionTimeMs) {
+        showStatus(
+          'notice',
+          'Please take a moment to review your details, then send your request again.',
+        );
+        return;
+      }
+
+      const payload = {
+        name: clean(data.get('name')),
+        email: clean(data.get('email')),
+        phone: clean(data.get('phone')),
+        service: clean(data.get('service')),
+        city: clean(data.get('city')),
+        message: clean(data.get('message')),
+        source: CONTACT_FORM.source,
+        pageUrl: window.location.href,
+        submittedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        // Always empty by the time we get here (guard 3 returns otherwise). Sent
+        // anyway so the Activepieces flow can assert on it independently rather
+        // than trusting this browser.
+        honeypot,
+      };
+
+      setSending(true);
+
+      // A hung request must not leave the button stuck on "Sending..." forever.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), CONTACT_FORM.requestTimeoutMs);
+
+      try {
+        const response = await fetch(CONTACT_FORM.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+
+        // The ONLY thing that earns a success state. The body is never parsed:
+        // the webhook may answer with JSON, plain text, or nothing at all, and
+        // an unconditional response.json() would throw on an empty body and turn
+        // a delivered message into a reported failure.
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        form.reset();
+        showStatus('success', SUCCESS_HTML);
+      } catch {
+        // Network failure, CORS rejection, timeout, or non-2xx all land here.
+        // The visitor is never shown the underlying error: it would tell them
+        // nothing useful and leak implementation detail. Their typed values are
+        // left untouched so they can retry without typing it all again.
+        showStatus('error', ERROR_HTML);
+      } finally {
+        clearTimeout(timeout);
+        setSending(false);
+      }
+    });
+  }
+</script>
 
 <style>
   .sr-only {
@@ -118,9 +318,7 @@ const { serviceOptions, cityOptions } = Astro.props;
     box-shadow: var(--shadow-sm);
   }
 
-  /* The honest notice. Styled as a real piece of the design, not a warning
-     sticker, but impossible to miss. */
-  .form-notice {
+  .form-noscript {
     margin: 0 0 1.75rem;
     padding: 1rem 1.15rem;
     border-left: 4px solid var(--color-red);
@@ -129,11 +327,6 @@ const { serviceOptions, cityOptions } = Astro.props;
     font-size: 0.95rem;
     line-height: 1.65;
     color: var(--color-muted);
-  }
-  .form-notice strong {
-    display: block;
-    margin-bottom: 0.2rem;
-    color: var(--color-dark);
   }
 
   fieldset {
@@ -190,14 +383,17 @@ const { serviceOptions, cityOptions } = Astro.props;
     border-color: var(--color-red);
     box-shadow: 0 0 0 3px rgba(210, 39, 39, 0.15);
   }
-  /* The disabled state has to LOOK disabled, or it is just another way of
-     misleading someone. */
-  fieldset:disabled input,
-  fieldset:disabled select,
-  fieldset:disabled textarea {
-    background: var(--color-surface-alt);
-    color: var(--color-muted);
-    cursor: not-allowed;
+
+  /* The honeypot. Off-screen, not display:none. Zero size at the very top-left
+     of the layer so it cannot be scrolled to or tabbed into, and cannot widen
+     the page. */
+  .hp-wrap {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 
   .form-submit {
@@ -213,12 +409,58 @@ const { serviceOptions, cityOptions } = Astro.props;
     cursor: pointer;
     transition: background-color 0.18s ease;
   }
-  .form-submit:hover {
+  .form-submit:hover:not(:disabled) {
     background: var(--accent-dark);
   }
-  fieldset:disabled .form-submit {
+  .form-submit:focus-visible {
+    outline: 3px solid var(--color-dark);
+    outline-offset: 2px;
+  }
+  /* The sending state has to LOOK unavailable, not just be unavailable. */
+  .form-submit:disabled {
     background: #b9bcbc;
-    cursor: not-allowed;
+    cursor: progress;
+  }
+
+  /* Status. Text carries the meaning; the color and the rule only reinforce it. */
+  .form-status {
+    margin-top: 1.5rem;
+    padding: 1rem 1.15rem;
+    border-left: 4px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-alt);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+  }
+  .form-status:focus-visible {
+    outline: 3px solid var(--color-dark);
+    outline-offset: 2px;
+  }
+  .form-status strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--color-dark);
+  }
+  .form-status.success {
+    border-left-color: #1f7a44;
+    background: #f1f8f3;
+  }
+  .form-status.error {
+    border-left-color: var(--color-red);
+    background: #fdf2f2;
+  }
+  .form-status.notice {
+    border-left-color: #b8860b;
+    background: #fdf8ec;
+  }
+  .status-phone {
+    display: block;
+    margin-top: 0.5rem;
+  }
+  .form-status a {
+    color: var(--color-red);
+    font-weight: 600;
   }
 
   @media (max-width: 640px) {

@@ -7,10 +7,10 @@
  * ContactDetails and ContentMap, so this page cannot drift from the footer or
  * the LocalBusiness schema.
  *
- * FORM STATUS: the form is UI ONLY. No delivery endpoint exists in this project,
- * so the form's fieldset is disabled and it carries a visible notice saying so.
- * Nothing on this page claims a message was sent. See ContactForm.astro for the
- * full reasoning and the steps to activate it.
+ * FORM STATUS: LIVE. The form submits JSON to the Activepieces webhook configured
+ * in src/config/contact.ts, and shows success ONLY after a 2xx response. See
+ * ContactForm.astro for the delivery logic and for what the Activepieces flow
+ * must validate on its side.
  */
 import ContentLayout from '../layouts/ContentLayout.astro';
 import ContentCTA from '../components/content-pages/ContentCTA.astro';
@@ -57,6 +57,9 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
         <ContactForm
           serviceOptions={CONTACT_PAGE.form.serviceOptions}
           cityOptions={CONTACT_PAGE.form.cityOptions}
+          phone={BUSINESS.phone}
+          phoneDisplay={BUSINESS.phoneDisplay}
+          email={primaryOffice.email}
         />
       </div>
     </div>
