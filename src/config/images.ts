@@ -143,6 +143,22 @@ export const HOMEPAGE_IMAGES = {
     height: 1600,
     provenance: 'ai',
   } satisfies ImageAsset as ImageAsset | null,
+
+  /**
+   * REAL. The actual fleet, in the "Why Homeowners Choose Lee's Plumbing"
+   * section, where a photograph of the real vehicles is the evidence for what
+   * the copy asserts. This is the one place on the homepage where the image is a
+   * CLAIM rather than an illustration, which is exactly why it must be real and
+   * why its alt text is allowed to name the business.
+   *
+   * It is only 653px wide, which is why the section is an asymmetric split
+   * rather than a full-bleed band: in a ~42% column it renders BELOW its native
+   * width and stays sharp. Full bleed would have upscaled it 2.2x at 1440 and
+   * 4.4x on a retina display. The layout was chosen because of the asset's
+   * limits, not in spite of them. ContentImage caps it at its intrinsic width
+   * regardless, so it can never be enlarged even if the column grows.
+   */
+  trustTrucks: TRUCKS,
 } as const;
 
 export const ABOUT_IMAGES = {

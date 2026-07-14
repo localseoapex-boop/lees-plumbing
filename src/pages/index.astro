@@ -130,7 +130,14 @@ const description =
     emphasis="primary"
   />
 
-  <TrustSection id="why-us" heading={WHY_US.heading} intro={WHY_US.intro} cards={WHY_US.cards} />
+  {/* The real fleet photograph is the evidence for what this section claims. */}
+  <TrustSection
+    id="why-us"
+    heading={WHY_US.heading}
+    intro={WHY_US.intro}
+    cards={WHY_US.cards}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
 
   <ServiceSection
     id="hvac"

@@ -1,39 +1,72 @@
 ---
 /**
- * TrustSection.astro — four-card trust block ("Why Homeowners Choose ...").
+ * TrustSection.astro — "Why Homeowners Choose ..." — trust points + real proof.
  *
  * Sits BETWEEN the two service sections. It is not the About section: it is a
  * short confidence beat and a visual break before the secondary trade is
- * introduced. Kept intentionally short so the page does not sag in the middle.
+ * introduced.
+ *
+ * WHY THERE IS A PHOTOGRAPH HERE NOW.
+ * The four points are factual and good, but four small cards on a flat dark slab
+ * read as filler, and the section that asserts "choose us" was the one section
+ * offering no evidence for it. The company vehicles are the strongest real,
+ * verifiable brand asset available: clean, unmistakably local, wordmark and
+ * phone number visible. On a section titled "Why Homeowners Choose Lee's
+ * Plumbing", a photograph of the actual fleet IS the proof the copy is making.
+ *
+ * The split is asymmetric BECAUSE of the asset. The photo is 653px wide, so a
+ * full-bleed band would have upscaled it 2.2x. In a ~42% column it renders below
+ * its native width and stays sharp. ContentImage caps it at its intrinsic width
+ * in any case, so it can never be enlarged.
+ *
+ * `image` is optional: with no photo the section falls back to a plain 2x2 grid
+ * of the trust points, which is what any future Local SEO Apex business gets
+ * before its photography exists.
  */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
 interface Props {
   id: string;
   heading: string;
   intro?: string;
   cards: readonly { title: string; body: string }[];
+  /** Real photography only. This slot is evidence, not decoration. */
+  image?: ImageAsset | null;
 }
 
-const { id, heading, intro, cards } = Astro.props;
+const { id, heading, intro, cards, image = null } = Astro.props;
 const headingId = `${id}-heading`;
 ---
 
 <section class="trust-section" aria-labelledby={headingId}>
   <div class="container">
     <header class="section-head">
+      <span class="head-rule" aria-hidden="true"></span>
       <h2 id={headingId}>{heading}</h2>
       {intro && <p class="section-intro">{intro}</p>}
     </header>
 
-    <ul class="trust-grid">
+    <div class:list={['trust-inner', { split: image !== null }]}>
+      <ul class="trust-grid">
+        {
+          cards.map((card) => (
+            <li class="trust-card">
+              <h3>{card.title}</h3>
+              <p>{card.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
       {
-        cards.map((card) => (
-          <li class="trust-card">
-            <h3>{card.title}</h3>
-            <p>{card.body}</p>
-          </li>
-        ))
+        image && (
+          <div class="trust-media">
+            <ContentImage asset={image} tone="dark" ratio="653 / 367" fit="cover" />
+          </div>
+        )
       }
-    </ul>
+    </div>
   </div>
 </section>
 
@@ -41,11 +74,21 @@ const headingId = `${id}-heading`;
   .trust-section {
     background: var(--color-dark);
     color: var(--color-white);
-    padding: clamp(3rem, 5.5vw, 4.5rem) 0;
+    padding: clamp(3.5rem, 6vw, 5rem) 0;
   }
+
   .section-head {
     max-width: 60ch;
-    margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  /* The same red accent the primary service band uses, so the two rhyme. */
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
   }
   h2 {
     color: var(--color-white);
@@ -59,39 +102,79 @@ const headingId = `${id}-heading`;
     font-size: 1.05rem;
     line-height: 1.7;
   }
+
+  /* The asymmetric split. Trust points carry the weight; the photograph is the
+     evidence beside them. */
+  .trust-inner.split {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: center;
+  }
+
   .trust-grid {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.25rem;
   }
+  /* Without a photograph the points span the full width, four across. */
+  .trust-inner:not(.split) .trust-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .trust-card {
-    padding: 1.5rem;
+    padding: 1.4rem 1.4rem 1.4rem 1.25rem;
     background: #0d1111;
     border: 1px solid #232828;
+    /* The red left rule ties the cards to the section's accent language and
+       gives four otherwise-flat boxes an anchor. */
+    border-left: 3px solid var(--color-red);
     border-radius: var(--radius-lg);
   }
+  /* Montserrat, matching the service cards. One component-title treatment across
+     the whole homepage. */
   .trust-card h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
     color: var(--color-white);
-    font-size: 1.4rem;
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.5rem;
   }
   .trust-card p {
     margin: 0;
     color: #b3b7b7;
-    font-size: 0.95rem;
+    font-size: 0.925rem;
     line-height: 1.65;
   }
 
+  .trust-media {
+    /* Never wider than the photograph itself. */
+    max-width: 653px;
+    margin-left: auto;
+    width: 100%;
+  }
+
   @media (max-width: 1000px) {
-    .trust-grid {
+    /* The photograph moves below the points rather than being squeezed. */
+    .trust-inner.split {
+      grid-template-columns: 1fr;
+    }
+    .trust-inner:not(.split) .trust-grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .trust-media {
+      margin-left: 0;
+      max-width: 653px;
     }
   }
   @media (max-width: 560px) {
-    .trust-grid {
+    .trust-grid,
+    .trust-inner:not(.split) .trust-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -3,13 +3,22 @@
  * ServiceSection.astro — a featured-services block for ONE service category.
  *
  * Used twice on the homepage (plumbing, then heating and cooling) and reusable
- * for any trade. The `emphasis` prop is what lets one call render heavier than
- * the other WITHOUT duplicating the component:
+ * for any trade.
  *
- *   emphasis="primary"   → larger heading, 3-up card grid, tinted surface,
- *                          solid CTA button. Use for the company's main trade.
- *   emphasis="secondary" → smaller heading, denser grid, plain surface,
- *                          outlined CTA.
+ * ONE CARD PRIMITIVE, TWO SECTIONS.
+ * The card is identical in both calls: same type, padding, border, internal
+ * rhythm, action row, focus ring and hover. Emphasis lives entirely at the
+ * SECTION level, which is where it belongs. Previously the card itself changed
+ * between the two, and the grids differed (3-up vs 4-up), so the same component
+ * rendered cards 91px apart in width at 1440 and the two sections read as two
+ * different templates. Now only the surface, the heading scale, the column count
+ * and the CTA fill differ.
+ *
+ *   emphasis="primary"   → deeper surface, red accent rule, more vertical air,
+ *                          3 columns, solid CTA. The company's main trade.
+ *   emphasis="secondary" → white surface, 2 columns, outline CTA. Quieter, not
+ *                          lesser: it is the same card, the same type, the same
+ *                          everything except weight.
  *
  * Cards are passed in already resolved from the service data, so this component
  * never reaches into the service architecture itself and cannot link to a page
@@ -38,6 +47,9 @@ const headingId = `${id}-heading`;
 <section class:list={['service-section', emphasis]} aria-labelledby={headingId}>
   <div class="container">
     <header class="section-head">
+      {/* The accent rule on the primary trade, echoing the hero's eyebrow. It is
+          decoration, so it is hidden from assistive technology. */}
+      {emphasis === 'primary' && <span class="head-rule" aria-hidden="true" />}
       <h2 id={headingId}>{heading}</h2>
       <p class="section-intro">{intro}</p>
     </header>
@@ -49,8 +61,18 @@ const headingId = `${id}-heading`;
             <a class="service-card" href={card.href}>
               <h3>{card.name}</h3>
               <p>{card.blurb}</p>
-              <span class="card-link" aria-hidden="true">
+              <span class="card-action" aria-hidden="true">
                 Learn more
+                <svg viewBox="0 0 16 16" width="14" height="14" focusable="false">
+                  <path
+                    d="M2 8h11M9 4l4 4-4 4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </span>
             </a>
           </li>
@@ -70,9 +92,18 @@ const headingId = `${id}-heading`;
   .service-section {
     padding: var(--section-y) 0;
   }
+  /* PRIMARY SURFACE. The brand black at 4.5% over white, not a new colour. The
+     old --color-surface-alt (#f7f8f8) was so close to white that the primary
+     band read as no band at all, so the emphasis was doing nothing. This is
+     still restrained, but it is actually visible. The rules top and bottom are
+     what turn the Plumbing / Trust / HVAC sequence into a rhythm rather than
+     three hard cuts. */
   .service-section.primary {
-    background: var(--color-surface-alt);
+    background-color: rgba(5, 7, 7, 0.045);
+    border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
+    /* The primary trade gets more air. Space is the cheapest premium signal. */
+    padding: calc(var(--section-y) * 1.15) 0;
   }
   .service-section.secondary {
     background: var(--color-white);
@@ -82,11 +113,20 @@ const headingId = `${id}-heading`;
     max-width: 62ch;
     margin-bottom: clamp(2rem, 4vw, 3rem);
   }
+  /* The red accent on the primary section, echoing the hero eyebrow. */
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
+  }
   h2 {
     margin: 0 0 1rem;
     text-wrap: balance;
   }
-  /* The primary trade simply gets more visual weight than the secondary one. */
+  /* Cormorant stays for display type. Only the SCALE differs between the two. */
   .primary h2 {
     font-size: clamp(2.4rem, 4.2vw, 3.4rem);
   }
@@ -100,25 +140,33 @@ const headingId = `${id}-heading`;
     color: var(--color-muted);
   }
 
+  /* ONE GRID RULE. Only the desktop column count differs: the primary trade
+     gets 3 across, the secondary 2. Both fall to 2 then 1 on the same ladder,
+     so neither can produce an orphan row: 6 divides by 3 and 2, and 4 divides
+     by 2. */
   .card-grid {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
   .primary .card-grid {
     grid-template-columns: repeat(3, 1fr);
   }
   .secondary .card-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
+  /* ---------------------------------------------------------------------------
+     THE CARD PRIMITIVE. Identical in both sections. Nothing below this comment
+     is allowed to vary by emphasis.
+     --------------------------------------------------------------------------- */
   .service-card {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 1.6rem;
+    padding: 1.75rem;
     background: var(--color-white);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -127,35 +175,73 @@ const headingId = `${id}-heading`;
     color: inherit;
     transition:
       border-color 0.18s ease,
-      box-shadow 0.18s ease,
-      transform 0.18s ease;
+      box-shadow 0.18s ease;
   }
+  /* Restrained. The card no longer lifts on hover: a whole card jumping under
+     the cursor is the template tell. The border, the shadow and the arrow carry
+     the affordance instead. */
   .service-card:hover {
     border-color: var(--color-red);
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
   }
   .service-card:focus-visible {
     outline: 3px solid var(--color-red);
     outline-offset: 3px;
   }
+
+  /* Montserrat, not Cormorant. Cormorant is a high-contrast display serif and at
+     card-title size its thin strokes go delicate, which is the opposite of what
+     a plumbing card should feel like. The families are unchanged: Cormorant
+     keeps the display sizes, Montserrat takes component-level titles where
+     strength and readability matter more than flourish. */
   .service-card h3 {
-    margin: 0 0 0.6rem;
-    font-size: 1.5rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.15rem;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    margin: 0 0 0.65rem;
+    color: var(--color-dark);
   }
   .service-card p {
-    margin: 0 0 1.25rem;
+    margin: 0 0 1.5rem;
     color: var(--color-muted);
     font-size: 0.95rem;
     line-height: 1.65;
     flex: 1;
   }
-  .card-link {
-    font-size: 0.85rem;
+
+  /* The action row sits in a defined zone above a hairline, instead of floating
+     at the bottom of the card. */
+  .card-action {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-red);
+  }
+  .card-action svg {
+    transition: transform 0.18s ease;
+  }
+  .service-card:hover .card-action svg {
+    transform: translateX(3px);
+  }
+
+  /* The hover motion is decorative and must not be forced on anyone who has
+     asked the OS for less of it. */
+  @media (prefers-reduced-motion: reduce) {
+    .service-card,
+    .card-action svg {
+      transition: none;
+    }
+    .service-card:hover .card-action svg {
+      transform: none;
+    }
   }
 
   .section-cta {
@@ -189,6 +275,7 @@ const headingId = `${id}-heading`;
     color: var(--color-white);
   }
 
+  /* The same ladder for both sections: 3-or-2 → 2 → 1. */
   @media (max-width: 1000px) {
     .primary .card-grid,
     .secondary .card-grid {
