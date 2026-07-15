@@ -209,6 +209,34 @@ export const HOMEPAGE_IMAGES = {
    * regardless, so it can never be enlarged even if the column grows.
    */
   trustTrucks: TRUCKS,
+
+  /**
+   * AI. The About section's editorial split (see AboutSection.astro). A generic
+   * plumber working inside a home is ILLUSTRATION, not evidence: it shows what
+   * the trade looks like and grounds the "local company" story, but it asserts
+   * nothing specific about this business, which is exactly why it may be `ai`.
+   *
+   * The trucks were deliberately NOT reused here. They already carry the Why-Us
+   * section higher up this same page, and they are a fleet/evidence shot ("we
+   * have vehicles"), not a craftsmanship shot ("we do careful work in a home").
+   *
+   * Because it is an illustration, its alt text describes the SCENE and never
+   * names the company or claims the work is ours. It carries NO branding, no
+   * logo, no readable text, and no branded clothing (see the negative prompt in
+   * docs/photography-style-guide.md).
+   *
+   * Portrait 4:5 (1122x1402), rendered in a 4:5 frame on desktop and reflowed to
+   * a centered 16:9 landscape crop below 900px. Dimensions are the file's true
+   * intrinsic size, read off the file itself, so the browser reserves the exact
+   * box and dropping it in causes no layout shift.
+   */
+  about: {
+    src: '/images/homepage/about-plumber-kitchen-valve.jpg',
+    alt: 'A plumber using pliers to tighten a shut-off valve on the water supply line under a modern kitchen sink',
+    width: 1122,
+    height: 1402,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
 } as const;
 
 export const ABOUT_IMAGES = {

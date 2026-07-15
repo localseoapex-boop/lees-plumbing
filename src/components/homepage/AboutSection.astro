@@ -1,11 +1,30 @@
 ---
 /**
- * AboutSection.astro — compact split-layout company introduction.
+ * AboutSection.astro — the company-story section, as an editorial split.
  *
- * Short by design. The `paragraphs` array is the growth point: real company
- * history drops straight in as additional entries without touching this file.
- * `highlights` is for verifiable facts only, never claims.
+ * LAYOUT. On desktop this is an asymmetric split: the story (~55%) sits beside a
+ * single portrait image (~45%) in a 4:5 frame. Below 900px it stacks to one
+ * column and the image reflows to a wider landscape band, ALWAYS LAST in both DOM
+ * and visual order, so the reading sequence is identical for sighted and screen
+ * reader users: heading, paragraph 1, paragraph 2, highlights, CTA, then image.
+ * No CSS `order` is used anywhere, on purpose.
+ *
+ * HIERARCHY. Paragraph 1 is the lede and paragraph 2 is supporting copy. The
+ * distinction is TYPOGRAPHIC ONLY: not a single word of copy changes, and the
+ * `paragraphs` array stays the growth point for real company history.
+ *
+ * HIGHLIGHTS. Verifiable facts only, rendered as a restrained inline credential
+ * row rather than a boxed sidebar card, so they read as part of the story.
+ *
+ * IMAGE. Optional, so the component stays reusable. Pass an `ImageAsset` and it
+ * renders the split; pass `null` and ContentImage renders the branded fallback at
+ * the same reserved ratio (zero layout shift); omit the prop entirely and the
+ * copy runs full width. The image is an ILLUSTRATION of the trade, never evidence
+ * of this company's work, which is why it may be `ai` (see config/images.ts).
  */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
 interface Props {
   id: string;
   heading: string;
@@ -13,17 +32,52 @@ interface Props {
   highlights?: readonly string[];
   ctaLabel?: string;
   ctaHref?: string;
+  /** Optional. Illustration of the trade. `null` renders the branded fallback. */
+  image?: ImageAsset | null;
+  /** Caption for the fallback panel when `image` is null. */
+  imageFallbackCaption?: string;
 }
 
-const { id, heading, paragraphs, highlights = [], ctaLabel, ctaHref } = Astro.props;
+const {
+  id,
+  heading,
+  paragraphs,
+  highlights = [],
+  ctaLabel,
+  ctaHref,
+  image,
+  imageFallbackCaption,
+} = Astro.props;
 const headingId = `${id}-heading`;
+// Presence of the prop opts into the split, so a `null` asset still reserves the
+// media column (and its space) rather than collapsing to full-width copy.
+const hasMedia = image !== undefined;
 ---
 
 <section class="about" aria-labelledby={headingId}>
-  <div class="container about-inner">
+  <div class:list={['container', 'about-inner', { split: hasMedia }]}>
     <div class="about-copy">
-      <h2 id={headingId}>{heading}</h2>
-      {paragraphs.map((text) => <p>{text}</p>)}
+      <header class="about-head">
+        <span class="head-rule" aria-hidden="true"></span>
+        <h2 id={headingId}>{heading}</h2>
+      </header>
+
+      {
+        paragraphs.map((text, i) => (
+          <p class:list={['about-p', { lede: i === 0 }]}>{text}</p>
+        ))
+      }
+
+      {
+        highlights.length > 0 && (
+          <ul class="about-credentials" aria-label="Company facts">
+            {highlights.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        )
+      }
+
       {
         ctaLabel && ctaHref && (
           <a class="btn-outline" href={ctaHref}>
@@ -34,14 +88,16 @@ const headingId = `${id}-heading`;
     </div>
 
     {
-      highlights.length > 0 && (
-        <aside class="about-highlights" aria-label="Company facts">
-          <ul>
-            {highlights.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
-        </aside>
+      hasMedia && (
+        <div class="about-media">
+          <ContentImage
+            asset={image ?? null}
+            fallbackCaption={imageFallbackCaption}
+            tone="light"
+            ratio="4 / 5"
+            fit="cover"
+          />
+        </div>
       )
     }
   </div>
@@ -52,26 +108,81 @@ const headingId = `${id}-heading`;
     background: var(--color-white);
     padding: var(--section-y) 0;
   }
-  .about-inner {
+  .about-inner.split {
     display: grid;
-    grid-template-columns: 1.4fr 0.6fr;
+    /* ~55% story, ~45% image. minmax(0,...) so a long word can never force an
+       overflow out of the grid track. */
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: clamp(2rem, 5vw, 4rem);
     align-items: start;
   }
+
+  /* The same red accent the trust and service bands use, so the sections rhyme. */
+  .about-head {
+    margin-bottom: 1.5rem;
+  }
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
+  }
   h2 {
     font-size: clamp(2rem, 3.4vw, 2.75rem);
-    margin: 0 0 1.25rem;
+    margin: 0;
+    text-wrap: balance;
   }
-  .about-copy p {
+
+  .about-p {
     margin: 0 0 1.1rem;
-    font-size: 1.075rem;
     line-height: 1.75;
-    color: var(--color-muted);
     max-width: 62ch;
   }
+  /* Lede: paragraph 1, distinguished by TYPE ONLY. Larger and set in the dark ink
+     so it leads; the copy itself is untouched. */
+  .about-p.lede {
+    font-size: clamp(1.15rem, 1.6vw, 1.3rem);
+    color: var(--color-dark);
+  }
+  /* Supporting copy: paragraph 2 onward. */
+  .about-p:not(.lede) {
+    font-size: 1.075rem;
+    color: var(--color-muted);
+  }
+
+  /* Restrained inline credential row. No box, no shadow: these facts belong to
+     the story, not a sidebar widget. */
+  .about-credentials {
+    list-style: none;
+    margin: 0.4rem 0 1.75rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.5rem;
+  }
+  .about-credentials li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.925rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--color-dark);
+  }
+  .about-credentials li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-red);
+  }
+
   .btn-outline {
     display: inline-block;
-    margin-top: 0.75rem;
     padding: 0.9rem 1.6rem;
     border: 2px solid var(--color-red);
     border-radius: var(--radius-sm);
@@ -87,41 +198,43 @@ const headingId = `${id}-heading`;
     color: var(--color-white);
   }
 
-  .about-highlights {
-    padding: 1.6rem;
-    background: var(--color-surface-alt);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-  }
-  .about-highlights ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 0.9rem;
-  }
-  .about-highlights li {
-    position: relative;
-    padding-left: 1.4rem;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--color-dark);
-  }
-  .about-highlights li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-red);
+  .about-media {
+    width: 100%;
   }
 
   @media (max-width: 900px) {
-    .about-inner {
+    /* Stack to one column. DOM order already puts the image last, so it stays
+       last visually with no `order` trickery. */
+    .about-inner.split {
       grid-template-columns: 1fr;
+    }
+    /* Reflow the portrait to a wider landscape band. ContentImage sizes the <img>
+       to its natural dimensions and never crops, so the crop is opted into HERE,
+       scoped to this section only (never touching ContentImage or any other page).
+
+       The slot's height comes from aspect-ratio, so percentage heights on the img
+       do not resolve against it. The img is therefore taken out of flow and pinned
+       to the slot box, where width/height 100% resolve against the positioned
+       container and object-fit: cover can crop to the centred 16:9 band. The
+       `.light` class on the selector lifts specificity above ContentImage's own
+       `.media-slot img` rule so this reliably wins regardless of bundle order.
+
+       max-width is released here ON PURPOSE: below 900px the slot is always
+       narrower than the file's 1122px intrinsic width, so cover downscales and can
+       never enlarge the image. */
+    .about-media :global(.media-slot) {
+      position: relative;
+      aspect-ratio: 16 / 9;
+    }
+    .about-media :global(.media-slot.light img) {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      object-position: center;
     }
   }
 </style>
