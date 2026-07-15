@@ -1,13 +1,26 @@
 ---
 /**
- * ServiceAreasSection.astro — responsive grid of linked city cards.
+ * ServiceAreasSection.astro — headquarters anchor + a balanced city directory.
  *
  * Every city page in the location architecture gets a real, crawlable link from
  * the homepage, which is what makes this section worth its space for local SEO.
- * Cards, not a bullet list: each one is a full-size tap target.
  *
- * The headquarters city is flagged by the caller and rendered with a badge and
- * a red border, so the physical office reads as the anchor of the service area.
+ * LAYOUT. The list is a three-column grid. The headquarters city is rendered as
+ * a FULL-WIDTH lead row above a clean 3x3 of the linked cities, so the section
+ * reads as "home base, then the communities it reaches" rather than as ten
+ * identical boxes. With nine linked cities that 3x3 is exact, so there is never a
+ * ragged orphan row at desktop or tablet width.
+ *
+ * ORDER. Cities render in the order the caller provides (locations.ts). The FIRST
+ * item flagged `isHeadquarters` is treated as the featured row; nothing is sorted
+ * here. For this site the headquarters is already first, so it leads the grid
+ * naturally.
+ *
+ * HEADQUARTERS. Distinguished only through layout, spacing, typography, badge,
+ * and a subtle background: no page to link to, so it is a plain, non-interactive
+ * element with no hover affordance. It is the most prominent element in the
+ * section, not a dimmed or disabled one, so its lack of a link reads as "you are
+ * describing home base," never as broken.
  */
 export interface AreaCard {
   city: string;
@@ -35,6 +48,9 @@ interface Props {
 
 const { id, heading, intro, areas, headquartersLabel = 'Headquarters' } = Astro.props;
 const headingId = `${id}-heading`;
+// The FIRST headquarters item is the featured lead. Found by index so a second
+// flagged item (should never happen) cannot also steal the full-width row.
+const featuredIndex = areas.findIndex((area) => area.isHeadquarters);
 ---
 
 <section class="areas" {id} aria-labelledby={headingId}>
@@ -46,10 +62,11 @@ const headingId = `${id}-heading`;
 
     <ul class="area-grid">
       {
-        areas.map((area) => {
+        areas.map((area, i) => {
+          const featured = area.isHeadquarters && i === featuredIndex;
           const Tag = area.href ? 'a' : 'div';
           return (
-            <li>
+            <li class:list={['area-item', { 'is-featured': featured }]}>
               <Tag
                 class:list={['area-card', area.isHeadquarters && 'is-hq', !area.href && 'is-static']}
                 href={area.href ?? undefined}
@@ -91,14 +108,26 @@ const headingId = `${id}-heading`;
     line-height: 1.7;
   }
 
+  /* Three columns. Nine linked cities fill an exact 3x3 beneath the full-width
+     headquarters row, so no width produces a ragged final row. */
   .area-grid {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
   }
+  .area-item {
+    display: flex;
+  }
+  /* The headquarters leads the grid as a full-width anchor row. */
+  .area-item.is-featured {
+    grid-column: 1 / -1;
+    /* A little air below the anchor before the city directory begins. */
+    margin-bottom: 0.5rem;
+  }
+
   .area-card {
     display: flex;
     align-items: center;
@@ -107,6 +136,7 @@ const headingId = `${id}-heading`;
        line instead of crushing the city name into two cramped lines. */
     flex-wrap: wrap;
     gap: 0.5rem 0.75rem;
+    width: 100%;
     height: 100%;
     padding: 1.15rem 1.35rem;
     border: 1px solid var(--color-border);
@@ -125,31 +155,58 @@ const headingId = `${id}-heading`;
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
   }
-  /* The HQ card has no page to link to. It keeps the card styling and the badge,
-     but must not pretend to be interactive. */
-  .area-card.is-static,
-  .area-card.is-static:hover {
-    box-shadow: var(--shadow-sm);
-    transform: none;
-    cursor: default;
-  }
   .area-card:focus-visible {
     outline: 3px solid var(--color-red);
     outline-offset: 3px;
   }
-  .area-card.is-hq {
-    border-color: var(--color-red);
-    border-width: 2px;
+  .area-city {
+    font-size: 1rem;
+    line-height: 1.3;
   }
+
+  /* The headquarters anchor. Distinct through layout, spacing, typography, the
+     badge, and a subtle filled background only. It has no page to link to, so it
+     keeps no interactive affordance: no hover lift, no elevation change, and the
+     cursor stays default. Most prominent element in the section, not a dimmed
+     one, so the missing link reads as intentional. */
+  .area-card.is-featured {
+    background: var(--color-surface-alt);
+    /* A quiet brand accent ties the anchor to the section without shouting. */
+    border-color: var(--color-border);
+    border-left: 3px solid var(--color-red);
+    padding: 1.5rem 1.6rem;
+    box-shadow: none;
+  }
+  .is-featured .area-city {
+    font-size: 1.2rem;
+  }
+  .area-card.is-static,
+  .area-card.is-static:hover {
+    border-color: var(--color-border);
+    border-left-color: var(--color-red);
+    box-shadow: none;
+    transform: none;
+    cursor: default;
+  }
+
   .area-badge {
     flex-shrink: 0;
-    padding: 0.2rem 0.55rem;
+    padding: 0.28rem 0.7rem;
     border-radius: 999px;
     background: var(--color-red);
     color: var(--color-white);
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  /* Tablet holds three columns so the 3x3 stays intact; only below it does the
+     directory collapse to a single column. Two columns are skipped on purpose:
+     nine cities in two columns would always leave a trailing orphan. */
+  @media (max-width: 640px) {
+    .area-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
