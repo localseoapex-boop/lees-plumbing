@@ -234,5 +234,13 @@ export const SERVICE_AREAS = {
 export const FINAL_CTA = {
   heading: 'Need a Plumber or HVAC Technician in Cache Valley?',
   body: 'Give us a call and tell us what is going on with your home. We will let you know how we can help.',
+  /**
+   * PRIMARY action: send a request, mirroring the hero. The closing band now
+   * offers the same two genuinely different speeds the hero does: schedule if it
+   * can wait, call if it cannot. Label and destination are reused verbatim from
+   * HERO.primaryCta so the site speaks with one voice and no new copy is coined.
+   */
+  primaryCta: { label: 'Schedule Service', href: '/contact-us' as string | null },
+  /** The phone CTA label. The number itself is resolved from office data. */
   ctaPrefix: 'Call',
 } as const;

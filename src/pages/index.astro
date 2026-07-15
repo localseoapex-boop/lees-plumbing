@@ -101,6 +101,13 @@ const heroPrimaryCta = {
   href: HERO.primaryCta.href ?? `tel:${BUSINESS.phone}`,
 };
 
+// The closing band's primary action, resolved the same way as the hero's: the
+// contact page when it exists, the phone as the framework's safety-net fallback.
+const finalPrimaryCta = {
+  label: FINAL_CTA.primaryCta.label,
+  href: FINAL_CTA.primaryCta.href ?? `tel:${BUSINESS.phone}`,
+};
+
 const title = 'Plumber in Hyde Park, UT';
 const description =
   "Lee's Plumbing provides trusted plumbing, heating, and cooling services in Hyde Park and communities across Cache Valley. Call 435-563-0611.";
@@ -182,6 +189,7 @@ const description =
     id="final-cta"
     heading={FINAL_CTA.heading}
     body={FINAL_CTA.body}
+    primaryCta={finalPrimaryCta}
     ctaPrefix={FINAL_CTA.ctaPrefix}
     phone={BUSINESS.phone}
     phoneDisplay={BUSINESS.phoneDisplay}

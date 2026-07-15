@@ -1,16 +1,23 @@
 ---
 /**
- * FinalCTASection.astro — dark closing band with the phone conversion.
+ * FinalCTASection.astro — the calm closing statement of the homepage.
  *
- * Phone calls are the primary conversion for a home service business, so the
- * page closes on the number, the hours, and nothing else competing with them.
- * Hours are passed in already formatted (see formatHours in data/offices.ts) so
- * this component holds no business data.
+ * The page ends on one clear choice offered two ways, mirroring the hero:
+ * schedule a request if it can wait, call if it cannot. Schedule Service is the
+ * dominant filled action; the phone is a genuinely quieter outlined button. The
+ * hours sit below as an understated closing detail.
+ *
+ * The button treatments are the SAME primitives the hero uses (.btn /
+ * .btn-primary / .btn-secondary), so the two ends of the page rhyme and no new
+ * button pattern is introduced. Hours are passed in already formatted (see
+ * formatHours in data/offices.ts) so this component holds no business data.
  */
 interface Props {
   id: string;
   heading: string;
   body?: string;
+  /** Dominant action: Schedule Service. href is pre-resolved by the caller. */
+  primaryCta: { label: string; href: string };
   ctaPrefix: string;
   phone: string;
   phoneDisplay: string;
@@ -18,7 +25,7 @@ interface Props {
   hours: string[];
 }
 
-const { id, heading, body, ctaPrefix, phone, phoneDisplay, hours } = Astro.props;
+const { id, heading, body, primaryCta, ctaPrefix, phone, phoneDisplay, hours } = Astro.props;
 const headingId = `${id}-heading`;
 ---
 
@@ -27,10 +34,12 @@ const headingId = `${id}-heading`;
     <h2 id={headingId}>{heading}</h2>
     {body && <p class="cta-body">{body}</p>}
 
-    <a class="cta-button" href={`tel:${phone}`}>
-      {ctaPrefix}
-      {phoneDisplay}
-    </a>
+    <div class="cta-actions">
+      <a class="btn btn-primary" href={primaryCta.href}>{primaryCta.label}</a>
+      <a class="btn btn-secondary" href={`tel:${phone}`}>
+        {ctaPrefix} {phoneDisplay}
+      </a>
+    </div>
 
     {
       hours.length > 0 && (
@@ -48,46 +57,89 @@ const headingId = `${id}-heading`;
   .final-cta {
     background: var(--color-dark);
     color: var(--color-white);
-    padding: clamp(3.5rem, 7vw, 5.5rem) 0;
+    /* A little more air top and bottom than the other bands, so the page ends on
+       a calm, resolved note rather than stopping abruptly. */
+    padding: clamp(4.5rem, 8vw, 7rem) 0;
   }
   .cta-inner {
     text-align: center;
-    max-width: 720px;
+    /* Narrower than a reading column: this is a poster, not an article. */
+    max-width: 640px;
   }
   h2 {
     color: var(--color-white);
     font-size: clamp(2.25rem, 4.4vw, 3.4rem);
     line-height: 1.12;
-    margin: 0 0 1rem;
+    /* Tight to the paragraph: heading and body read as one thought. */
+    margin: 0 0 0.75rem;
     text-wrap: balance;
   }
   .cta-body {
-    margin: 0 auto 2rem;
-    max-width: 54ch;
+    /* A deliberately narrow measure, ~34-38 characters per line on desktop, so
+       the closing line is calm and easy to read. Set below 34ch because the body
+       font's average glyph is narrower than its `0`, so a raw 34ch measure runs
+       past 40 characters a line. */
+    max-width: 28ch;
+    margin: 0 auto;
     font-size: 1.1rem;
     line-height: 1.7;
     color: #c9cccc;
   }
-  .cta-button {
-    display: inline-block;
-    padding: 1.1rem 2.25rem;
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    /* Larger than the heading-to-paragraph gap, so the buttons land as a distinct
+       final beat rather than crowding the copy. */
+    margin-top: 2.5rem;
+  }
+  /* Same button primitives as the hero, so both ends of the page match. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Padding keeps the tap target comfortably above 44px tall. */
+    min-height: 44px;
+    padding: 0.95rem 2rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  /* One dominant action. */
+  .btn-primary {
     background: var(--color-red);
     color: var(--color-white);
-    border-radius: var(--radius-sm);
-    font-size: 1.15rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: background-color 0.18s ease;
+    border-color: var(--color-red);
   }
-  .cta-button:hover {
+  .btn-primary:hover {
     background: var(--accent-dark);
+    border-color: var(--accent-dark);
   }
-  .cta-button:focus-visible {
+  /* Genuinely quieter, but actually drawn: outlined on the dark band. */
+  .btn-secondary {
+    color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .btn-secondary:hover {
+    border-color: var(--color-white);
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .btn:focus-visible {
     outline: 3px solid var(--color-white);
     outline-offset: 3px;
   }
+
   .cta-hours {
-    margin-top: 1.75rem;
+    margin-top: 2rem;
     color: #9aa0a0;
     font-size: 0.95rem;
   }
@@ -95,9 +147,16 @@ const headingId = `${id}-heading`;
     margin: 0.2rem 0;
   }
 
+  /* Stack the two actions cleanly on narrow screens, centered and equal width,
+     each still a full 44px+ tap target. */
   @media (max-width: 480px) {
-    .cta-button {
-      display: block;
+    .cta-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+    .btn {
+      width: 100%;
+      max-width: 320px;
     }
   }
 </style>
