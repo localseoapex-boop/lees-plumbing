@@ -47,6 +47,9 @@ import { getSubService } from '../data/subservices';
 import { nearbyCities } from '../lib/links';
 import { cityUrl, serviceUrl, subServiceUrl, LOCATIONS_URL } from '../lib/urls';
 import { TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
+// The real fleet photograph — the same proof asset the homepage Trust band uses.
+// Passing it here gives every city page the same local evidence beat.
+import { HOMEPAGE_IMAGES } from '../config/images';
 import {
   HERO,
   SERVICE_CARDS,
@@ -157,6 +160,7 @@ const faqs = cityFaqs(city, nearbyNames);
     heading={TRUST_HEADING}
     intro={`A Hyde Park company serving ${city} and the rest of Cache Valley.`}
     cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
   />
 
   <LocalProblems

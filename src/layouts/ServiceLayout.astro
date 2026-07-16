@@ -45,6 +45,9 @@ import { linkableCitiesForService } from '../lib/links';
 import { serviceUrl, cityUrl, subServiceUrl, absoluteUrl } from '../lib/urls';
 import { HQ_CITY_SLUG, getLocation } from '../data/locations';
 import { getHubContent, TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
+// The real fleet photograph — the same proof asset the homepage Trust band uses.
+// Passing it here gives every hub the same evidence beat instead of a flat slab.
+import { HOMEPAGE_IMAGES } from '../config/images';
 
 interface Props {
   service: Service;
@@ -137,7 +140,13 @@ const serviceSchema = {
     {groups}
   />
 
-  <TrustSection id="why-us" heading={TRUST_HEADING} intro={content.trustIntro} cards={TRUST_CARDS} />
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro={content.trustIntro}
+    cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
 
   <ReviewsSection
     id="reviews"
