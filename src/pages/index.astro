@@ -34,7 +34,6 @@ import {
   HERO,
   TRUST_STRIP,
   PLUMBING_SECTION,
-  HVAC_SECTION,
   WHY_US,
   REVIEWS,
   ABOUT,
@@ -74,7 +73,6 @@ function resolveServiceSection(content: ServiceSectionContent) {
 }
 
 const plumbing = resolveServiceSection(PLUMBING_SECTION);
-const hvac = resolveServiceSection(HVAC_SECTION);
 
 // All ten cities appear in the grid, because all ten are served. Only the nine
 // with a page are LINKED: Hyde Park is the HQ, it has no city page, and this
@@ -110,7 +108,7 @@ const finalPrimaryCta = {
 
 const title = 'Plumber in Hyde Park, UT';
 const description =
-  "Lee's Plumbing provides trusted plumbing, heating, and cooling services in Hyde Park and communities across Cache Valley. Call 435-563-0611.";
+  "Lee's Plumbing provides trusted plumbing services in Hyde Park and communities across Cache Valley. Call 435-563-0611.";
 ---
 
 <BaseLayout {title} {description}>
@@ -148,16 +146,6 @@ const description =
     intro={WHY_US.intro}
     cards={WHY_US.cards}
     image={HOMEPAGE_IMAGES.trustTrucks}
-  />
-
-  <ServiceSection
-    id="hvac"
-    heading={HVAC_SECTION.heading}
-    intro={HVAC_SECTION.intro}
-    cards={hvac.cards}
-    ctaLabel={HVAC_SECTION.ctaLabel}
-    ctaHref={hvac.ctaHref}
-    emphasis="secondary"
   />
 
   <ReviewsSection

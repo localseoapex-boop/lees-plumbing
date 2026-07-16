@@ -74,7 +74,7 @@ export const MERGER_PAGE = {
     benefits: [
       {
         heading: 'More services for your home.',
-        body: "Along with plumbing, Lee's customers now have access to expanded home services through Any Hour Services, including electrical, HVAC, drains, and insulation.",
+        body: "Along with plumbing, Lee's customers now have access to expanded home services through Any Hour Services, including electrical, drains, and insulation.",
       },
       {
         heading: 'More support behind every call.',
@@ -110,7 +110,7 @@ export const MERGER_PAGE = {
     body: "If you were looking for Lee's Plumbing, you're in the right place.",
     /** Rendered as a plain list of names. None of these are links. */
     servicesLabel: 'Now offering:',
-    services: ['Plumbing', 'Drains', 'HVAC', 'Electrical', 'Insulation'],
+    services: ['Plumbing', 'Drains', 'Electrical', 'Insulation'],
     /** The tel: target is resolved from the central business config, not here. */
     buttonPrefix: "Call Lee's Plumbing today at",
   },

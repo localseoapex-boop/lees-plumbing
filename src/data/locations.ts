@@ -32,8 +32,8 @@ export interface Location {
   services?: string[];
 }
 
-/** Both trades are offered across the whole service area today. */
-const ALL_TRADES = ['plumbing', 'hvac'];
+/** Plumbing is offered across the whole service area. */
+const ALL_TRADES = ['plumbing'];
 
 export const locations: Location[] = [
   {

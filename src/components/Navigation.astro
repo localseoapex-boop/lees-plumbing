@@ -324,10 +324,9 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
     font-size: 0.95rem;
     font-weight: 500;
     /* The logo lockup is wider than the old text brand, and without this the
-       flex line shrank the links until their labels wrapped: "Heating & /
-       Cooling" over two lines at 1440. A nav label is an atom and must never
-       break. There is room for all seven on one line; they just needed to be
-       told not to fold. */
+       flex line could shrink the links until a multi-word label wrapped over two
+       lines. A nav label is an atom and must never break, so they are told not to
+       fold. */
     white-space: nowrap;
   }
   .nav-links > li > a:hover,
@@ -467,12 +466,12 @@ const groupHasActiveChild = (children: readonly { href: string }[]) =>
      floating panel: it expands INLINE. A floating panel anchored to a wrapped
      row is unusable on a narrow screen. */
   /* The collapse breakpoint is 1080px, not 860px.
-     The logo lockup is wider than the text brand it replaced, and the seven nav
-     labels must not wrap (a nav label is an atom). Between 861 and ~1080 the
-     brand, the seven links and the call button no longer fit on one line, so the
-     old 860 breakpoint left the header overflowing the viewport. Collapsing at
-     the width where the desktop nav actually stops fitting is the honest fix:
-     tablets get the hamburger, which is where they were heading anyway. */
+     The logo lockup is wider than the text brand it replaced, and the nav labels
+     must not wrap (a nav label is an atom). Below ~1080 the brand, the links, and
+     the call button no longer fit on one line, so the old 860 breakpoint left the
+     header overflowing the viewport. Collapsing at the width where the desktop
+     nav actually stops fitting is the honest fix: tablets get the hamburger,
+     which is where they were heading anyway. */
   @media (max-width: 1080px) {
     .nav {
       flex-wrap: wrap;

@@ -24,9 +24,9 @@ import type { ContentPoint, FaqItem } from './service-content';
 export const HERO = {
   eyebrow: 'Based in Hyde Park, Serving Cache Valley',
   /** The page's single H1. */
-  heading: (city: string) => `Plumbing and Heating & Cooling Services in ${city}, Utah`,
+  heading: (city: string) => `Plumbing Services in ${city}, Utah`,
   lede: (city: string) =>
-    `Lee's Plumbing is based in Hyde Park and serves homeowners in ${city} and throughout Cache Valley. We handle plumbing repairs and installations along with heating and cooling work, so one call covers both sides of the house.`,
+    `Lee's Plumbing is based in Hyde Park and serves homeowners in ${city} and throughout Cache Valley. We handle plumbing repairs and installations, from a leaking pipe or a water heater that has stopped keeping up to a drain that backs up every few months.`,
   secondaryCtaLabel: 'See Our Services',
   secondaryCtaHref: '#services',
 } as const;
@@ -35,10 +35,9 @@ export const HERO = {
 
 /**
  * A service card on a city page. `highlights` are sub-service slugs, resolved at
- * build time to real names and real /plumbing/... or /heating-cooling/... links.
- * Resolving from slugs rather than hardcoding labels means a card can never link
- * to a page that does not exist, and the guard in CityLayout fails the build if a
- * slug here is wrong.
+ * build time to real names and real /plumbing/... links. Resolving from slugs
+ * rather than hardcoding labels means a card can never link to a page that does
+ * not exist, and the guard in CityLayout fails the build if a slug here is wrong.
  */
 export interface LocationServiceCard {
   /** Category slug from data/services.ts. Drives the hub link. */
@@ -64,26 +63,12 @@ export const SERVICE_CARDS: LocationServiceCard[] = [
     ],
     ctaLabel: 'View All Plumbing Services',
   },
-  {
-    serviceSlug: 'hvac',
-    intro: (city: string) =>
-      `Cache Valley asks a lot of a heating and cooling system, and ${city} is no exception. Winters are long and cold, summers turn hot and dry, and the same equipment has to carry the house through both. We repair, replace, and maintain furnaces, air conditioners, and heat pumps.`,
-    highlights: [
-      'furnace-repair',
-      'furnace-installation',
-      'ac-repair',
-      'ac-installation',
-      'heat-pump-services',
-      'hvac-maintenance',
-    ],
-    ctaLabel: 'View All Heating & Cooling Services',
-  },
 ];
 
 export const SERVICES_SECTION = {
   heading: (city: string) => `Services We Offer in ${city}`,
   intro:
-    'Two trades under one roof, which means one call whether the problem is a pipe or a furnace. Choose a service to read more about the work.',
+    'From water heaters and leaks to drains and sewer lines, one call covers your home plumbing. Choose a service to read more about the work.',
 } as const;
 
 // ──────────────────── Common problems (SEO core) ────────────────────
@@ -132,31 +117,6 @@ export const PROBLEM_GROUPS: ProblemGroup[] = [
       },
     ],
   },
-  {
-    title: 'Heating & Cooling',
-    items: [
-      {
-        title: 'Furnaces that will not keep up in winter',
-        body: 'A furnace here runs for months rather than weeks. The common faults are a dirty flame sensor that shuts the burner down seconds after it lights, a failed igniter, and a clogged filter that makes the unit overheat and trip its limit switch.',
-      },
-      {
-        title: 'Air conditioners that run without cooling',
-        body: 'Summers are hot and dry, and a system that is marginal in June will fail in July, because that is when it is working hardest. Restricted airflow, a fouled coil, a failed capacitor, and a refrigerant leak all produce a unit that runs constantly without cooling the house.',
-      },
-      {
-        title: 'Aging equipment and rising bills',
-        body: 'When the same comfort costs more than it did last year with no change in habits, the system is working harder to deliver it. That is usually worth investigating before the equipment fails outright on the coldest or hottest day of the year.',
-      },
-      {
-        title: 'Uneven temperatures between rooms',
-        body: 'Rooms that will not warm up or cool down are often a distribution problem rather than an equipment problem. A restricted filter, a weakening blower, blocked registers, and leaky ductwork all produce cold and hot spots that a new unit alone will not fix.',
-      },
-      {
-        title: 'Seasonal maintenance that has been skipped',
-        body: 'Most breakdowns give warning first. A capacitor drifting out of spec, a coil loading up with dust, or a charge that is slightly low from a small leak will not stop a system today, but each of them will eventually, and the timing is rarely convenient.',
-      },
-    ],
-  },
 ];
 
 // ───────────────────── Areas we serve nearby ─────────────────────
@@ -189,7 +149,7 @@ export const cityFaqs = (city: string, nearbyCityNames: string[]): FaqItem[] => 
   return [
     {
       question: `Does Lee's Plumbing serve ${city}?`,
-      answer: `Yes. Lee's Plumbing is based in Hyde Park and provides plumbing, heating and cooling services throughout ${city} and other Cache Valley communities.`,
+      answer: `Yes. Lee's Plumbing is based in Hyde Park and provides plumbing services throughout ${city} and other Cache Valley communities.`,
     },
     {
       question: `Are you located in ${city}?`,
@@ -198,10 +158,6 @@ export const cityFaqs = (city: string, nearbyCityNames: string[]): FaqItem[] => 
     {
       question: `What plumbing services are available in ${city}?`,
       answer: `The full range we offer anywhere else: water heater repair and installation, leak detection, pipe repair, toilet and garbage disposal repair, drain cleaning, main line cleaning, sewer line repair, hydro jetting, and sewer camera inspection. Nothing is withheld from one city and offered in another.`,
-    },
-    {
-      question: `What heating and cooling services are available in ${city}?`,
-      answer: `We repair and install furnaces and air conditioners, service and install heat pumps, and perform seasonal maintenance. That covers a system that has stopped working, one that is aging out and needs replacing, and one that is running but should be checked before the season turns.`,
     },
     {
       question: 'Which nearby communities do you serve?',
@@ -213,7 +169,7 @@ export const cityFaqs = (city: string, nearbyCityNames: string[]): FaqItem[] => 
 // ─────────────────────────── Final CTA ───────────────────────────
 
 export const FINAL_CTA = {
-  heading: (city: string) => `Need a Plumber or HVAC Technician in ${city}?`,
+  heading: (city: string) => `Need a Plumber in ${city}?`,
   body: (city: string) =>
     `Give us a call and tell us what is going on at your ${city} home. We will let you know how we can help.`,
   secondaryLabel: 'See our services',

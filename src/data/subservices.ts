@@ -11,7 +11,7 @@
  * never store per-city sub-service flags — coverage is inherited from the
  * category, which keeps the model small and impossible to get inconsistent.
  *
- * Every row's `parent` must be a live category slug: 'plumbing' or 'hvac'.
+ * Every row's `parent` must be a live category slug: 'plumbing'.
  * Drain and sewer work sits UNDER plumbing rather than in its own category.
  *
  * Adding a row here automatically generates its pages and links — no new files.
@@ -19,7 +19,7 @@
 export interface SubService {
   slug: string;
   name: string;
-  /** Parent category slug from services.ts ('plumbing' or 'hvac'). */
+  /** Parent category slug from services.ts ('plumbing'). */
   parent: string;
   /** One-line hero subhead. */
   tagline: string;
@@ -225,104 +225,6 @@ export const subServices: SubService[] = [
       'Main line snaking',
       'Cleanout access',
       'Camera verification',
-    ],
-  },
-
-  // ────────────────────────── Heating & Cooling ──────────────────────────────
-  {
-    slug: 'ac-repair',
-    name: 'AC Repair',
-    parent: 'hvac',
-    tagline: 'Air conditioning repair when your system stops cooling.',
-    description:
-      'AC repair for warm air, leaks, unusual noises, and system breakdowns.',
-    intro:
-      'When your air conditioner stops keeping up, we diagnose the fault and repair the system.',
-    features: [
-      'Refrigerant leak repair',
-      'Compressor and capacitor service',
-      'Thermostat troubleshooting',
-      'No cool diagnostics',
-    ],
-  },
-  {
-    slug: 'ac-installation',
-    name: 'AC Installation',
-    parent: 'hvac',
-    tagline: 'New air conditioner installation and replacement.',
-    description:
-      'Air conditioner installation and replacement, properly sized for your home with efficient, reliable equipment.',
-    intro:
-      'A correctly sized and installed air conditioner runs more efficiently and lasts longer. We help you choose the right system and install it cleanly.',
-    features: [
-      'Load calculation and sizing',
-      'High efficiency systems',
-      'Old unit removal',
-      'Clean, code compliant install',
-    ],
-  },
-  {
-    slug: 'furnace-repair',
-    name: 'Furnace Repair',
-    parent: 'hvac',
-    tagline: 'Heating repair to keep your home warm.',
-    description:
-      'Furnace repair for no heat, short cycling, pilot and ignition problems, and noisy operation.',
-    intro:
-      'A furnace that cannot keep up is more than uncomfortable. We find the fault and get the heat back on.',
-    features: [
-      'Ignition and pilot repair',
-      'Blower motor service',
-      'Short cycling diagnosis',
-      'Safety inspection',
-    ],
-  },
-  {
-    slug: 'furnace-installation',
-    name: 'Furnace Installation',
-    parent: 'hvac',
-    tagline: 'Furnace installation and replacement.',
-    description:
-      'Furnace installation and replacement with properly sized, energy efficient units and a clean, code compliant setup.',
-    intro:
-      'Replacing an aging furnace can lower energy use and reduce breakdowns. We size, install, and test it for safe, even heat.',
-    features: [
-      'Right sized selection',
-      'High efficiency models',
-      'Old furnace removal',
-      'Combustion safety testing',
-    ],
-  },
-  {
-    slug: 'heat-pump-services',
-    name: 'Heat Pump Services',
-    parent: 'hvac',
-    tagline: 'Heat pump repair, installation, and tune ups.',
-    description:
-      'Heat pump repair, replacement, and maintenance for efficient year round heating and cooling.',
-    intro:
-      'Heat pumps heat and cool with one efficient system. We install, repair, and maintain them for reliable performance.',
-    features: [
-      'Repair and replacement',
-      'Defrost cycle service',
-      'Refrigerant checks',
-      'Efficiency tune ups',
-    ],
-  },
-  {
-    slug: 'hvac-maintenance',
-    name: 'Heating & Cooling Maintenance',
-    parent: 'hvac',
-    tagline: 'Tune ups that help prevent breakdowns.',
-    description:
-      'Seasonal heating and cooling maintenance to improve efficiency, extend equipment life, and catch problems early.',
-    intro:
-      'Many breakdowns are preventable. Regular maintenance keeps a system efficient and surfaces small issues before they grow.',
-    features: [
-      'Filter and coil cleaning',
-      'Refrigerant and airflow checks',
-      'Electrical connection inspection',
-      'Seasonal tune ups',
     ],
   },
 ];

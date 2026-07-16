@@ -38,8 +38,8 @@ export interface ServiceSectionContent {
 export const HERO = {
   eyebrow: 'Based in Hyde Park • Serving Cache Valley',
   /** The single H1 for the site's most important page. */
-  heading: 'Plumbing and HVAC Services in Hyde Park, Utah',
-  body: "Lee's Plumbing is a Hyde Park based company serving homeowners throughout Cache Valley. We handle plumbing repairs and installations along with heating and cooling work, from a leaking pipe or water heater to a furnace or air conditioner that has stopped keeping up.",
+  heading: 'Plumbing Services in Hyde Park, Utah',
+  body: "Lee's Plumbing is a Hyde Park based company serving homeowners throughout Cache Valley. We handle plumbing repairs and installations, from a leaking pipe or a water heater that has stopped keeping up to a drain that backs up every few months.",
   /**
    * PRIMARY action: send a request. Points at the contact page, which now
    * exists. Previously this fell back to the phone because no such page had been
@@ -65,7 +65,7 @@ export const HERO = {
 export const TRUST_STRIP = [
   { label: 'Based in Hyde Park', detail: 'A local company, not a franchise' },
   { label: 'Serving Cache Valley', detail: 'Ten communities across the valley' },
-  { label: 'Plumbing & HVAC', detail: 'Two trades, one phone call' },
+  { label: 'Repairs & Installations', detail: 'Water heaters, pipes, drains, and sewers' },
   { label: 'Quality Workmanship', detail: 'Work done properly the first time' },
 ] as const;
 
@@ -89,25 +89,10 @@ export const PLUMBING_SECTION: ServiceSectionContent = {
   ],
 };
 
-/** SECONDARY trade. Same visual language, lighter emphasis. */
-export const HVAC_SECTION: ServiceSectionContent = {
-  serviceSlug: 'hvac',
-  heading: 'Heating & Cooling Services',
-  intro:
-    'Cache Valley asks a lot of a heating and cooling system. We service furnaces, air conditioners, and heat pumps, and we install replacement equipment when a system has reached the end of its life.',
-  ctaLabel: 'View All Heating & Cooling Services',
-  featured: [
-    { slug: 'furnace-repair' },
-    { slug: 'ac-repair' },
-    { slug: 'heat-pump-services' },
-    { slug: 'hvac-maintenance' },
-  ],
-};
-
 /**
- * Compact trust section between the two trades. This is NOT the About section.
- * It exists to break up the page and build confidence before HVAC is
- * introduced. Keep it to four short cards.
+ * Compact trust section below the plumbing services. This is NOT the About
+ * section. It exists to break up the page and build confidence. Keep it to four
+ * short cards.
  */
 export const WHY_US = {
   heading: "Why Homeowners Choose Lee's Plumbing",
@@ -127,7 +112,7 @@ export const WHY_US = {
     },
     {
       title: 'Quality Workmanship',
-      body: 'Plumbing and heating work is done to code and built to hold up over time.',
+      body: 'Plumbing work is done to code and built to hold up over time.',
     },
   ],
 } as const;
@@ -209,14 +194,14 @@ export const ABOUT = {
   heading: "About Lee's Plumbing",
   /** Kept short on purpose. Company history goes here when it is confirmed. */
   paragraphs: [
-    "Lee's Plumbing is a home service company based in Hyde Park, Utah. We work on the plumbing and the heating and cooling systems that Cache Valley homeowners depend on every day.",
-    'Being local matters in this trade. We know the housing stock in these communities, we know how the winters treat a furnace, and we are close enough to get to you without a long drive across the valley.',
+    "Lee's Plumbing is a home service company based in Hyde Park, Utah. We work on the plumbing systems that Cache Valley homeowners depend on every day.",
+    'Being local matters in this trade. We know the housing stock in these communities, we know how a hard Cache Valley winter treats the pipes in an older home, and we are close enough to get to you without a long drive across the valley.',
   ],
   /** Factual, verifiable points only. */
   highlights: [
     'Office in Hyde Park, Utah',
     'Serving ten Cache Valley communities',
-    'Plumbing plus heating and cooling',
+    'Plumbing repairs and installations',
   ],
   ctaLabel: 'See Our Service Areas',
   ctaHref: '/locations',
@@ -225,14 +210,14 @@ export const ABOUT = {
 export const SERVICE_AREAS = {
   heading: 'Proudly Serving Cache Valley',
   intro:
-    "Our office is in Hyde Park and we serve homeowners throughout the surrounding communities. Select your city to learn more about the plumbing and heating and cooling services Lee's Plumbing provides across Cache Valley.",
+    "Our office is in Hyde Park and we serve homeowners throughout the surrounding communities. Select your city to learn more about the plumbing services Lee's Plumbing provides across Cache Valley.",
   /** Slug of the city that is the physical HQ. Highlighted in the grid. */
   headquartersSlug: 'hyde-park-ut',
   headquartersLabel: 'Headquarters',
 } as const;
 
 export const FINAL_CTA = {
-  heading: 'Need a Plumber or HVAC Technician in Cache Valley?',
+  heading: 'Need a Plumber in Cache Valley?',
   body: 'Give us a call and tell us what is going on with your home. We will let you know how we can help.',
   /**
    * PRIMARY action: send a request, mirroring the hero. The closing band now

@@ -1,16 +1,20 @@
 ---
 /**
- * LocationServices.astro — the two service cards on a city page.
+ * LocationServices.astro — the service card(s) on a city page.
  *
  * This is the largest section on a city overview page and its most valuable one,
  * because it is what routes the visitor into the core Hyde Park service pages.
- * Every link here points at a real page: the hub (/plumbing, /heating-cooling)
- * and the individual sub-services beneath it. There are NO city-service links,
- * because those pages do not exist by design.
+ * Every link here points at a real page: the hub (/plumbing) and the individual
+ * sub-services beneath it. There are NO city-service links, because those pages
+ * do not exist by design.
  *
  * Both the card title and its CTA link to the hub, and every highlighted service
  * is its own link, so the section carries real internal-linking weight rather
  * than being a decorative summary.
+ *
+ * The grid is card-count agnostic (auto-fit): one category renders a single
+ * full-width card, and additional categories flow beside it, so the component
+ * stays reusable for a business that offers more than one trade.
  */
 export interface ServiceHighlight {
   name: string;
@@ -98,7 +102,10 @@ const headingId = `${id}-heading`;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Card-count agnostic: a single category fills the row; two or more flow
+       side by side. Prevents a lone card from sitting half-width in a fixed
+       two-column track. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     gap: 1.5rem;
   }
   .service-card {

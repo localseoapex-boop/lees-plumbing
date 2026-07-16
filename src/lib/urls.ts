@@ -9,8 +9,6 @@
  *   /                        homepage (targets Hyde Park)
  *   /plumbing/               plumbing hub
  *   /plumbing/[sub]/         plumbing sub-services
- *   /heating-cooling/        heating and cooling hub
- *   /heating-cooling/[sub]/  heating and cooling sub-services
  *   /locations/              service-areas index
  *   /locations/[city]/       the nine non-HQ Cache Valley cities
  *   /blog/, /blog/[slug]/
@@ -26,7 +24,8 @@ import { SITE } from '../config/site';
 import { getService } from '../data/services';
 
 /**
- * Map a service SLUG ('hvac') to its URL SEGMENT ('heating-cooling').
+ * Map a service SLUG ('plumbing') to its URL SEGMENT ('plumbing'). The two are
+ * kept separate so a category's route can diverge from its internal key.
  *
  * Throws rather than silently emitting "/undefined/", which would ship a broken
  * link and leave the link scan to catch it downstream.
@@ -39,7 +38,7 @@ const routeSegment = (serviceSlug: string): string => {
   return service.routeSegment;
 };
 
-/** /plumbing or /heating-cooling — the category hub. */
+/** /plumbing — the category hub. */
 export const serviceUrl = (serviceSlug: string): string => `/${routeSegment(serviceSlug)}`;
 
 /** /plumbing/water-heater-repair — a core sub-service page. */

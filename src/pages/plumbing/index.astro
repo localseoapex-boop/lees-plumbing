@@ -2,10 +2,10 @@
 /**
  * /plumbing — the plumbing hub. Targets "Plumbing Services in Hyde Park, Utah".
  *
- * A static route rather than a dynamic /[category] one: there are exactly two
- * trades, they live at hand-chosen URLs (/plumbing and /heating-cooling), and
- * spelling them out keeps the routing obvious. This file resolves the category
- * and hands it to the approved ServiceLayout. It contains no markup of its own.
+ * A static route rather than a dynamic /[category] one: the category lives at a
+ * hand-chosen URL (/plumbing), and spelling it out keeps the routing obvious.
+ * This file resolves the category and hands it to the approved ServiceLayout. It
+ * contains no markup of its own.
  */
 import ServiceLayout from '../../layouts/ServiceLayout.astro';
 import { getService } from '../../data/services';

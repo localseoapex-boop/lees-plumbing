@@ -100,7 +100,7 @@ export const ABOUT_PAGE = {
 export const CONTACT_PAGE = {
   title: "Contact Lee's Plumbing | Hyde Park, UT",
   description:
-    "Contact Lee's Plumbing in Hyde Park for plumbing, heating, and cooling service across Cache Valley. Call 435-563-0611.",
+    "Contact Lee's Plumbing in Hyde Park for plumbing service across Cache Valley. Call 435-563-0611.",
   heading: "Contact Lee's Plumbing",
   eyebrow: 'Hyde Park, Utah',
   lede: 'Call us, email us, or stop by the office. We serve homeowners throughout Cache Valley.',
@@ -115,7 +115,7 @@ export const CONTACT_PAGE = {
     heading: 'Send Us a Message',
     intro: 'Tell us what is going on and we will get back to you.',
     /** Feed the <select> options. Kept here so the form component holds no copy. */
-    serviceOptions: ['Plumbing', 'Heating & Cooling', 'Other'],
+    serviceOptions: ['Plumbing', 'Other'],
     cityOptions: [
       'Hyde Park',
       'Logan',
@@ -147,9 +147,9 @@ export const CONTACT_PAGE = {
 } as const;
 
 export const OFFERS_PAGE = {
-  title: "Plumbing and HVAC Offers | Lee's Plumbing",
+  title: "Plumbing Offers | Lee's Plumbing",
   description:
-    "View current plumbing, heating, and cooling offers from Lee's Plumbing in Hyde Park, Utah.",
+    "View current plumbing offers from Lee's Plumbing in Hyde Park, Utah.",
   heading: 'Current Offers',
   eyebrow: 'Save on Your Next Service',
   lede: 'Current savings for Cache Valley homeowners.',

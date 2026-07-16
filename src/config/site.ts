@@ -16,7 +16,7 @@ export const SITE = {
   name: "Lee's Plumbing",
   /** Short tagline used as the default meta description fallback. */
   description:
-    'Trusted plumbing, heating, and cooling services in Hyde Park and communities across Cache Valley, Utah.',
+    'Trusted plumbing services in Hyde Park and communities across Cache Valley, Utah.',
   /** Default social share image (lives in /public). */
   defaultOgImage: '/og-default.png',
   /** Default language for the <html lang> attribute. */
@@ -82,12 +82,10 @@ export const isNavGroup = (item: NavItem): item is { label: string; children: re
  */
 export const NAV_LINKS: readonly NavItem[] = [
   // No "Home" link. The logo is the home link, which is a convention every
-  // visitor already knows, and a redundant Home item spends a slot in a
-  // seven-item bar that has no room to spare. The brand link carries
-  // aria-current="page" on the homepage so the current location is still
-  // announced.
+  // visitor already knows, and a redundant Home item would spend a nav slot for
+  // nothing. The brand link carries aria-current="page" on the homepage so the
+  // current location is still announced.
   { label: 'Plumbing', href: '/plumbing' },
-  { label: 'Heating & Cooling', href: '/heating-cooling' },
   { label: 'Service Areas', href: '/locations' },
   {
     label: 'About Us',
@@ -111,10 +109,7 @@ export const NAV_LINKS: readonly NavItem[] = [
 export const FOOTER_LINKS = [
   {
     title: 'Services',
-    links: [
-      { label: 'Plumbing', href: '/plumbing' },
-      { label: 'Heating & Cooling', href: '/heating-cooling' },
-    ],
+    links: [{ label: 'Plumbing', href: '/plumbing' }],
   },
   {
     title: 'Company',

@@ -2,23 +2,21 @@
 /**
  * ServiceSection.astro — a featured-services block for ONE service category.
  *
- * Used twice on the homepage (plumbing, then heating and cooling) and reusable
- * for any trade.
+ * Rendered on the homepage for the plumbing services block, and reusable for any
+ * service category a future business needs.
  *
- * ONE CARD PRIMITIVE, TWO SECTIONS.
- * The card is identical in both calls: same type, padding, border, internal
+ * ONE CARD PRIMITIVE, TWO EMPHASIS MODES.
+ * The card is identical in both modes: same type, padding, border, internal
  * rhythm, action row, focus ring and hover. Emphasis lives entirely at the
- * SECTION level, which is where it belongs. Previously the card itself changed
- * between the two, and the grids differed (3-up vs 4-up), so the same component
- * rendered cards 91px apart in width at 1440 and the two sections read as two
- * different templates. Now only the surface, the heading scale, the column count
- * and the CTA fill differ.
+ * SECTION level, which is where it belongs. Only the surface, the heading scale,
+ * the column count and the CTA fill differ between the two modes, so a section
+ * can be given more or less weight without the card ever changing.
  *
  *   emphasis="primary"   → deeper surface, red accent rule, more vertical air,
  *                          3 columns, solid CTA. The company's main trade.
  *   emphasis="secondary" → white surface, 2 columns, outline CTA. Quieter, not
  *                          lesser: it is the same card, the same type, the same
- *                          everything except weight.
+ *                          everything except weight. Retained for reuse.
  *
  * Cards are passed in already resolved from the service data, so this component
  * never reaches into the service architecture itself and cannot link to a page
@@ -34,9 +32,9 @@
  * a real photo when one exists, the branded BrandPanel plate when it does not, so
  * the layout is finished either way and dropping a photo in later shifts nothing.
  *
- * The SECONDARY trade never gets the spread. It keeps the plain stacked header it
- * has always had, so the two sections stay one framework with one difference in
- * weight, exactly as before. Nothing here changes the card primitive.
+ * A secondary-emphasis section never gets the spread. It keeps the plain stacked
+ * header, so primary and secondary stay one framework with one difference in
+ * weight. Nothing here changes the card primitive.
  */
 import type { ImageAsset } from '../../config/images';
 import ContentImage from '../content-pages/ContentImage.astro';
@@ -144,8 +142,8 @@ const hasSpread = emphasis === 'primary';
      old --color-surface-alt (#f7f8f8) was so close to white that the primary
      band read as no band at all, so the emphasis was doing nothing. This is
      still restrained, but it is actually visible. The rules top and bottom are
-     what turn the Plumbing / Trust / HVAC sequence into a rhythm rather than
-     three hard cuts. */
+     what turn the Plumbing / Trust sequence into a rhythm rather than a hard
+     cut. */
   .service-section.primary {
     background-color: rgba(5, 7, 7, 0.045);
     border-top: 1px solid var(--color-border);

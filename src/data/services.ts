@@ -9,21 +9,17 @@
  * `related` holds sibling slugs for cross-linking; `schemaType` is the closest
  * schema.org business type if you later emit per-service LocalBusiness nodes.
  * Adding a service here automatically generates its pages — no new files.
- *
- * Order matters: plumbing is the primary trade and is listed first, so it leads
- * every generated list of services.
  */
 export interface Service {
   /** Stable identifier used everywhere in the data model. NOT the URL. */
   slug: string;
   /**
-   * The top-level URL segment this category lives at, e.g. 'heating-cooling'.
+   * The top-level URL segment this category lives at, e.g. 'plumbing'.
    *
-   * Deliberately separate from `slug`: the slug 'hvac' is the internal key that
-   * subservices.ts `parent`, links.ts, and service-content.ts are all keyed on,
-   * while the public route is /heating-cooling/ because that is what a homeowner
-   * searches for. Keeping them apart means the URL can read well without a
-   * rename cascading through the whole data model.
+   * Deliberately kept separate from `slug` so a category's public route can read
+   * well without a rename cascading through the whole data model: `slug` is the
+   * internal key that subservices.ts `parent`, links.ts, and service-content.ts
+   * are all keyed on, while `routeSegment` is what a homeowner sees in the URL.
    *
    * lib/urls.ts is the only place that reads this. Add a service here and its
    * route follows automatically.
@@ -62,26 +58,7 @@ export const services: Service[] = [
       'Drain and sewer solutions',
       'Plumbing replacements and installations',
     ],
-    related: ['hvac'],
-  },
-  {
-    slug: 'hvac',
-    routeSegment: 'heating-cooling',
-    name: 'Heating & Cooling',
-    schemaType: 'HVACBusiness',
-    tagline: 'Heating and cooling services for year-round home comfort.',
-    description:
-      'Heating and cooling repair, replacement, installation, and maintenance for homes across Cache Valley.',
-    intro:
-      "Lee's Plumbing provides heating and cooling services for furnaces, air conditioners, heat pumps, and other home comfort systems.",
-    features: [
-      'Air conditioning service',
-      'Furnace service',
-      'Heat pump service',
-      'Equipment installation and replacement',
-      'Seasonal maintenance',
-    ],
-    related: ['plumbing'],
+    related: [],
   },
 ];
 
