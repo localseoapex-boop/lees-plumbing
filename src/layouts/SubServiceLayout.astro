@@ -59,7 +59,8 @@ import {
 } from '../data/service-content';
 // The real fleet photograph — the same proof asset the homepage Trust band uses.
 // Passing it here gives every sub-service page the same evidence beat.
-import { HOMEPAGE_IMAGES } from '../config/images';
+// SERVICE_HERO_IMAGES is the config-driven hero backdrop, keyed by sub-service slug.
+import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES } from '../config/images';
 
 interface Props {
   service: Service;
@@ -155,6 +156,7 @@ const serviceSchema = {
     {hours}
     secondaryCtaLabel="Learn About This Service"
     secondaryCtaHref="#about-service"
+    heroImage={SERVICE_HERO_IMAGES[subService.slug]}
   />
 
   <SupportingContent

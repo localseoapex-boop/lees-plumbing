@@ -18,6 +18,8 @@
  *
  * Renders the page's single H1. Nothing else on these pages emits one.
  */
+import type { ImageAsset } from '../../config/images';
+
 interface Props {
   eyebrow: string;
   /** The page's one and only H1. */
@@ -31,6 +33,16 @@ interface Props {
   secondaryCtaHref: string;
   /** A real, confirmed offer. Null renders the contact panel instead. */
   offer?: { title: string; body: string } | null;
+  /**
+   * Optional contextual background photo, config-driven per page. Null/omitted
+   * renders the flat dark hero unchanged, so any page without a photo is exactly
+   * as before. It is an AI illustration of the trade: DECORATIVE (empty alt), no
+   * branding, no claim (see SERVICE_HERO_IMAGES in config/images.ts). Rendered
+   * with the homepage hero's technique: a real <img> behind the content with
+   * fetchpriority high (the LCP element) and a scrim dimensioned for the worst
+   * case so white copy stays legible over artwork nobody has previewed.
+   */
+  heroImage?: ImageAsset | null;
 }
 
 const {
@@ -43,10 +55,28 @@ const {
   secondaryCtaLabel,
   secondaryCtaHref,
   offer = null,
+  heroImage = null,
 } = Astro.props;
 ---
 
-<section class="hero">
+<section class:list={['hero', { 'has-image': heroImage }]}>
+  {
+    heroImage && (
+      <Fragment>
+        <img
+          class="hero-bg"
+          src={heroImage.src}
+          alt=""
+          width={heroImage.width}
+          height={heroImage.height}
+          fetchpriority="high"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="hero-scrim" aria-hidden="true" />
+      </Fragment>
+    )
+  }
   <div class="container hero-inner">
     <div class="hero-copy">
       <p class="eyebrow-light">{eyebrow}</p>
@@ -89,15 +119,57 @@ const {
 
 <style>
   .hero {
+    /* The fallback AND the safety net: with no image, or if the file 404s, the
+       white text sits on flat brand black exactly as before. */
     background: var(--color-dark);
     color: var(--color-white);
     padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+  }
+  /* Only the photographic variant needs a stacking context and clipping. */
+  .hero.has-image {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  /* Out of flow, so it can never cause layout shift. Behaves like a background
+     but loads like a priority image (it is the LCP element on these pages). */
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 45%;
+    z-index: -2;
+  }
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    /* Copy sits on the LEFT and the solid contact panel on the RIGHT, so the
+       scrim is heaviest on the left where the text lives and lifts toward the
+       right where the photo can breathe behind and around the panel. All layers
+       are the brand black at varying alpha, so no new colour enters. Dimensioned
+       against the worst case: even over a pure-white photo the left zone stays
+       near #1a1c1c, which keeps the white lede above 12:1. */
+    background-image: linear-gradient(
+      90deg,
+      rgba(5, 7, 7, 0.93) 0%,
+      rgba(5, 7, 7, 0.86) 38%,
+      rgba(5, 7, 7, 0.58) 72%,
+      rgba(5, 7, 7, 0.46) 100%
+    );
+    background-color: rgba(5, 7, 7, 0.42);
   }
   .hero-inner {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: clamp(2rem, 4vw, 3.5rem);
     align-items: center;
+  }
+  .hero.has-image .hero-inner {
+    position: relative;
+    z-index: 1;
   }
 
   .eyebrow-light {
@@ -240,6 +312,22 @@ const {
     .hero-inner {
       grid-template-columns: 1fr;
       align-items: stretch;
+    }
+    /* Stacked: copy and the panel now span the full width, so the horizontal
+       falloff is meaningless. The scrim runs vertically and stays heavy through
+       the whole column, since content covers the frame; the photo reads as a
+       quiet warm texture rather than a subject. */
+    .hero.has-image .hero-scrim {
+      background-image: linear-gradient(
+        180deg,
+        rgba(5, 7, 7, 0.9) 0%,
+        rgba(5, 7, 7, 0.85) 55%,
+        rgba(5, 7, 7, 0.82) 100%
+      );
+      background-color: rgba(5, 7, 7, 0.5);
+    }
+    .hero-bg {
+      object-position: 60% 40%;
     }
   }
   @media (max-width: 480px) {

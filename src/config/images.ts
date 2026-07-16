@@ -274,6 +274,58 @@ export const ABOUT_IMAGES = {
   remodel: null as ImageAsset | null,
 } as const;
 
+/**
+ * SERVICE HERO BACKGROUNDS — the config-driven backdrop for each service page's
+ * hero (see ServiceHero.astro). Keyed by the service/sub-service SLUG so a page
+ * gets its photo by lookup, with NO markup change: ServiceLayout looks up the
+ * category slug, SubServiceLayout the sub-service slug. A `null` slot renders the
+ * flat dark hero unchanged, so every unfilled page is exactly as it was.
+ *
+ * Provenance is `ai` for all of these: they ILLUSTRATE the trade (a water heater
+ * in a utility room, a drain being cleared) and assert nothing specific about
+ * this business, which is why they may be generated. Each therefore carries:
+ *   - NO branding, logo, readable signage, or company-specific claim
+ *   - NO uniforms and no identifiable person presented as a Lee's employee
+ *     (these are contextual equipment scenes, not staff portraits)
+ *   - EMPTY alt: they are decorative backdrops behind the <h1>, which already
+ *     carries the meaning, so a screen reader gains nothing from describing them.
+ *
+ * Landscape, generated at ~2x the rendered hero width, JPEG. Set a slot here when
+ * its file lands and nothing else changes. Same photographic style as the
+ * homepage hero (see docs/photography-style-guide.md).
+ */
+/**
+ * Every slot below is a 2000x1125 (16:9) AI backdrop at
+ * /images/services/<slug>-service.jpg, so a tiny helper keeps the map DRY: the
+ * file name is derived from the key, and only the key list can drift. All are
+ * decorative (empty alt) and `ai` (see the block comment above).
+ */
+const svcHero = (slug: string): ImageAsset => ({
+  src: `/images/services/${slug}-service.jpg`,
+  alt: '',
+  width: 2000,
+  height: 1125,
+  provenance: 'ai',
+});
+
+export const SERVICE_HERO_IMAGES: Record<string, ImageAsset | null> = {
+  // Category hub.
+  plumbing: svcHero('plumbing'),
+  // Sub-services (keys are the slugs from data/subservices.ts).
+  'water-heater-repair': svcHero('water-heater-repair'),
+  'water-heater-installation': svcHero('water-heater-installation'),
+  'leak-detection': svcHero('leak-detection'),
+  'pipe-repair': svcHero('pipe-repair'),
+  'toilet-repair': svcHero('toilet-repair'),
+  'garbage-disposal-repair': svcHero('garbage-disposal-repair'),
+  'drain-cleaning': svcHero('drain-cleaning'),
+  'sewer-line-repair': svcHero('sewer-line-repair'),
+  'sewer-camera-inspection': svcHero('sewer-camera-inspection'),
+  'hydro-jetting': svcHero('hydro-jetting'),
+  'clogged-toilet': svcHero('clogged-toilet'),
+  'main-line-cleaning': svcHero('main-line-cleaning'),
+};
+
 export const OFFERS_IMAGES = {
   /**
    * REAL. Filename is lowercase on purpose. It was `Lees-Coupon.jpg`, which
