@@ -127,6 +127,9 @@ const description =
 
   <TrustStrip items={TRUST_STRIP} />
 
+  {/* The opening-spread plate. No plumbing photograph exists yet, so this is
+      null and the branded fallback renders; when a real photo lands, set
+      HOMEPAGE_IMAGES.plumbing and nothing else changes. */}
   <ServiceSection
     id="plumbing"
     heading={PLUMBING_SECTION.heading}
@@ -135,6 +138,7 @@ const description =
     ctaLabel={PLUMBING_SECTION.ctaLabel}
     ctaHref={plumbing.ctaHref}
     emphasis="primary"
+    image={HOMEPAGE_IMAGES.plumbing}
   />
 
   {/* The real fleet photograph is the evidence for what this section claims. */}

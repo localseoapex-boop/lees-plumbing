@@ -23,7 +23,24 @@
  * Cards are passed in already resolved from the service data, so this component
  * never reaches into the service architecture itself and cannot link to a page
  * that does not exist.
+ *
+ * THE OPENING SPREAD (primary trade only).
+ * The primary section opens like a magazine feature: the heading and intro sit
+ * in a narrow left column beside a tall image plate, and the card grid runs
+ * clean beneath the pair. That one photographic beat is what carries the hero's
+ * cinematic language down into the content instead of dropping straight from a
+ * full-bleed photo onto a flat wall of cards. The image is OPTIONAL and follows
+ * the exact pattern the sibling sections already use (TrustSection, AboutSection):
+ * a real photo when one exists, the branded BrandPanel plate when it does not, so
+ * the layout is finished either way and dropping a photo in later shifts nothing.
+ *
+ * The SECONDARY trade never gets the spread. It keeps the plain stacked header it
+ * has always had, so the two sections stay one framework with one difference in
+ * weight, exactly as before. Nothing here changes the card primitive.
  */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
 export interface ServiceCard {
   name: string;
   href: string;
@@ -38,21 +55,52 @@ interface Props {
   ctaLabel: string;
   ctaHref: string;
   emphasis?: 'primary' | 'secondary';
+  /**
+   * The opening-spread plate for the primary trade. Real photography when it
+   * exists, `null` to render the branded fallback. Ignored by the secondary
+   * trade, which has no spread. Omitted entirely and the primary still renders
+   * the branded plate, so the spread is never half-built.
+   */
+  image?: ImageAsset | null;
 }
 
-const { id, heading, intro, cards, ctaLabel, ctaHref, emphasis = 'secondary' } = Astro.props;
+const {
+  id,
+  heading,
+  intro,
+  cards,
+  ctaLabel,
+  ctaHref,
+  emphasis = 'secondary',
+  image = null,
+} = Astro.props;
 const headingId = `${id}-heading`;
+const hasSpread = emphasis === 'primary';
 ---
 
 <section class:list={['service-section', emphasis]} aria-labelledby={headingId}>
   <div class="container">
-    <header class="section-head">
-      {/* The accent rule on the primary trade, echoing the hero's eyebrow. It is
-          decoration, so it is hidden from assistive technology. */}
-      {emphasis === 'primary' && <span class="head-rule" aria-hidden="true" />}
-      <h2 id={headingId}>{heading}</h2>
-      <p class="section-intro">{intro}</p>
-    </header>
+    {
+      hasSpread ? (
+        <div class="section-masthead">
+          <header class="section-head">
+            {/* The accent rule on the primary trade, echoing the hero's eyebrow.
+                It is decoration, so it is hidden from assistive technology. */}
+            <span class="head-rule" aria-hidden="true" />
+            <h2 id={headingId}>{heading}</h2>
+            <p class="section-intro">{intro}</p>
+          </header>
+          <div class="masthead-media">
+            <ContentImage asset={image} tone="light" ratio="4 / 3" fit="cover" />
+          </div>
+        </div>
+      ) : (
+        <header class="section-head">
+          <h2 id={headingId}>{heading}</h2>
+          <p class="section-intro">{intro}</p>
+        </header>
+      )
+    }
 
     <ul class="card-grid">
       {
@@ -112,6 +160,29 @@ const headingId = `${id}-heading`;
   .section-head {
     max-width: 62ch;
     margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  /* THE OPENING SPREAD. An asymmetric two-column masthead: the title block in a
+     narrower left column, the image plate wider on the right, the pair centred
+     to each other so a short heading does not float at the top of a tall photo.
+     The card grid follows underneath at full width. This is the whole premium
+     move: one photographic beat between the hero and the index of cards. */
+  .section-masthead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  /* Inside the spread the title block carries no bottom margin (the masthead owns
+     the gap to the grid) and takes a tighter measure so it reads as a column, not
+     a full-width paragraph that happens to sit next to a picture. */
+  .section-masthead .section-head {
+    max-width: 46ch;
+    margin-bottom: 0;
+  }
+  .masthead-media {
+    width: 100%;
   }
   /* The red accent on the primary section, echoing the hero eyebrow. */
   .head-rule {
@@ -273,6 +344,19 @@ const headingId = `${id}-heading`;
   .btn-outline:hover {
     background: var(--color-red);
     color: var(--color-white);
+  }
+
+  /* The spread stacks before the grid does: once the title column would be
+     squeezed narrower than its measure, the plate drops below the title rather
+     than being crushed beside it. The title then relaxes back to a full measure. */
+  @media (max-width: 900px) {
+    .section-masthead {
+      grid-template-columns: 1fr;
+      gap: clamp(1.75rem, 4vw, 2.5rem);
+    }
+    .section-masthead .section-head {
+      max-width: 62ch;
+    }
   }
 
   /* The same ladder for both sections: 3-or-2 → 2 → 1. */

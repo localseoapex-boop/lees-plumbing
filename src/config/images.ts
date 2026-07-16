@@ -211,6 +211,32 @@ export const HOMEPAGE_IMAGES = {
   trustTrucks: TRUCKS,
 
   /**
+   * NULL. The opening-spread plate for the primary Plumbing section (see the
+   * masthead in ServiceSection.astro). Until a photograph exists it renders the
+   * branded BrandPanel plate, which is a finished state, not a broken one, and is
+   * exactly what any future Local SEO Apex business gets before its photography
+   * lands.
+   *
+   * When a real image arrives it is ILLUSTRATION, not evidence: it shows what
+   * plumbing work looks like and carries the hero's photographic language into
+   * the section, but it asserts nothing specific about this business, which is
+   * why it may be `ai`. It must therefore contain NO branding, no logo, no
+   * readable signage, and no company-specific claim, and its alt must describe a
+   * SCENE, never an EVENT. The trucks are deliberately NOT reused here: they are
+   * an evidence shot already carrying the Why-Us section lower on this same page.
+   *
+   * Landscape 4:3 to match the plate's ratio. Set the slot here and change
+   * NOTHING else.
+   */
+  plumbing: {
+    src: '/images/homepage/plumbing-water-heater-service.jpg',
+    alt: 'A plumber adjusting the gauge and shutoff valves on the supply lines above a residential tank water heater in a clean, bright utility room',
+    width: 2000,
+    height: 1500,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+
+  /**
    * AI. The About section's editorial split (see AboutSection.astro). A generic
    * plumber working inside a home is ILLUSTRATION, not evidence: it shows what
    * the trade looks like and grounds the "local company" story, but it asserts
