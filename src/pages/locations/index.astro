@@ -1,33 +1,76 @@
 ---
 /**
- * /locations — hub page listing every city served.
+ * /locations — the service-areas index.
  *
- * Breadcrumb parent for city pages and a crawl hub linking to all of them.
+ * Rebuilt to the same rhythm as the homepage instead of a bare list of city
+ * chips: a photographic hero, the framed regional directory (the exact component
+ * the homepage uses), the shared trust band with the real fleet photograph, and
+ * a closing CTA. It is still the crawl hub that links to every city page and the
+ * breadcrumb parent for them, so the internal-link value is unchanged.
+ *
+ * Holds no copy or image paths of its own beyond the hero lede. The directory
+ * heading/intro come from the homepage config so the two directories read
+ * identically, the trust copy from the shared service-content, and every image
+ * path from config/images.ts.
  */
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import InternalLinks from '../../components/InternalLinks.astro';
-// The nine cities that have a page. Hyde Park is the HQ and is covered by the
-// homepage and the core service pages, so it is not listed as a destination here.
-import { cityLocations } from '../../data/locations';
-import { cityUrl } from '../../lib/urls';
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import ServiceAreasSection from '../../components/homepage/ServiceAreasSection.astro';
+import TrustSection from '../../components/homepage/TrustSection.astro';
+import ContentCTA from '../../components/content-pages/ContentCTA.astro';
 
-const links = cityLocations.map((loc) => ({
-  label: `${loc.city}, ${loc.region}`,
-  href: cityUrl(loc.slug),
+import { BUSINESS } from '../../config/site';
+import { SERVICE_AREAS, FINAL_CTA } from '../../config/homepage';
+import { LOCATIONS_IMAGES, HOMEPAGE_IMAGES } from '../../config/images';
+import { TRUST_HEADING, TRUST_CARDS } from '../../data/service-content';
+// All ten cities. Hyde Park is the HQ and has no city page, so it leads the grid
+// as the non-linked anchor; the other nine are linked. Same rule as the homepage.
+import { locations, HQ_CITY_SLUG, hasCityPage } from '../../data/locations';
+import { cityUrl } from '../../lib/urls';
+import { primaryOffice, formatHours } from '../../data/offices';
+
+const crumbs = [{ name: 'Home', href: '/' }, { name: 'Service Areas' }];
+
+const areas = locations.map((loc) => ({
+  city: loc.city,
+  region: loc.region,
+  href: hasCityPage(loc.slug) ? cityUrl(loc.slug) : null,
+  isHeadquarters: loc.slug === HQ_CITY_SLUG,
 }));
+
+const hours = primaryOffice.hours.map((spec) => formatHours(spec));
 ---
 
-<BaseLayout
+<ContentLayout
   title="Service Areas"
   description="The Cache Valley, Utah communities we serve with plumbing services."
+  {crumbs}
+  eyebrow="Based in Hyde Park • Serving Cache Valley"
+  heading="Service Areas"
+  lede="Lee's Plumbing is based in Hyde Park and serves homeowners in ten communities across Cache Valley, Utah. Find your city below to see the plumbing services we provide there."
+  heroBgImage={LOCATIONS_IMAGES.hero}
 >
-  <div class="container page">
-    <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Locations' }]} />
-    <header class="page-hero">
-      <h1>Service Areas</h1>
-      <p class="lede">Serving Hyde Park and communities across Cache Valley, Utah.</p>
-    </header>
-    <InternalLinks title="Cities we serve" links={links} />
-  </div>
-</BaseLayout>
+  <ServiceAreasSection
+    id="service-areas"
+    heading={SERVICE_AREAS.heading}
+    intro={SERVICE_AREAS.intro}
+    {areas}
+    headquartersLabel={SERVICE_AREAS.headquartersLabel}
+  />
+
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro="A local plumbing company that answers the phone and does the work properly."
+    cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
+
+  <ContentCTA
+    heading={FINAL_CTA.heading}
+    body={FINAL_CTA.body}
+    ctaPrefix={FINAL_CTA.ctaPrefix}
+    phone={BUSINESS.phone}
+    phoneDisplay={BUSINESS.phoneDisplay}
+    {hours}
+  />
+</ContentLayout>

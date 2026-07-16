@@ -342,6 +342,22 @@ export const CONTACT_IMAGES = {
   } satisfies ImageAsset as ImageAsset | null,
 } as const;
 
+/**
+ * SERVICE AREAS (/locations). The hero background behind the "Service Areas" H1.
+ * A Cache Valley residential street with the mountains behind it: decorative
+ * regional context, not a claim about a specific address, so it is `ai` with an
+ * empty alt. No branding, readable signage, or people. Rendered behind a scrim.
+ */
+export const LOCATIONS_IMAGES = {
+  hero: {
+    src: '/images/locations/service-areas-hero.jpg',
+    alt: '',
+    width: 1800,
+    height: 1013,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+} as const;
+
 export const OFFERS_IMAGES = {
   /**
    * REAL. Filename is lowercase on purpose. It was `Lees-Coupon.jpg`, which
