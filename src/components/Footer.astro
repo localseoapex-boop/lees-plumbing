@@ -82,7 +82,15 @@ const year = new Date().getFullYear();
   .site-footer {
     background: var(--color-dark);
     color: #d4d6d6;
-    margin-top: 4rem;
+    /* A hairline seam, NOT an external margin. The old `margin-top: 4rem` sat
+       between the last section and the footer over the transparent <body>, so it
+       painted as a 64px white band. That reads as an unexplained empty band
+       wherever the final section is dark (the homepage close) or coloured (the
+       red CTA that ends every service page). The footer now abuts the section
+       above and delineates itself with the same 1px rule the legal line uses, so
+       the two still read as separate sections with no white gap. The footer
+       keeps its own internal top padding, so nothing feels cramped. */
+    border-top: 1px solid #2a2e2e;
   }
   .footer-inner {
     max-width: 1100px;
