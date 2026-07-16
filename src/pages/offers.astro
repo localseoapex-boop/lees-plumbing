@@ -2,6 +2,10 @@
 /**
  * /offers — current offers.
  *
+ * Brought up to the site's premium rhythm: a photographic hero (a bright modern
+ * kitchen), the savings intro, the REAL coupon as the centerpiece, the shared
+ * trust band with the real fleet photograph, and the closing phone CTA.
+ *
  * The coupon is the real artwork from the client, rendered at its own aspect
  * ratio and never enlarged past its intrinsic 1037px width, so it stays crisp
  * and is never stretched.
@@ -16,10 +20,12 @@ import ContentLayout from '../layouts/ContentLayout.astro';
 import ContentSection from '../components/content-pages/ContentSection.astro';
 import ContentImage from '../components/content-pages/ContentImage.astro';
 import ContentCTA from '../components/content-pages/ContentCTA.astro';
+import TrustSection from '../components/homepage/TrustSection.astro';
 
 import { BUSINESS } from '../config/site';
 import { OFFERS_PAGE } from '../config/content-pages';
-import { OFFERS_IMAGES } from '../config/images';
+import { OFFERS_IMAGES, HOMEPAGE_IMAGES } from '../config/images';
+import { TRUST_HEADING, TRUST_CARDS } from '../data/service-content';
 import { primaryOffice, formatHours } from '../data/offices';
 
 const hours = primaryOffice.hours.map((spec) => formatHours(spec));
@@ -38,6 +44,7 @@ const couponRatio = `${coupon.width} / ${coupon.height}`;
   eyebrow={OFFERS_PAGE.eyebrow}
   heading={OFFERS_PAGE.heading}
   lede={OFFERS_PAGE.lede}
+  heroBgImage={OFFERS_IMAGES.heroBg}
 >
   <ContentSection
     id="intro"
@@ -58,6 +65,14 @@ const couponRatio = `${coupon.width} / ${coupon.height}`;
       <p class="coupon-terms">{OFFERS_PAGE.coupon.terms}</p>
     </div>
   </section>
+
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro="A local plumbing company that answers the phone and does the work properly."
+    cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
 
   <ContentCTA
     heading={OFFERS_PAGE.cta.heading}

@@ -374,6 +374,19 @@ export const LOCATIONS_IMAGES = {
 
 export const OFFERS_IMAGES = {
   /**
+   * AI. The Offers page's photographic hero BACKGROUND: a bright, welcoming
+   * modern kitchen with a chrome faucet and stainless sink. Illustration of the
+   * home the service protects, not a claim, so it is `ai` with an empty alt and
+   * carries no branding, readable text, or people. Landscape 16:9, behind a scrim.
+   */
+  heroBg: {
+    src: '/images/offers/offers-hero.jpg',
+    alt: '',
+    width: 2000,
+    height: 1125,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+  /**
    * REAL. Filename is lowercase on purpose. It was `Lees-Coupon.jpg`, which
    * resolves on macOS's case-insensitive filesystem but 404s on Vercel's
    * case-sensitive Linux build. Renamed through git so the case change is
