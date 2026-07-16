@@ -266,7 +266,21 @@ export const HOMEPAGE_IMAGES = {
 } as const;
 
 export const ABOUT_IMAGES = {
-  /** REAL. The trucks carry the compact About hero. */
+  /**
+   * AI. The About page's photographic hero BACKGROUND: a close, warm view of a
+   * plumber's hands working brass and copper under a sink. Illustration of the
+   * craft, not a claim, so it is `ai` with an empty alt and carries no branding,
+   * readable text, face, or uniform. Landscape 16:9, rendered behind a scrim.
+   * (The real fleet photograph is used lower on the page, in the trust band.)
+   */
+  heroBg: {
+    src: '/images/about/about-hero.jpg',
+    alt: '',
+    width: 2000,
+    height: 1125,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+  /** REAL. The trucks. Available for a compact About media slot if needed. */
   hero: TRUCKS,
   /** NULL. No showroom photograph exists. Renders a branded fallback. */
   showroom: null as ImageAsset | null,

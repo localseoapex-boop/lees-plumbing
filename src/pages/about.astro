@@ -1,25 +1,42 @@
 ---
 /**
- * /about — About Lee's Plumbing.
+ * /about — About Lee's Plumbing, the definitive company story.
  *
- * Assembles the content-page framework from config. This file holds NO copy: all
- * of it comes from ABOUT_PAGE in config/content-pages.ts, and every image path
- * comes from ABOUT_IMAGES in config/images.ts.
+ * Composition:
+ *   1. Photographic hero (a plumber's hands at work, behind the H1)
+ *   2. History of Lee's Plumbing — the company story and community roots
+ *   3. "Hi, I'm Lee. Call Me!" — remodel work
+ *   4. Visit Our Hyde Park Showroom — the physical Hyde Park presence
+ *   5. Our Expertise + Product Brands — what we work on
+ *   6. Why Homeowners Choose Lee's Plumbing — the trust band with the REAL fleet
+ *      photograph (proof)
+ *   7. Reviews — the real Google reviews reused from the homepage
+ *   8. Closing phone CTA
+ *
+ * This file holds NO copy: all of it comes from ABOUT_PAGE in
+ * config/content-pages.ts (plus the shared trust/reviews config), and every image
+ * path comes from config/images.ts.
+ *
+ * The remodel and showroom media slots are DELIBERATELY left as branded fallback
+ * panels: they depict Lee's own completed work and facility, so they must be real
+ * client photography, never AI, and they stay as honest placeholders until that
+ * photography exists (see config/images.ts).
  *
  * The Any Hour partnership is NOT mentioned here, by design. This page is about
- * Lee's Plumbing. The partnership lives on its own page and is linked only from
- * the About Us dropdown.
- *
- * The single <h1> is rendered by ContentLayout's hero. Section headings are h2,
- * and the expertise / brand group titles are h3.
+ * Lee's Plumbing. The single <h1> is rendered by ContentLayout's hero.
  */
 import ContentLayout from '../layouts/ContentLayout.astro';
 import ContentSection from '../components/content-pages/ContentSection.astro';
 import ContentCTA from '../components/content-pages/ContentCTA.astro';
+// Shared bands, same as the homepage, so the page rhymes with the rest of the site.
+import TrustSection from '../components/homepage/TrustSection.astro';
+import ReviewsSection from '../components/homepage/ReviewsSection.astro';
 
 import { BUSINESS } from '../config/site';
 import { ABOUT_PAGE } from '../config/content-pages';
-import { ABOUT_IMAGES } from '../config/images';
+import { REVIEWS } from '../config/homepage';
+import { ABOUT_IMAGES, HOMEPAGE_IMAGES } from '../config/images';
+import { TRUST_HEADING, TRUST_CARDS } from '../data/service-content';
 import { primaryOffice, formatHours } from '../data/offices';
 
 const hours = primaryOffice.hours.map((spec) => formatHours(spec));
@@ -33,7 +50,7 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: "About Lee's Plumbing" }];
   eyebrow={ABOUT_PAGE.eyebrow}
   heading={ABOUT_PAGE.heading}
   lede={ABOUT_PAGE.lede}
-  heroAsset={ABOUT_IMAGES.hero}
+  heroBgImage={ABOUT_IMAGES.heroBg}
 >
   <ContentSection
     id="history"
@@ -90,6 +107,26 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: "About Lee's Plumbing" }];
       {ABOUT_PAGE.brands.items.map((brand) => <li>{brand}</li>)}
     </ul>
   </ContentSection>
+
+  {/* Why homeowners trust Lee's + the real fleet photograph as proof. */}
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro="A local plumbing company that answers the phone and does the work properly."
+    cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
+
+  <ReviewsSection
+    id="reviews"
+    heading={REVIEWS.heading}
+    intro={REVIEWS.intro}
+    items={REVIEWS.items}
+    isPlaceholder={REVIEWS.isPlaceholder}
+    emptyMessage={REVIEWS.emptyMessage}
+    ctaLabel={REVIEWS.ctaLabel}
+    ctaHref={REVIEWS.ctaHref}
+  />
 
   <ContentCTA
     heading={ABOUT_PAGE.cta.heading}
