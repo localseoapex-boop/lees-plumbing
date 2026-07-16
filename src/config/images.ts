@@ -326,6 +326,22 @@ export const SERVICE_HERO_IMAGES: Record<string, ImageAsset | null> = {
   'main-line-cleaning': svcHero('main-line-cleaning'),
 };
 
+/**
+ * CONTACT PAGE. The hero background behind the contact page's H1 (see
+ * ContentHero's background mode). AI illustration of the trade: a tidy plumbing
+ * workbench, no branding, no readable text, no people, so it is decorative
+ * (empty alt) and `ai`. Landscape 16:9, rendered behind a scrim.
+ */
+export const CONTACT_IMAGES = {
+  hero: {
+    src: '/images/contact/office-hero.jpg',
+    alt: '',
+    width: 2000,
+    height: 1125,
+    provenance: 'ai',
+  } satisfies ImageAsset as ImageAsset | null,
+} as const;
+
 export const OFFERS_IMAGES = {
   /**
    * REAL. Filename is lowercase on purpose. It was `Lees-Coupon.jpg`, which

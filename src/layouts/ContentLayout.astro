@@ -33,10 +33,21 @@ interface Props {
   /** Omit for a text-only hero. `null` renders the branded fallback panel. */
   heroAsset?: ImageAsset | null;
   heroFallbackCaption?: string;
+  /** Full-bleed hero background photo. Suppresses the plate; other pages omit it. */
+  heroBgImage?: ImageAsset | null;
 }
 
-const { title, description, crumbs, eyebrow, heading, lede, heroAsset, heroFallbackCaption } =
-  Astro.props;
+const {
+  title,
+  description,
+  crumbs,
+  eyebrow,
+  heading,
+  lede,
+  heroAsset,
+  heroFallbackCaption,
+  heroBgImage,
+} = Astro.props;
 
 // `heroAsset` must stay UNDEFINED when the caller omitted it, because
 // ContentHero distinguishes "no media slot at all" from "media slot with no
@@ -49,7 +60,14 @@ const heroMedia = 'heroAsset' in Astro.props ? { asset: heroAsset } : {};
     <Breadcrumbs items={crumbs} />
   </div>
 
-  <ContentHero {eyebrow} {heading} {lede} {...heroMedia} fallbackCaption={heroFallbackCaption} />
+  <ContentHero
+    {eyebrow}
+    {heading}
+    {lede}
+    {...heroMedia}
+    fallbackCaption={heroFallbackCaption}
+    bgImage={heroBgImage}
+  />
 
   <slot />
 </BaseLayout>

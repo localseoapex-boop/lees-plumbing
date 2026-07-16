@@ -139,6 +139,35 @@ export const CONTACT_PAGE = {
     intro: 'Our office and showroom are on West 3700 North in Hyde Park.',
   },
 
+  /**
+   * "What happens next" after someone reaches out. Every step is honest about how
+   * we actually work: no response-time promises, no guarantees, nothing the
+   * business has not confirmed. The last step reuses the trust language used
+   * elsewhere on the site ("diagnose the actual problem, explain what we found").
+   */
+  process: {
+    heading: 'What Happens After You Reach Out',
+    intro: 'A quick look at how a request turns into a finished job.',
+    steps: [
+      {
+        title: 'You reach out',
+        body: 'Call us or send the form with what is going on at your home.',
+      },
+      {
+        title: 'We confirm the details',
+        body: 'We follow up using the phone or email you provided to make sure we understand the problem.',
+      },
+      {
+        title: 'We schedule the visit',
+        body: 'We agree on a time that works and let you know what to expect.',
+      },
+      {
+        title: 'We do the work',
+        body: 'We diagnose the actual problem, explain what we found, and do the work you agreed to.',
+      },
+    ],
+  },
+
   cta: {
     heading: 'Need a Plumber Today?',
     body: 'A phone call is the fastest way to reach us and the surest way to get on the schedule.',

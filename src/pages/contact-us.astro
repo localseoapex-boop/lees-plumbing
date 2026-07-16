@@ -2,28 +2,43 @@
 /**
  * /contact-us — Contact Lee's Plumbing.
  *
- * Holds no business data. The phone, email, physical address, mailing P.O. Box,
- * and hours all resolve from data/offices.ts + config/site.ts through
- * ContactDetails and ContentMap, so this page cannot drift from the footer or
- * the LocalBusiness schema.
+ * Redesigned to reinforce trust rather than read as a utility page. The order
+ * walks a visitor from "how do I reach them" to "what happens if I do":
+ *   1. Photographic hero (a tidy plumbing workbench behind the H1)
+ *   2. A large contact card (call, email, office, hours) paired with the real
+ *      Google Business map
+ *   3. The message form, with the scheduling expectation stated beside it
+ *   4. "What happens after you reach out" — the honest four-step process
+ *   5. The shared trust band with the real fleet photograph
+ *   6. The closing phone CTA
+ *
+ * Holds no business data of its own. Phone, email, address, mailing P.O. Box, and
+ * hours all resolve from data/offices.ts + config/site.ts through ContactDetails
+ * and ContentMap, so this page cannot drift from the footer or the LocalBusiness
+ * schema. All copy comes from CONTACT_PAGE in config/content-pages.ts.
  *
  * FORM STATUS: LIVE. The form submits JSON to the Activepieces webhook configured
  * in src/config/contact.ts, and shows success ONLY after a 2xx response. See
- * ContactForm.astro for the delivery logic and for what the Activepieces flow
- * must validate on its side.
+ * ContactForm.astro for the delivery logic.
  */
 import ContentLayout from '../layouts/ContentLayout.astro';
-import ContentCTA from '../components/content-pages/ContentCTA.astro';
 import ContactForm from '../components/content-pages/ContactForm.astro';
 import ContactDetails from '../components/content-pages/ContactDetails.astro';
 import ContentMap from '../components/content-pages/ContentMap.astro';
+import ContentCTA from '../components/content-pages/ContentCTA.astro';
+// The shared trust band with the real fleet photograph, same as the homepage and
+// the service pages, so the contact page rhymes with the rest of the site.
+import TrustSection from '../components/homepage/TrustSection.astro';
 
 import { BUSINESS } from '../config/site';
 import { CONTACT_PAGE } from '../config/content-pages';
+import { CONTACT_IMAGES, HOMEPAGE_IMAGES } from '../config/images';
+import { TRUST_HEADING, TRUST_CARDS } from '../data/service-content';
 import { primaryOffice, formatHours } from '../data/offices';
 
 const hours = primaryOffice.hours.map((spec) => formatHours(spec));
 const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
+const { notice, form, details, map, process } = CONTACT_PAGE;
 ---
 
 <ContentLayout
@@ -33,30 +48,46 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
   eyebrow={CONTACT_PAGE.eyebrow}
   heading={CONTACT_PAGE.heading}
   lede={CONTACT_PAGE.lede}
+  heroBgImage={CONTACT_IMAGES.hero}
 >
-  {/* Scheduling expectation, set before anyone fills anything in. */}
-  <section class="notice-band" aria-labelledby="notice-heading">
-    <div class="container notice-inner">
-      <h2 id="notice-heading">{CONTACT_PAGE.notice.heading}</h2>
-      <p>{CONTACT_PAGE.notice.body}</p>
-    </div>
-  </section>
-
-  <section class="contact-band" aria-labelledby="contact-heading">
-    <div class="container contact-inner">
-      <div class="contact-col">
-        <h2 id="contact-heading">{CONTACT_PAGE.details.heading}</h2>
-        {/* Phone and email lead, because they are the only channels that
-            actually reach us today. */}
+  {/* Contact card + the real Google Business map, side by side. */}
+  <section class="reach-band" aria-labelledby="reach-heading">
+    <div class="container reach-inner">
+      <div class="contact-card">
+        <h2 id="reach-heading">{details.heading}</h2>
         <ContactDetails />
       </div>
 
+      <div class="map-col">
+        <h2 id="map-heading">{map.heading}</h2>
+        <p class="map-intro">{map.intro}</p>
+        <ContentMap />
+      </div>
+    </div>
+  </section>
+
+  {/* The message form, with the scheduling expectation stated right beside it. */}
+  <section class="form-band" aria-labelledby="form-heading">
+    <div class="container form-inner">
+      <div class="form-intro-col">
+        <h2 id="form-heading">{form.heading}</h2>
+        <p class="form-intro">{form.intro}</p>
+
+        <div class="notice-card">
+          <p class="notice-title">{notice.heading}</p>
+          <p class="notice-body">{notice.body}</p>
+        </div>
+
+        <p class="call-instead">
+          Prefer to call?
+          <a href={`tel:${BUSINESS.phone}`}>{BUSINESS.phoneDisplay}</a>
+        </p>
+      </div>
+
       <div class="form-col">
-        <h2 id="form-heading">{CONTACT_PAGE.form.heading}</h2>
-        <p class="form-intro">{CONTACT_PAGE.form.intro}</p>
         <ContactForm
-          serviceOptions={CONTACT_PAGE.form.serviceOptions}
-          cityOptions={CONTACT_PAGE.form.cityOptions}
+          serviceOptions={form.serviceOptions}
+          cityOptions={form.cityOptions}
           phone={BUSINESS.phone}
           phoneDisplay={BUSINESS.phoneDisplay}
           email={primaryOffice.email}
@@ -65,14 +96,40 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
     </div>
   </section>
 
-  <section class="map-band" aria-labelledby="map-heading">
+  {/* What happens after you reach out — the honest four-step process. */}
+  <section class="process-band" aria-labelledby="process-heading">
     <div class="container">
-      <h2 id="map-heading">{CONTACT_PAGE.map.heading}</h2>
-      <p class="map-intro">{CONTACT_PAGE.map.intro}</p>
-      {/* Maps the PHYSICAL street address. The P.O. Box is never mapped. */}
-      <ContentMap />
+      <header class="process-head">
+        <span class="head-rule" aria-hidden="true"></span>
+        <h2 id="process-heading">{process.heading}</h2>
+        <p class="process-intro">{process.intro}</p>
+      </header>
+
+      <ol class="process-steps">
+        {
+          process.steps.map((step, i) => (
+            <li class="process-step">
+              <span class="step-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
     </div>
   </section>
+
+  <TrustSection
+    id="why-us"
+    heading={TRUST_HEADING}
+    intro="A local plumbing company that answers the phone and does the work properly."
+    cards={TRUST_CARDS}
+    image={HOMEPAGE_IMAGES.trustTrucks}
+  />
 
   <ContentCTA
     heading={CONTACT_PAGE.cta.heading}
@@ -85,60 +142,178 @@ const crumbs = [{ name: 'Home', href: '/' }, { name: 'Contact Us' }];
 </ContentLayout>
 
 <style>
-  .notice-band {
-    background: var(--color-surface-alt);
-    border-bottom: 1px solid var(--color-border);
-    padding: 2rem 0;
-  }
-  .notice-inner {
-    border-left: 4px solid var(--color-red);
-    padding-left: 1.25rem;
-  }
-  .notice-band h2 {
-    margin: 0 0 0.4rem;
-    font-size: 1.4rem;
-  }
-  .notice-band p {
-    margin: 0;
-    color: var(--color-muted);
-    line-height: 1.7;
-    max-width: 70ch;
-  }
-
-  .contact-band {
+  /* ── Contact card + map ─────────────────────────────────────────────── */
+  .reach-band {
     background: var(--color-surface);
     padding: var(--section-y) 0;
   }
-  .contact-inner {
+  .reach-inner {
     display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+  .reach-inner h2,
+  .form-band h2 {
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+    margin: 0 0 1.25rem;
+  }
+  /* The large contact card: the "walk into the office" centerpiece. */
+  .contact-card {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-red);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    box-shadow: var(--shadow-sm);
+  }
+  .map-intro {
+    margin: -0.5rem 0 1.5rem;
+    color: var(--color-muted);
+    line-height: 1.7;
+    max-width: 48ch;
+  }
+
+  /* ── Form band ──────────────────────────────────────────────────────── */
+  .form-band {
+    background: var(--color-surface-alt);
+    border-top: 1px solid var(--color-border);
+    padding: var(--section-y) 0;
+  }
+  .form-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: clamp(2rem, 5vw, 4rem);
     align-items: start;
   }
-  .contact-band h2,
-  .map-band h2 {
-    font-size: clamp(1.75rem, 3vw, 2.35rem);
-    margin: 0 0 1.5rem;
-  }
   .form-intro {
-    margin: -0.75rem 0 1.5rem;
+    margin: -0.5rem 0 1.5rem;
     color: var(--color-muted);
     line-height: 1.7;
+    max-width: 46ch;
+  }
+  .notice-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-red);
+    border-radius: var(--radius-sm);
+    padding: 1.15rem 1.35rem;
+  }
+  .notice-title {
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+    color: var(--color-dark);
+  }
+  .notice-body {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.65;
+    font-size: 0.95rem;
+  }
+  .call-instead {
+    margin: 1.5rem 0 0;
+    font-size: 1.05rem;
+    color: var(--color-muted);
+  }
+  .call-instead a {
+    margin-left: 0.4rem;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-red);
+    text-decoration: none;
+  }
+  .call-instead a:hover {
+    text-decoration: underline;
   }
 
-  .map-band {
-    background: var(--color-surface-alt);
+  /* ── What happens next ──────────────────────────────────────────────── */
+  .process-band {
+    background: var(--color-surface);
     padding: var(--section-y) 0;
   }
-  .map-intro {
-    margin: -0.75rem 0 1.75rem;
+  .process-head {
+    max-width: 60ch;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
+  }
+  .process-head h2 {
+    font-size: clamp(2rem, 3.4vw, 2.75rem);
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+  }
+  .process-intro {
+    margin: 0;
     color: var(--color-muted);
+    font-size: 1.05rem;
     line-height: 1.7;
-    max-width: 65ch;
+  }
+  .process-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    counter-reset: none;
+  }
+  .process-step {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.6rem 1.5rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    flex: none;
+    border-radius: 50%;
+    background: var(--color-red);
+    color: var(--color-white);
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .process-step h3 {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin: 0 0 0.4rem;
+  }
+  .process-step p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
   }
 
+  /* ── Responsive ─────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
-    .contact-inner {
+    .reach-inner,
+    .form-inner {
+      grid-template-columns: 1fr;
+    }
+    .process-steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .process-steps {
       grid-template-columns: 1fr;
     }
   }

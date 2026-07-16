@@ -6,8 +6,14 @@
  * page is not a conversion page, so this states what the page is and gets out of
  * the way. It holds the page's single <h1>.
  *
- * The media slot is optional. When `asset` is omitted the hero is a single
- * centered column rather than a two-column split with an empty box in it.
+ * TWO OPTIONAL VISUALS, mutually exclusive:
+ *   - `asset` renders a 16:9 image PLATE beside the copy (About, Offers). Omit it
+ *     for a single centered column instead of a split with an empty box.
+ *   - `bgImage` makes the whole hero a photographic landing hero: a full-bleed
+ *     <img> behind the copy with a worst-case scrim, using the same technique as
+ *     the homepage and service heroes. When it is set the plate is suppressed, so
+ *     a page picks one treatment or the other, never both.
+ * With neither, the hero is the original flat dark band, unchanged.
  */
 import type { ImageAsset } from '../../config/images';
 import ContentImage from './ContentImage.astro';
@@ -19,13 +25,35 @@ interface Props {
   /** Omit entirely for a text-only hero. `null` renders a branded panel. */
   asset?: ImageAsset | null;
   fallbackCaption?: string;
+  /** Full-bleed background photo. Decorative (empty alt). Suppresses the plate. */
+  bgImage?: ImageAsset | null;
 }
 
-const { eyebrow, heading, lede, asset, fallbackCaption } = Astro.props;
-const hasMedia = asset !== undefined;
+const { eyebrow, heading, lede, asset, fallbackCaption, bgImage = null } = Astro.props;
+const hasBg = bgImage != null;
+// The plate is only shown when the caller opted into `asset` AND there is no
+// background photo taking over the whole hero.
+const hasMedia = asset !== undefined && !hasBg;
 ---
 
-<section class="content-hero">
+<section class:list={['content-hero', { 'has-bg': hasBg }]}>
+  {
+    hasBg && (
+      <Fragment>
+        <img
+          class="hero-bg"
+          src={bgImage.src}
+          alt=""
+          width={bgImage.width}
+          height={bgImage.height}
+          fetchpriority="high"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="hero-scrim" aria-hidden="true" />
+      </Fragment>
+    )
+  }
   <div class:list={['container', 'hero-inner', { split: hasMedia }]}>
     <div class="hero-copy">
       {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
@@ -54,6 +82,43 @@ const hasMedia = asset !== undefined;
     background: var(--color-dark);
     color: var(--color-white);
     padding: clamp(2.75rem, 5vw, 4rem) 0;
+  }
+  /* Background-photo variant: a landing hero with more vertical presence. */
+  .content-hero.has-bg {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(3.5rem, 7vw, 6rem) 0;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 55% 50%;
+    z-index: -2;
+  }
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    /* Copy sits on the left, so the scrim is heaviest there and lifts toward the
+       right where the workbench can breathe. Brand black at varying alpha only.
+       Dimensioned for the worst case: the left zone stays near #191b1b, keeping
+       the white lede above 12:1. */
+    background-image: linear-gradient(
+      90deg,
+      rgba(5, 7, 7, 0.9) 0%,
+      rgba(5, 7, 7, 0.82) 42%,
+      rgba(5, 7, 7, 0.55) 78%,
+      rgba(5, 7, 7, 0.45) 100%
+    );
+    background-color: rgba(5, 7, 7, 0.4);
+  }
+  .content-hero.has-bg .hero-inner {
+    position: relative;
+    z-index: 1;
   }
   .hero-inner.split {
     display: grid;
@@ -90,6 +155,16 @@ const hasMedia = asset !== undefined;
     }
     .hero-media {
       order: 2;
+    }
+    /* Copy spans the full width, so the scrim runs vertically and stays heavy. */
+    .content-hero.has-bg .hero-scrim {
+      background-image: linear-gradient(
+        180deg,
+        rgba(5, 7, 7, 0.88) 0%,
+        rgba(5, 7, 7, 0.82) 60%,
+        rgba(5, 7, 7, 0.8) 100%
+      );
+      background-color: rgba(5, 7, 7, 0.5);
     }
   }
 </style>

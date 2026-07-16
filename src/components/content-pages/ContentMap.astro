@@ -2,13 +2,14 @@
 /**
  * ContentMap.astro — responsive Google Map embed for the physical office.
  *
- * The query is built from data/offices.ts, so the pin and the address printed
- * beside it are the same record. It maps the PHYSICAL street address and never
- * the mailing P.O. Box: a P.O. Box is not a location, and dropping a map pin on
- * one would be wrong for customers and wrong for local SEO.
+ * The pin is the REAL Google Business place for Lee's Plumbing Inc (its place id
+ * is baked into the embed URL below), so the map lands on the verified listing
+ * rather than a geocoded guess at the street. It maps the PHYSICAL location and
+ * never the mailing P.O. Box: a P.O. Box is not a location, and dropping a map
+ * pin on one would be wrong for customers and wrong for local SEO.
  *
- * Uses the keyless /maps?output=embed endpoint, so there is no API key to leak,
- * no billing to configure, and no third-party script on the page. It is a lazy
+ * Uses the keyless /maps/embed endpoint, so there is no API key to leak, no
+ * billing to configure, and no third-party script on the page. It is a lazy
  * iframe, which keeps it off the critical path.
  *
  * The iframe carries a `title`, which is what a screen reader announces in place
@@ -19,7 +20,10 @@ import { primaryOffice } from '../../data/offices';
 
 const { address, name } = primaryOffice;
 const query = `${address.street}, ${address.city}, ${address.region} ${address.postalCode}`;
-const embedSrc = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+// The verified Google Business place embed (contains Lee's Plumbing Inc's place
+// id). Supplied by the business; reproduced exactly.
+const embedSrc =
+  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2974.3316100107663!2d-111.83892770000001!3d41.7996163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x87547d41a8637ce5%3A0xe1a12c574134d150!2sLee's%20Plumbing%20Inc!5e0!3m2!1sen!2sus!4v1784180377801!5m2!1sen!2sus";
 const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 ---
 
@@ -29,7 +33,7 @@ const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${enc
       src={embedSrc}
       title={`Google Map showing the location of Lee's Plumbing, ${query}`}
       loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"
+      referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen></iframe>
   </div>
   <p class="map-caption">
