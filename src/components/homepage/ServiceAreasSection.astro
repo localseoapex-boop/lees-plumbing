@@ -56,6 +56,10 @@ const featuredIndex = areas.findIndex((area) => area.isHeadquarters);
 <section class="areas" {id} aria-labelledby={headingId}>
   <div class="container">
     <header class="section-head">
+      {/* The same red accent the About, Trust and Plumbing bands open with, so
+          this section finally rhymes with the rest of the page. Decorative, so
+          it is hidden from assistive technology. */}
+      <span class="head-rule" aria-hidden="true"></span>
       <h2 id={headingId}>{heading}</h2>
       {intro && <p class="section-intro">{intro}</p>}
     </header>
@@ -96,6 +100,14 @@ const featuredIndex = areas.findIndex((area) => area.isHeadquarters);
     max-width: 62ch;
     margin-bottom: clamp(2rem, 4vw, 2.75rem);
   }
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
+  }
   h2 {
     font-size: clamp(2rem, 3.4vw, 2.75rem);
     margin: 0 0 0.75rem;
@@ -108,24 +120,36 @@ const featuredIndex = areas.findIndex((area) => area.isHeadquarters);
     line-height: 1.7;
   }
 
-  /* Three columns. Nine linked cities fill an exact 3x3 beneath the full-width
-     headquarters row, so no width produces a ragged final row. */
+  /* THE FRAMED DIRECTORY.
+     The whole list is one editorial object: an outer hairline frame with 1px
+     dividers between every cell. Both are drawn the seam-free way — a 1px grid
+     GAP over a border-coloured backing, with white cells sitting on top — so
+     there are no doubled borders where cells meet and no per-card box. The frame
+     carries the structure that nine shadowed, hovering cards used to, which is
+     what turns a styled link directory into a considered service register. Nine
+     linked cities fill an exact 3x3 beneath the full-width headquarters row, so
+     no width produces a ragged final row. */
   .area-grid {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 1px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    /* Clip the inner cells to the rounded frame. Also WHY the focus ring below
+       is inset: a positive outline-offset would be clipped by this. */
+    overflow: hidden;
   }
   .area-item {
     display: flex;
   }
-  /* The headquarters leads the grid as a full-width anchor row. */
+  /* The headquarters leads as a full-width anchor row; the 1px gap beneath it
+     becomes the hairline that separates home base from the communities. */
   .area-item.is-featured {
     grid-column: 1 / -1;
-    /* A little air below the anchor before the city directory begins. */
-    margin-bottom: 0.5rem;
   }
 
   .area-card {
@@ -139,53 +163,47 @@ const featuredIndex = areas.findIndex((area) => area.isHeadquarters);
     width: 100%;
     height: 100%;
     padding: 1.15rem 1.35rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    background: var(--color-white);
     text-decoration: none;
     color: var(--color-dark);
     font-weight: 600;
     transition:
-      border-color 0.18s ease,
-      box-shadow 0.18s ease,
-      transform 0.18s ease;
+      background-color 0.18s ease,
+      color 0.18s ease;
   }
-  .area-card:hover {
-    border-color: var(--color-red);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+  /* City links are quiet by default and FILL on hover instead of lifting: a
+     whole card jumping under the cursor was the template tell, and nine of them
+     jumping was this section's. The fill plus the red ink is the affordance. */
+  .area-card[href]:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-red);
   }
+  /* Inset on purpose: the frame clips overflow, so a positive offset would cut
+     the ring on the edge cells. Elsewhere on the site the ring stays at +3. */
   .area-card:focus-visible {
     outline: 3px solid var(--color-red);
-    outline-offset: 3px;
+    outline-offset: -3px;
   }
   .area-city {
     font-size: 1rem;
     line-height: 1.3;
   }
 
-  /* The headquarters anchor. Distinct through layout, spacing, typography, the
-     badge, and a subtle filled background only. It has no page to link to, so it
-     keeps no interactive affordance: no hover lift, no elevation change, and the
-     cursor stays default. Most prominent element in the section, not a dimmed
-     one, so the missing link reads as intentional. */
-  .area-card.is-featured {
+  /* The headquarters anchor. Home base, distinguished by scale, a filled surface
+     and the badge — the most prominent cell, not a dimmed one. It has no page to
+     link to, so it keeps no interactive affordance: no fill on hover, the cursor
+     stays default, and the missing link reads as intentional. */
+  .area-card.is-hq {
     background: var(--color-surface-alt);
-    /* A quiet brand accent ties the anchor to the section without shouting. */
-    border-color: var(--color-border);
-    border-left: 3px solid var(--color-red);
     padding: 1.5rem 1.6rem;
-    box-shadow: none;
   }
   .is-featured .area-city {
     font-size: 1.2rem;
   }
   .area-card.is-static,
   .area-card.is-static:hover {
-    border-color: var(--color-border);
-    border-left-color: var(--color-red);
-    box-shadow: none;
-    transform: none;
+    background: var(--color-surface-alt);
+    color: var(--color-dark);
     cursor: default;
   }
 
