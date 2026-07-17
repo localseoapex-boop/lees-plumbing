@@ -4,19 +4,21 @@
  *
  * Used by the header and the footer. It has TWO modes and prefers the first:
  *
- *   1. A real logo file, when one exists in BRAND_IMAGES for this surface.
- *   2. A LOCKUP: the genuine red pipe-wrench mark plus the company name set in
- *      the brand heading font. This is what ships today, because Lee's has no
- *      standalone logo file (see the note in config/images.ts).
+ *   1. A real logo file, when one exists in BRAND_IMAGES for this surface. This
+ *      is what ships today: the co-branded Lee's x Any Hour lockup is wired into
+ *      both surfaces (see BRAND_IMAGES in config/images.ts).
+ *   2. A LOCKUP fallback: the genuine red pipe-wrench mark plus the company name
+ *      set in the brand heading font. Used only if the logo slots are cleared.
  *
  * The switch is automatic. Drop a real logo into BRAND_IMAGES.logoOnLight /
  * logoOnDark and every place the brand appears updates at once, with no
  * component edits anywhere.
  *
- * `tone` picks the surface. It matters: the real Lee's wordmark is black type,
- * so the footer will need a knockout variant. In lockup mode the wrench is red
- * on both surfaces (it is transparent artwork) and the wordmark takes the colour
- * of the surface it sits on.
+ * `tone` picks the surface. It matters: the co-branded lockup is black type on a
+ * transparent ground, so tone="dark" backs it with a white plaque in the footer
+ * (see the .brand-logo.dark rule) while tone="light" renders it bare on the white
+ * header. In lockup fallback mode the wrench is red on both surfaces and the
+ * wordmark takes the colour of the surface it sits on.
  *
  * SIZING is driven by two inherited custom properties, NOT by props:
  *   --brand-mark-height   height of the wrench mark   (default 30px)
@@ -50,9 +52,9 @@ const mark = BRAND_IMAGES.mark;
 {
   logo ? (
     <img
-      class="brand-logo"
+      class:list={['brand-logo', tone]}
       src={logo.src}
-      alt={SITE.name}
+      alt={logo.alt || SITE.name}
       width={logo.width}
       height={logo.height}
     />
@@ -69,9 +71,23 @@ const mark = BRAND_IMAGES.mark;
 <style>
   .brand-logo {
     display: block;
-    height: calc(var(--brand-mark-height, 30px) + 8px);
+    /* Height-driven so the wide lockup keeps its aspect ratio and can never be
+       stretched. A caller can override --brand-logo-height directly; otherwise it
+       tracks the same --brand-mark-height the responsive header already shrinks. */
+    height: var(--brand-logo-height, calc(var(--brand-mark-height, 30px) + 12px));
     width: auto;
     max-width: 100%;
+  }
+  /* The co-branded lockup is black "LEE'S PLUMBING" ink on a transparent ground.
+     It reads as-is on the white header (tone="light"), but on the dark footer
+     (tone="dark") the wordmark would disappear, so it sits on a white plaque.
+     content-box keeps the artwork at --brand-logo-height and adds the padding
+     around it rather than shrinking the logo. */
+  .brand-logo.dark {
+    box-sizing: content-box;
+    background: var(--color-white);
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius-lg, 14px);
   }
 
   .brand-lockup {

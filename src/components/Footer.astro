@@ -21,9 +21,9 @@ const year = new Date().getFullYear();
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-brand-col">
-      {/* tone="dark" so a knockout logo is used the moment one exists. Until
-          then the wrench mark sits on the dark surface and the wordmark renders
-          white, which is why the mark needed to be transparent artwork. */}
+      {/* tone="dark" renders the co-branded lockup on a white plaque, because
+          its black "Lee's Plumbing" wordmark would otherwise vanish into the
+          dark footer. BrandLogo owns that treatment; see its dark-tone rule. */}
       <div class="footer-brand">
         <BrandLogo tone="dark" />
       </div>

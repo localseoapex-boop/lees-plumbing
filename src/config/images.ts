@@ -79,37 +79,29 @@ const ORIGINALS = '/images/lees-original-photos';
 /**
  * BRAND IDENTITY. The header and footer logo.
  *
- * THERE IS NO CLEAN LEE'S LOGO FILE. The real logo (red pipe wrench + the LEE'S
- * PLUMBING INCORPORATED wordmark and ripple) exists only baked into the coupon
- * artwork and painted on the side of the trucks. Neither is extractable at
- * quality, and neither has transparency. So until the client supplies a proper
- * logo pack, the header and footer render a LOCKUP built from real parts:
+ * THE SITE LOGO IS THE CO-BRANDED LEE'S x ANY HOUR LOCKUP. Per the owner's
+ * direction, the standalone Lee's mark is no longer used anywhere in the site
+ * chrome: the company now presents as Lee's Plumbing, part of Any Hour Services,
+ * on every page. The single real logo file the business supplied
+ * (lees-x-any-hour-logo.png, 951x206, transparent PNG) is therefore wired into
+ * BOTH `logoOnLight` and `logoOnDark`, so BrandLogo renders it in the header and
+ * the footer alike. (This reverses an earlier decision that isolated the
+ * co-brand to the merger page; the owner asked for it site-wide.)
  *
- *   - `mark`: the genuine red pipe-wrench mark from the Lee's logo. Real, and
- *     transparent, so it sits correctly on both the white header and the black
- *     footer.
- *   - the wordmark: "Lee's Plumbing" set in Cormorant Garamond, which is already
- *     the brand heading font and already how the header has always rendered.
+ * ONE SURFACE CAVEAT, handled in BrandLogo, not here. The lockup is BLACK
+ * "LEE'S PLUMBING" ink on a transparent ground, so it reads cleanly on the white
+ * header but would vanish into the #050707 footer. There is no knockout variant
+ * of this artwork and inventing one would be a forgery, so BrandLogo sets the
+ * dark-tone logo on a white plaque instead. That is why the same file serves
+ * both tones: the difference is the backing, not the art.
  *
- * Nothing is redrawn, regenerated, or invented. A generated wordmark is a fake
- * wordmark, and putting one on a real company's site is not a design shortcut,
- * it is a forgery.
- *
- * WHAT TO ASK THE CLIENT FOR, and how to switch it on:
- * Two variants are needed, because the footer is #050707 and the real wordmark
- * is black type: a dark-on-light version for the header and a light-on-dark
- * (knockout) version for the footer. SVG is ideal. When they arrive, fill in
- * `logoOnLight` and `logoOnDark` below and change NOTHING else: BrandLogo prefers
- * a full logo whenever one exists and falls back to the lockup when it does not.
- *
- * NOTE: /images/lees-original-photos/lees-x-any-hour-logo.png is the CO-BRANDED
- * Lee's x Any Hour lockup. It must NEVER be used here. Putting it in the site
- * chrome would stamp "Any Hour" onto all 38 pages and destroy the merger
- * isolation the whole architecture is built to preserve. It belongs to the
- * merger page and nowhere else.
+ * `mark` (the standalone red pipe-wrench) is retained ONLY as the automatic
+ * fallback for the lockup mode BrandLogo drops to if `logoOnLight`/`logoOnDark`
+ * are ever cleared. It is no longer rendered while the co-branded logo is set.
  */
 export const BRAND_IMAGES = {
-  /** REAL. The pipe-wrench mark. Transparent, so it works on any surface. */
+  /** REAL. The pipe-wrench mark. Transparent, so it works on any surface.
+      Fallback only now that the co-branded lockup is the live logo. */
   mark: {
     src: '/images/brand/lees-wrench-mark.png',
     /* Decorative: the wordmark beside it already carries the company name, so a
@@ -120,10 +112,23 @@ export const BRAND_IMAGES = {
     provenance: 'real',
   } satisfies ImageAsset as ImageAsset | null,
 
-  /** Awaiting the real logo pack. Dark artwork, for the white header. */
-  logoOnLight: null as ImageAsset | null,
-  /** Awaiting the real logo pack. Knockout artwork, for the dark footer. */
-  logoOnDark: null as ImageAsset | null,
+  /** LIVE. Co-branded lockup on the white header. Black ink reads as-is. */
+  logoOnLight: {
+    src: `${ORIGINALS}/lees-x-any-hour-logo.png`,
+    alt: "Lee's Plumbing, part of Any Hour Services",
+    width: 951,
+    height: 206,
+    provenance: 'real',
+  } satisfies ImageAsset as ImageAsset | null,
+  /** LIVE. Same file on the dark footer; BrandLogo backs it with a white plaque
+      so the black wordmark stays legible (see the caveat above). */
+  logoOnDark: {
+    src: `${ORIGINALS}/lees-x-any-hour-logo.png`,
+    alt: "Lee's Plumbing, part of Any Hour Services",
+    width: 951,
+    height: 206,
+    provenance: 'real',
+  } satisfies ImageAsset as ImageAsset | null,
 } as const;
 
 /**
@@ -338,6 +343,32 @@ export const SERVICE_HERO_IMAGES: Record<string, ImageAsset | null> = {
   'hydro-jetting': svcHero('hydro-jetting'),
   'clogged-toilet': svcHero('clogged-toilet'),
   'main-line-cleaning': svcHero('main-line-cleaning'),
+};
+
+/**
+ * SUPPORTING_IMAGES — the optional contextual photo for the supporting block on
+ * the FLAGSHIP sub-service pages only. This is deliberately a short list, not one
+ * per page: the plainer pages stay prose-only, so the pages that carry a photo
+ * read differently. Same rules as the hero backdrops (AI, unbranded, no people
+ * presented as staff, empty alt because the prose beside it already carries the
+ * meaning). 4:3, generated at ~2x the rendered column width, JPEG, at
+ * /images/services/<slug>-supporting.jpg. Populated in the photography pass.
+ */
+const supp = (slug: string): ImageAsset => ({
+  src: `/images/services/${slug}-supporting.jpg`,
+  alt: '',
+  width: 1600,
+  height: 1200,
+  provenance: 'ai',
+});
+
+export const SUPPORTING_IMAGES: Record<string, ImageAsset | null> = {
+  'water-heater-repair': supp('water-heater-repair'),
+  'pipe-repair': supp('pipe-repair'),
+  'drain-cleaning': supp('drain-cleaning'),
+  'sewer-camera-inspection': supp('sewer-camera-inspection'),
+  'hydro-jetting': supp('hydro-jetting'),
+  'toilet-repair': supp('toilet-repair'),
 };
 
 /**
