@@ -1,38 +1,36 @@
 ---
 /**
- * ServiceHero.astro — the conversion hero for hub AND sub-service pages.
+ * ServiceHero.astro — the conversion hero for hub AND sub-service pages (and,
+ * per direction, the city pages, which reuse this same component).
  *
- * One component serves both tiers. The difference between a hub hero and a
- * sub-service hero is entirely in the props (heading, lede, and where the
- * secondary CTA jumps to), not in the markup, so there is a single hero to keep
- * in sync rather than one per page type.
+ * One component serves every tier. The difference between the heroes is entirely
+ * in the props (heading, lede, and where the secondary CTA jumps to), not in the
+ * markup, so there is a single hero to keep in sync rather than one per page type.
  *
- * THE OFFER SLOT: `offer` is a deliberately reserved structural area. No offer
- * exists today, and inventing a coupon would be putting a false promise in front
- * of a customer. So when `offer` is null the panel falls back to the two facts we
- * can actually stand behind, the phone number and the office hours, both read
- * from office data. That reads as an intentional "here is how to reach us" panel
- * rather than an empty box or a development placeholder. When a real offer
- * exists, pass it in and it takes the same slot with no layout change and no
- * redesign of the hero.
+ * THE RIGHT COLUMN is the coded coupon card (HeroOfferCard). It replaced the old
+ * "Speak With Us" contact panel: the offer is a real, confirmed coupon, so the
+ * hero now leads with savings rather than a restatement of the phone number. All
+ * offer copy comes from the shared OFFER source, so it is never duplicated here.
+ *
+ * The standalone phone-number row that used to sit under the CTA buttons is gone
+ * too: it duplicated the "Call to Schedule" button beside it. The phone CTA
+ * itself stays as the primary action.
  *
  * Renders the page's single H1. Nothing else on these pages emits one.
  */
 import type { ImageAsset } from '../../config/images';
+import HeroOfferCard from './HeroOfferCard.astro';
 
 interface Props {
   eyebrow: string;
   /** The page's one and only H1. */
   heading: string;
   lede: string;
+  /** Powers the primary "Call to Schedule" CTA (tel: link). */
   phone: string;
-  phoneDisplay: string;
-  hours: string;
   /** In-page anchor, e.g. "#services" or "#about-this-service". */
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
-  /** A real, confirmed offer. Null renders the contact panel instead. */
-  offer?: { title: string; body: string } | null;
   /**
    * Optional contextual background photo, config-driven per page. Null/omitted
    * renders the flat dark hero unchanged, so any page without a photo is exactly
@@ -50,11 +48,8 @@ const {
   heading,
   lede,
   phone,
-  phoneDisplay,
-  hours,
   secondaryCtaLabel,
   secondaryCtaHref,
-  offer = null,
   heroImage = null,
 } = Astro.props;
 ---
@@ -87,33 +82,9 @@ const {
         <a class="btn-primary" href={`tel:${phone}`}>Call to Schedule</a>
         <a class="btn-ghost" href={secondaryCtaHref}>{secondaryCtaLabel}</a>
       </div>
-
-      <a class="hero-phone" href={`tel:${phone}`}>
-        <span class="hero-phone-label">Call</span>
-        <span class="hero-phone-number">{phoneDisplay}</span>
-      </a>
     </div>
 
-    <aside class="hero-panel" aria-label={offer ? 'Current offer' : 'Contact details'}>
-      {
-        offer ? (
-          <>
-            <p class="panel-kicker">Current Offer</p>
-            <p class="panel-title">{offer.title}</p>
-            <p class="panel-body">{offer.body}</p>
-          </>
-        ) : (
-          <>
-            <p class="panel-kicker">Speak With Us</p>
-            <a class="panel-phone" href={`tel:${phone}`}>
-              {phoneDisplay}
-            </a>
-            <p class="panel-body">{hours}</p>
-            <p class="panel-body">Based in Hyde Park, serving Cache Valley.</p>
-          </>
-        )
-      }
-    </aside>
+    <HeroOfferCard />
   </div>
 </section>
 
@@ -229,83 +200,9 @@ const {
     border-color: var(--color-white);
   }
   .btn-primary:focus-visible,
-  .btn-ghost:focus-visible,
-  .hero-phone:focus-visible,
-  .panel-phone:focus-visible {
+  .btn-ghost:focus-visible {
     outline: 3px solid var(--color-white);
     outline-offset: 3px;
-  }
-
-  /* The number itself, stated plainly. A tel: link on mobile, a readable number
-     on desktop where tapping it does nothing useful. */
-  .hero-phone {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
-    text-decoration: none;
-  }
-  .hero-phone-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: #8d9292;
-  }
-  .hero-phone-number {
-    font-family: var(--font-heading);
-    font-size: clamp(1.75rem, 3vw, 2.25rem);
-    font-weight: 700;
-    color: var(--color-white);
-  }
-  .hero-phone:hover .hero-phone-number {
-    color: #f0a3a3;
-  }
-
-  /* Reserved offer area. Sized and styled to hold a real offer later without
-     the hero needing to change shape. */
-  .hero-panel {
-    padding: clamp(1.5rem, 2.5vw, 2rem);
-    background: #0d1111;
-    border: 1px solid #232828;
-    border-left: 4px solid var(--color-red);
-    border-radius: var(--radius-lg);
-  }
-  .panel-kicker {
-    margin: 0 0 0.75rem;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-weight: 700;
-    color: #f0a3a3;
-  }
-  .panel-title {
-    margin: 0 0 0.5rem;
-    font-family: var(--font-heading);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--color-white);
-  }
-  .panel-phone {
-    display: inline-block;
-    margin-bottom: 0.75rem;
-    font-family: var(--font-heading);
-    font-size: clamp(1.6rem, 2.4vw, 2rem);
-    font-weight: 700;
-    color: var(--color-white);
-    text-decoration: none;
-  }
-  .panel-phone:hover {
-    color: #f0a3a3;
-  }
-  .panel-body {
-    margin: 0 0 0.4rem;
-    color: #b3b7b7;
-    font-size: 0.92rem;
-    line-height: 1.6;
-  }
-  .panel-body:last-child {
-    margin-bottom: 0;
   }
 
   @media (max-width: 900px) {

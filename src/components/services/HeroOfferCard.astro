@@ -1,0 +1,114 @@
+---
+/**
+ * HeroOfferCard.astro — the coded promotional coupon that sits in the RIGHT
+ * column of ServiceHero on every hub and sub-service page (and, per direction,
+ * the city pages too).
+ *
+ * It REFERENCES the coupon language from the Offers page (the red savings figure,
+ * a ticket border, a tear line above the fine print) but it is fully CODED, not
+ * the coupon image: the artwork is a raster JPEG and would soften over a hero
+ * photo, and the terms need to be real selectable text. All offer copy comes from
+ * the single shared OFFER source, so nothing is duplicated or invented.
+ *
+ * HEADINGS: the card emits NO heading element. The hero already owns the page's
+ * one <h1>, and dropping an <h2>/<h3> here would inject a stray node into the
+ * document outline for a promo aside. The savings figure is a styled <p>, so the
+ * outline is untouched and there is no second H1.
+ *
+ * LEGIBILITY: the card keeps a SOLID dark background rather than a translucent
+ * one, so it reads cleanly over any of the (un-previewed) hero photographs and
+ * never depends on the scrim behind it. Every text colour clears AA on that
+ * background; the decorative ticket border and tear line are aria-hidden.
+ */
+import { OFFER } from '../../config/offer';
+---
+
+<aside class="offer-card" aria-label="Current offer">
+  <p class="offer-eyebrow">{OFFER.eyebrow}</p>
+  <p class="offer-title">{OFFER.title}</p>
+  <p class="offer-body">{OFFER.body}</p>
+  <p class="offer-terms">{OFFER.terms}</p>
+  <a class="offer-cta" href={OFFER.href}>{OFFER.ctaLabel}</a>
+</aside>
+
+<style>
+  /* The coupon. A solid dark ticket with a dashed brand-red border, so it reads
+     as promotional at a glance and stays legible over any hero image. No new
+     colours: the border and figure are --color-red, the card and text reuse the
+     same greys the hero already uses. */
+  .offer-card {
+    position: relative;
+    padding: clamp(1.5rem, 2.5vw, 2rem);
+    background: #0d1111;
+    border: 2px dashed var(--color-red);
+    border-radius: var(--radius-lg);
+  }
+
+  .offer-eyebrow {
+    margin: 0 0 0.6rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 700;
+    color: #f0a3a3;
+  }
+
+  /* The savings figure. Large and bold, so AA applies at the 3:1 large-text
+     threshold (d22727 on #0d1111 clears it), echoing the red dollar amount on
+     the printed coupon. Not a heading: see the component note. */
+  .offer-title {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.9rem, 2.6vw, 2.4rem);
+    line-height: 1.1;
+    font-weight: 700;
+    color: var(--color-red);
+  }
+
+  .offer-body {
+    margin: 0 0 1rem;
+    color: #c9cccc;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* The fine print, below a dashed tear line that reads as the coupon's
+     perforation. The rule is decorative, so it is drawn as a border rather than
+     announced. */
+  .offer-terms {
+    margin: 0 0 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #3a4040;
+    color: #9aa0a0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  /* CTA to the full Offers page. Solid red, white label, sized so the tap target
+     clears 44px on every viewport. */
+  .offer-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.7rem 1.4rem;
+    background: var(--color-red);
+    color: var(--color-white);
+    border: 2px solid var(--color-red);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .offer-cta:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+  }
+  .offer-cta:focus-visible {
+    outline: 3px solid var(--color-white);
+    outline-offset: 3px;
+  }
+</style>

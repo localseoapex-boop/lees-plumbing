@@ -9,10 +9,17 @@
  * so that nothing which renders About, Contact, or Offers can even import the
  * Any Hour content by accident.
  *
+ * The live coupon's savings figure and terms are NOT written here either: they
+ * live in config/offer.ts, the single shared offer source that both this page
+ * and the service-hero coupon card read from. OFFERS_PAGE.coupon below simply
+ * points at that source, so the offer copy exists in exactly one place.
+ *
  * Copy rules, inherited from homepage.ts and extended by the Phase 5 brief:
  * no em dashes, no semicolons, no invented history, no unverifiable claims. The
  * About copy below is the client's own text and is reproduced as supplied.
  */
+
+import { OFFER } from './offer';
 
 /** A titled list of capabilities on the About page. Names only, no claims. */
 export interface ExpertiseGroup {
@@ -192,14 +199,14 @@ export const OFFERS_PAGE = {
   },
 
   coupon: {
-    heading: '$19.95 Off Any Service',
     /**
-     * The ONLY terms that appear on the page. They are transcribed from the red
-     * bar printed on the coupon artwork itself. Nothing has been added: there is
-     * no expiration date, no coupon code, and no extra restriction, because the
-     * coupon states none.
+     * Sourced from the shared OFFER so the savings figure and terms are written
+     * once. These are transcribed from the red bar printed on the coupon artwork
+     * itself: no expiration date, no coupon code, and no extra restriction,
+     * because the coupon states none.
      */
-    terms: 'Must be presented at time of service. Cannot be combined with any other discount.',
+    heading: OFFER.title,
+    terms: OFFER.terms,
   },
 
   cta: {
