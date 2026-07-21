@@ -388,33 +388,38 @@ export const SUPPORTING_IMAGES: Record<string, ImageAsset | null> = {
  *     mid-page band keeps the empty, decorative alt for its own usage).
  *
  *   - SEVEN pages (the hub, plus the six flagship pages whose supporting photo is
- *     already their mid-page band) await a dedicated `<slug>-intro.jpg`. Until the
- *     file exists the slot is `null`, so ContentImage renders the branded fallback
- *     panel rather than a broken image, and the layout reserves the same box (no
- *     CLS). TO ACTIVATE ONE: drop a 1600x1200 JPEG at
- *     /images/services/<slug>-intro.jpg and replace its `null` with the
- *     `intro(...)` call shown in the comment beside it. The scene-based alt is
- *     pre-written there; it must NOT claim a real Lee's employee, customer, job,
- *     or facility, and must carry no logo, uniform, or readable text.
+ *     already their mid-page band) use a dedicated `<slug>-intro.jpg` via
+ *     `introImage`. If any of those files is ever removed, ContentImage renders
+ *     the branded fallback panel rather than a broken image, and the layout
+ *     reserves the same box either way (no CLS).
  */
 const reuseFirstContent = (key: string, alt: string): ImageAsset => ({
   ...(SUPPORTING_IMAGES[key] as ImageAsset),
   alt,
 });
 
-/** Descriptor for a not-yet-supplied first-content photo. Referenced from the
- *  activation comments below; unused until a slot is switched from null. */
+/**
+ * Descriptor for a dedicated first-content photo at
+ * /images/services/<slug>-intro.jpg. These are AI illustrations of the trade,
+ * generated at 1024x768 (4:3), so the intrinsic size recorded here is 1024x768
+ * and ContentImage never upscales them (they render in a ~450px column). Each
+ * carries scene-based alt that describes only what is shown and claims no real
+ * Lee's employee, customer, job, or facility, with no logo, uniform, or text.
+ */
 export const introImage = (slug: string, alt: string): ImageAsset => ({
   src: `/images/services/${slug}-intro.jpg`,
   alt,
-  width: 1600,
-  height: 1200,
+  width: 1024,
+  height: 768,
   provenance: 'ai',
 });
 
 export const FIRST_CONTENT_IMAGES: Record<string, ImageAsset | null> = {
-  // Hub. Awaits a general plumbing scene.
-  plumbing: null, // introImage('plumbing', 'Water supply lines and a brass shutoff valve on a home utility wall')
+  // Hub. A general plumbing scene.
+  plumbing: introImage(
+    'plumbing',
+    'Copper water pipes and a brass shutoff valve on a home utility room wall',
+  ),
 
   // Reuse existing 4:3 supporting photos. Subject fits the page and is not this
   // page's own mid-page band, so nothing repeats on a single page.
@@ -443,14 +448,32 @@ export const FIRST_CONTENT_IMAGES: Record<string, ImageAsset | null> = {
     'A white toilet in a bright, clean tiled bathroom',
   ),
 
-  // Flagship pages. Their supporting photo is already the mid-page band, so a
-  // dedicated intro photo is needed to avoid repeating an image on the page.
-  'water-heater-repair': null, // introImage('water-heater-repair', 'The gas control valve and connections at the base of a tank water heater')
-  'pipe-repair': null, // introImage('pipe-repair', 'A repaired run of copper pipe with fresh soldered fittings in a wall cavity')
-  'drain-cleaning': null, // introImage('drain-cleaning', 'A drain auger cable feeding into an open floor drain')
-  'sewer-camera-inspection': null, // introImage('sewer-camera-inspection', 'A sewer inspection camera reel and monitor set up beside a cleanout')
-  'hydro-jetting': null, // introImage('hydro-jetting', 'A hydro jetting nozzle and high-pressure line at an open sewer cleanout')
-  'toilet-repair': null, // introImage('toilet-repair', 'The fill valve and flapper inside an open toilet tank')
+  // Flagship pages. Dedicated intro photos, because their supporting photo is
+  // already the mid-page band and reusing it here would repeat an image.
+  'water-heater-repair': introImage(
+    'water-heater-repair',
+    'Brass shutoff valves and copper connections on a residential tank water heater in a utility room',
+  ),
+  'pipe-repair': introImage(
+    'pipe-repair',
+    'A copper water pipe with fittings running between wood wall-framing studs',
+  ),
+  'drain-cleaning': introImage(
+    'drain-cleaning',
+    'A metal drain auger cable feeding into an open floor drain on a tiled floor',
+  ),
+  'sewer-camera-inspection': introImage(
+    'sewer-camera-inspection',
+    'A sewer inspection camera reel and monitor set up beside white drain pipes',
+  ),
+  'hydro-jetting': introImage(
+    'hydro-jetting',
+    'A high-pressure nozzle jetting water into an outdoor drain opening in the grass',
+  ),
+  'toilet-repair': introImage(
+    'toilet-repair',
+    'A clean white toilet bowl in a bright, tiled bathroom',
+  ),
 };
 
 /**
