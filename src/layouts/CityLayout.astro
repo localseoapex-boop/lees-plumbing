@@ -46,10 +46,15 @@ import { getService } from '../data/services';
 import { getSubService } from '../data/subservices';
 import { nearbyCities } from '../lib/links';
 import { cityUrl, serviceUrl, subServiceUrl, LOCATIONS_URL } from '../lib/urls';
-import { TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
+import { TRUST_HEADING, TRUST_CARDS } from '../data/service-content';
+// Reviews reuse the SAME verified Google reviews the homepage and service pages
+// use, from the single source in config/homepage.ts. Nothing is copied into a
+// second object.
+import { REVIEWS } from '../config/homepage';
 // The real fleet photograph — the same proof asset the homepage Trust band uses.
 // Passing it here gives every city page the same local evidence beat.
-import { HOMEPAGE_IMAGES } from '../config/images';
+// CITY_IMAGES is the contextual home photo for the first content section, by slug.
+import { HOMEPAGE_IMAGES, CITY_IMAGES } from '../config/images';
 import {
   HERO,
   SERVICE_CARDS,
@@ -151,6 +156,7 @@ const faqs = cityFaqs(city, nearbyNames);
     heading={SERVICES_SECTION.heading(city)}
     intro={SERVICES_SECTION.intro}
     cards={serviceCards}
+    asset={CITY_IMAGES[location.slug] ?? null}
   />
 
   <TrustSection
@@ -179,9 +185,12 @@ const faqs = cityFaqs(city, nearbyNames);
   <ReviewsSection
     id="reviews"
     heading={REVIEWS.heading}
-    items={[]}
+    intro={REVIEWS.intro}
+    items={REVIEWS.items}
     isPlaceholder={REVIEWS.isPlaceholder}
     emptyMessage={REVIEWS.emptyMessage}
+    ctaLabel={REVIEWS.ctaLabel}
+    ctaHref={REVIEWS.ctaHref}
   />
 
   <FaqSection id="faqs" heading={FAQ_HEADING(city)} items={faqs} />

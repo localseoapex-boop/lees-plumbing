@@ -508,6 +508,66 @@ export const LOCATIONS_IMAGES = {
   } satisfies ImageAsset as ImageAsset | null,
 } as const;
 
+/**
+ * CITY_IMAGES — the contextual photo for the first content section on each city
+ * overview page (the "Services We Offer in [City]" split in LocationServices).
+ *
+ * One per city, keyed by location slug. These are AI ILLUSTRATIONS of a Cache
+ * Valley residential setting, generated at 1024x768 (4:3). They are context, not
+ * a claim: none shows a real, identified address in that specific city, so the
+ * alt describes the SCENE and never asserts "this house is in [City]" (which
+ * would be fabricated locality, the exact thing location-content.ts avoids).
+ * Each carries no person, no logo, no readable street sign, house number, or
+ * other text. Provenance is `ai`. The intrinsic size recorded here is the true
+ * 1024x768, so ContentImage never upscales them.
+ */
+const cityHome = (slug: string, alt: string): ImageAsset => ({
+  src: `/images/locations/${slug}-home.jpg`,
+  alt,
+  width: 1024,
+  height: 768,
+  provenance: 'ai',
+});
+
+export const CITY_IMAGES: Record<string, ImageAsset | null> = {
+  'logan-ut': cityHome(
+    'logan-ut',
+    'A two-story craftsman home with a covered porch on a tree-lined street below the mountains',
+  ),
+  'north-logan-ut': cityHome(
+    'north-logan-ut',
+    'A single-story ranch home with a green lawn and attached garage below the mountains',
+  ),
+  'smithfield-ut': cityHome(
+    'smithfield-ut',
+    'A brick colonial-style home framed by mature shade trees with the mountains behind',
+  ),
+  'providence-ut': cityHome(
+    'providence-ut',
+    'A modern white farmhouse with a dark metal roof among autumn trees below the foothills',
+  ),
+  'hyrum-ut': cityHome(
+    'hyrum-ut',
+    'A stone cottage-style home with garden beds and snow-dusted mountains in the distance',
+  ),
+  'nibley-ut': cityHome(
+    'nibley-ut',
+    'A contemporary two-story home with a manicured lawn and a mountain range behind',
+  ),
+  'river-heights-ut': cityHome(
+    'river-heights-ut',
+    'A two-story craftsman home beside a bright autumn maple with the valley mountains behind',
+  ),
+  'wellsville-ut': cityHome(
+    'wellsville-ut',
+    'A rural wood-sided farmhouse in open fields with tall mountains close behind',
+  ),
+  'richmond-ut': cityHome(
+    'richmond-ut',
+    'A classic white farmhouse with a wraparound porch and mountains in the evening light',
+  ),
+};
+
 export const OFFERS_IMAGES = {
   /**
    * AI. The Offers page's photographic hero BACKGROUND: a bright, welcoming

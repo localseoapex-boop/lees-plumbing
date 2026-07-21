@@ -16,6 +16,9 @@
  * full-width card, and additional categories flow beside it, so the component
  * stays reusable for a business that offers more than one trade.
  */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
 export interface ServiceHighlight {
   name: string;
   href: string;
@@ -34,18 +37,38 @@ interface Props {
   heading: string;
   intro?: string;
   cards: LocationServiceCardView[];
+  /**
+   * Optional contextual photo for the section header. When the prop is present
+   * (even as null) the header becomes a text-and-image split, heading and intro
+   * on the left, photo on the right, with the card grid full-width below. Null
+   * renders the branded fallback panel. Omitting the prop keeps the plain header.
+   */
+  asset?: ImageAsset | null;
 }
 
 const { id, heading, intro, cards } = Astro.props;
+// Read directly (no default) so "prop omitted" stays distinct from "passed null".
+const asset = Astro.props.asset;
+const hasImage = asset !== undefined;
 const headingId = `${id}-heading`;
 ---
 
-<section class="loc-services" {id} aria-labelledby={headingId}>
+<section class:list={['loc-services', { 'has-media': hasImage }]} {id} aria-labelledby={headingId}>
   <div class="container">
-    <header class="section-head">
-      <h2 id={headingId}>{heading}</h2>
-      {intro && <p class="section-intro">{intro}</p>}
-    </header>
+    <div class="loc-head">
+      <header class="section-head">
+        <h2 id={headingId}>{heading}</h2>
+        {intro && <p class="section-intro">{intro}</p>}
+      </header>
+
+      {
+        hasImage && (
+          <div class="media-col">
+            <ContentImage asset={asset ?? null} ratio="4 / 3" fit="cover" tone="light" />
+          </div>
+        )
+      }
+    </div>
 
     <ul class="card-grid">
       {
@@ -89,6 +112,28 @@ const headingId = `${id}-heading`;
     font-size: clamp(2rem, 3.4vw, 2.75rem);
     margin: 0 0 0.75rem;
     text-wrap: balance;
+  }
+
+  /* ── Header image split (only when a photo is supplied) ─────────────────── */
+  /* Heading and intro on the left (~55%), photo on the right (~45%); the card
+     grid stays full-width below. */
+  .loc-services.has-media .loc-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4.5vw, 4rem);
+    align-items: center;
+    margin-bottom: clamp(2rem, 4vw, 2.75rem);
+  }
+  /* In the split the header spacing is handled by the grid, and the heading no
+     longer needs its own measure cap. */
+  .loc-services.has-media .section-head {
+    margin-bottom: 0;
+    max-width: none;
+  }
+  @media (max-width: 860px) {
+    .loc-services.has-media .loc-head {
+      grid-template-columns: 1fr;
+    }
   }
   .section-intro {
     margin: 0;
