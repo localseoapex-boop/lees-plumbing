@@ -44,11 +44,17 @@ import { subServices } from '../data/subservices';
 import { linkableCitiesForService } from '../lib/links';
 import { serviceUrl, cityUrl, subServiceUrl, absoluteUrl } from '../lib/urls';
 import { HQ_CITY_SLUG, getLocation } from '../data/locations';
-import { getHubContent, TRUST_HEADING, TRUST_CARDS, REVIEWS } from '../data/service-content';
+import { getHubContent, TRUST_HEADING, TRUST_CARDS } from '../data/service-content';
+// Reviews reuse the SAME verified Google reviews the homepage and About page use,
+// from the single source in config/homepage.ts. Nothing is copied into a second
+// object, and the service-content REVIEWS placeholder is left untouched for the
+// city tier and any future site that has no real reviews yet.
+import { REVIEWS } from '../config/homepage';
 // The real fleet photograph — the same proof asset the homepage Trust band uses.
 // Passing it here gives every hub the same evidence beat instead of a flat slab.
-// SERVICE_HERO_IMAGES is the config-driven backdrop for the hero, keyed by slug.
-import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES } from '../config/images';
+// SERVICE_HERO_IMAGES is the config-driven backdrop for the hero, keyed by slug;
+// FIRST_CONTENT_IMAGES is the photo for the first content section below the hero.
+import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES, FIRST_CONTENT_IMAGES } from '../config/images';
 
 interface Props {
   service: Service;
@@ -131,6 +137,7 @@ const serviceSchema = {
     id="about-service"
     heading={content.supportingHeading}
     paragraphs={content.supportingParagraphs}
+    asset={FIRST_CONTENT_IMAGES[service.slug] ?? null}
   />
 
   <SubserviceDirectory
@@ -151,9 +158,12 @@ const serviceSchema = {
   <ReviewsSection
     id="reviews"
     heading={REVIEWS.heading}
-    items={[]}
+    intro={REVIEWS.intro}
+    items={REVIEWS.items}
     isPlaceholder={REVIEWS.isPlaceholder}
     emptyMessage={REVIEWS.emptyMessage}
+    ctaLabel={REVIEWS.ctaLabel}
+    ctaHref={REVIEWS.ctaHref}
   />
 
   {/* ServiceAreasSection renders its own `id`, which is the #areas anchor target

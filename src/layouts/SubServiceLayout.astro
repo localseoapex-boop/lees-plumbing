@@ -57,14 +57,24 @@ import {
   EXPECT_STEPS,
   TRUST_HEADING,
   TRUST_CARDS,
-  REVIEWS,
 } from '../data/service-content';
+// Reviews reuse the SAME verified Google reviews the homepage and About page use,
+// from the single source in config/homepage.ts. Nothing is copied into a second
+// object, and the service-content REVIEWS placeholder is left untouched for the
+// city tier and any future site that has no real reviews yet.
+import { REVIEWS } from '../config/homepage';
 // The real fleet photograph — the same proof asset the homepage Trust band uses.
 // Passing it here gives every sub-service page the same evidence beat.
 // SERVICE_HERO_IMAGES is the config-driven hero backdrop, keyed by sub-service slug.
-// SUPPORTING_IMAGES is the optional contextual photo for the supporting block, set
+// FIRST_CONTENT_IMAGES is the photo for the first content section below the hero.
+// SUPPORTING_IMAGES is the optional contextual photo for the mid-page band, set
 // only for the flagship pages so the plainer pages stay prose-only.
-import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES, SUPPORTING_IMAGES } from '../config/images';
+import {
+  HOMEPAGE_IMAGES,
+  SERVICE_HERO_IMAGES,
+  FIRST_CONTENT_IMAGES,
+  SUPPORTING_IMAGES,
+} from '../config/images';
 
 interface Props {
   service: Service;
@@ -179,6 +189,7 @@ const serviceSchema = {
     id="about-service"
     heading={supportingHeading}
     paragraphs={content.supportingParagraphs}
+    asset={FIRST_CONTENT_IMAGES[subService.slug] ?? null}
   />
 
   {/* Optional highlighted beat between the hero zone and the trust band. Only
@@ -221,9 +232,12 @@ const serviceSchema = {
   <ReviewsSection
     id="reviews"
     heading={REVIEWS.heading}
-    items={[]}
+    intro={REVIEWS.intro}
+    items={REVIEWS.items}
     isPlaceholder={REVIEWS.isPlaceholder}
     emptyMessage={REVIEWS.emptyMessage}
+    ctaLabel={REVIEWS.ctaLabel}
+    ctaHref={REVIEWS.ctaHref}
   />
 
   <ServiceAreasSection

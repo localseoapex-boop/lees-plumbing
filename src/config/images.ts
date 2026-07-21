@@ -372,6 +372,88 @@ export const SUPPORTING_IMAGES: Record<string, ImageAsset | null> = {
 };
 
 /**
+ * FIRST_CONTENT_IMAGES — the contextual photo for the FIRST content section
+ * (SupportingContent, directly below the hero) on the hub and every sub-service
+ * page.
+ *
+ * This is a SEPARATE slot from SERVICE_HERO_IMAGES (the scrimmed hero backdrop)
+ * and from SUPPORTING_IMAGES (the mid-page EditorialImageBand), so a page never
+ * shows the same file twice.
+ *
+ *   - SIX pages reuse an existing 4:3 supporting photo whose subject fits the
+ *     page and which is NOT that page's own mid-page band, so nothing is
+ *     duplicated on a single page. `reuseFirstContent` spreads the existing asset
+ *     (same file, no path duplicated) and gives it scene-based alt, because in
+ *     THIS slot the photo sits beside prose that does not already caption it (the
+ *     mid-page band keeps the empty, decorative alt for its own usage).
+ *
+ *   - SEVEN pages (the hub, plus the six flagship pages whose supporting photo is
+ *     already their mid-page band) await a dedicated `<slug>-intro.jpg`. Until the
+ *     file exists the slot is `null`, so ContentImage renders the branded fallback
+ *     panel rather than a broken image, and the layout reserves the same box (no
+ *     CLS). TO ACTIVATE ONE: drop a 1600x1200 JPEG at
+ *     /images/services/<slug>-intro.jpg and replace its `null` with the
+ *     `intro(...)` call shown in the comment beside it. The scene-based alt is
+ *     pre-written there; it must NOT claim a real Lee's employee, customer, job,
+ *     or facility, and must carry no logo, uniform, or readable text.
+ */
+const reuseFirstContent = (key: string, alt: string): ImageAsset => ({
+  ...(SUPPORTING_IMAGES[key] as ImageAsset),
+  alt,
+});
+
+/** Descriptor for a not-yet-supplied first-content photo. Referenced from the
+ *  activation comments below; unused until a slot is switched from null. */
+export const introImage = (slug: string, alt: string): ImageAsset => ({
+  src: `/images/services/${slug}-intro.jpg`,
+  alt,
+  width: 1600,
+  height: 1200,
+  provenance: 'ai',
+});
+
+export const FIRST_CONTENT_IMAGES: Record<string, ImageAsset | null> = {
+  // Hub. Awaits a general plumbing scene.
+  plumbing: null, // introImage('plumbing', 'Water supply lines and a brass shutoff valve on a home utility wall')
+
+  // Reuse existing 4:3 supporting photos. Subject fits the page and is not this
+  // page's own mid-page band, so nothing repeats on a single page.
+  'water-heater-installation': reuseFirstContent(
+    'water-heater-repair',
+    'A residential tank water heater connected with copper supply pipes in a utility space',
+  ),
+  'leak-detection': reuseFirstContent(
+    'pipe-repair',
+    'Copper water lines with brass shutoff valves running along an interior wall',
+  ),
+  'garbage-disposal-repair': reuseFirstContent(
+    'drain-cleaning',
+    'The drain trap and supply pipes under a stainless steel kitchen sink',
+  ),
+  'sewer-line-repair': reuseFirstContent(
+    'sewer-camera-inspection',
+    'A white PVC drain cleanout at the base of a house exterior beside the lawn',
+  ),
+  'main-line-cleaning': reuseFirstContent(
+    'hydro-jetting',
+    'A coiled white high-pressure hose line on a wet patio outside a home',
+  ),
+  'clogged-toilet': reuseFirstContent(
+    'toilet-repair',
+    'A white toilet in a bright, clean tiled bathroom',
+  ),
+
+  // Flagship pages. Their supporting photo is already the mid-page band, so a
+  // dedicated intro photo is needed to avoid repeating an image on the page.
+  'water-heater-repair': null, // introImage('water-heater-repair', 'The gas control valve and connections at the base of a tank water heater')
+  'pipe-repair': null, // introImage('pipe-repair', 'A repaired run of copper pipe with fresh soldered fittings in a wall cavity')
+  'drain-cleaning': null, // introImage('drain-cleaning', 'A drain auger cable feeding into an open floor drain')
+  'sewer-camera-inspection': null, // introImage('sewer-camera-inspection', 'A sewer inspection camera reel and monitor set up beside a cleanout')
+  'hydro-jetting': null, // introImage('hydro-jetting', 'A hydro jetting nozzle and high-pressure line at an open sewer cleanout')
+  'toilet-repair': null, // introImage('toilet-repair', 'The fill valve and flapper inside an open toilet tank')
+};
+
+/**
  * CONTACT PAGE. The hero background behind the contact page's H1 (see
  * ContentHero's background mode). AI illustration of the trade: a tidy plumbing
  * workbench, no branding, no readable text, no people, so it is decorative

@@ -1,37 +1,74 @@
 ---
 /**
- * SupportingContent.astro — the first section after the hero on both tiers.
+ * SupportingContent.astro — the first content section after the hero on both
+ * tiers.
  *
- * This is the main educational and search-facing block. It is deliberately plain
- * prose in a readable measure rather than a card grid, because its job is to be
- * read. All copy arrives through props from data/service-content.ts, so this
- * component holds no page-specific text of its own.
+ * This is the main educational and search-facing block, and the FIRST editorial
+ * image beat on the page. When the caller passes an `asset` slot the section
+ * becomes a text-and-image split: the heading and intro prose on the left
+ * (~55%), a contextual photo on the right (~45%). The prose is UNCHANGED by the
+ * image; the split only places it beside the photo.
  *
- * TEXT ONLY. The optional contextual photo that a flagship page carries is NOT
- * rendered here. It lives lower on the page, in EditorialImageBand (placed after
- * ExpectSection), so the image creates rhythm in the long body rather than
- * clustering directly beneath the hero photo. This section keeps only the
- * introductory prose.
+ * The image goes through ContentImage, so it keeps a reserved 4:3 box (no CLS),
+ * is capped at its intrinsic width (never upscaled), and can never be stretched.
+ * A `null` asset renders the branded fallback panel in the same reserved box, so
+ * a page whose dedicated photo has not been supplied yet shows a finished
+ * placeholder rather than a broken image (see FIRST_CONTENT_IMAGES).
+ *
+ * DOM AND VISUAL ORDER: heading, then prose, then image, always. On desktop the
+ * photo sits in the right column; below the breakpoint the grid collapses and the
+ * photo falls under the prose. The image is never moved out of DOM order, so the
+ * reading order matches the visual order on every screen.
+ *
+ * PASSING NO `asset` prop at all keeps the original text-only rendering, so any
+ * caller that does not want an image is unaffected.
  *
  * The `id` is the anchor target for the sub-service hero's "Learn About This
  * Service" CTA, so it must stay stable.
  */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
 interface Props {
   id: string;
   heading: string;
   paragraphs: string[];
+  /**
+   * Optional first-content photo. When the prop is present (even as null) the
+   * section renders as a text-and-image split; null shows the branded fallback.
+   * Omitting the prop entirely keeps the plain text-only rendering.
+   */
+  asset?: ImageAsset | null;
 }
 
 const { id, heading, paragraphs } = Astro.props;
+// Read directly (no default) so "prop omitted" (undefined) stays distinct from
+// "prop passed as null" (image slot present, awaiting photo).
+const asset = Astro.props.asset;
+const hasImageSlot = asset !== undefined;
 const headingId = `${id}-heading`;
 ---
 
-<section class="supporting" id={id} aria-labelledby={headingId}>
-  <div class="container">
-    <h2 id={headingId}>{heading}</h2>
-    <div class="prose">
-      {paragraphs.map((text) => <p>{text}</p>)}
+<section
+  class:list={['supporting', { 'has-media': hasImageSlot }]}
+  id={id}
+  aria-labelledby={headingId}
+>
+  <div class="container supporting-inner">
+    <div class="prose-col">
+      <h2 id={headingId}>{heading}</h2>
+      <div class="prose">
+        {paragraphs.map((text) => <p>{text}</p>)}
+      </div>
     </div>
+
+    {
+      hasImageSlot && (
+        <div class="media-col">
+          <ContentImage asset={asset ?? null} ratio="4 / 3" fit="cover" tone="light" />
+        </div>
+      )
+    }
   </div>
 </section>
 
@@ -60,5 +97,26 @@ const headingId = `${id}-heading`;
   }
   .prose p:last-child {
     margin-bottom: 0;
+  }
+
+  /* ── Editorial split (only when an image slot is supplied) ──────────────── */
+  /* ~55% copy / ~45% image. */
+  .supporting.has-media .supporting-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4.5vw, 4rem);
+    align-items: center;
+  }
+  /* In the split the copy lives in a column, so it no longer needs its own
+     measure cap to stay readable. */
+  .supporting.has-media h2,
+  .supporting.has-media .prose {
+    max-width: none;
+  }
+
+  @media (max-width: 860px) {
+    .supporting.has-media .supporting-inner {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
