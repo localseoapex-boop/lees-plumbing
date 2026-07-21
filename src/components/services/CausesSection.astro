@@ -10,6 +10,11 @@
  * Causes of Water Heater Problems" is right for a repair page, and nonsense on an
  * installation page, which wants "Reasons to Consider Water Heater Installation".
  * Repair language does not get forced onto installation pages.
+ *
+ * White tone, and a red rule above the heading, so it shares the section
+ * signature with SignsSection and the trust band. Its left-rule list keeps it
+ * visually distinct from SignsSection's top-rule divided list, so the two do not
+ * read as the same block twice.
  */
 import type { ContentPoint } from '../../data/service-content';
 
@@ -25,6 +30,7 @@ const headingId = `${id}-heading`;
 
 <section class="causes" aria-labelledby={headingId}>
   <div class="container">
+    <span class="head-rule" aria-hidden="true"></span>
     <h2 id={headingId}>{heading}</h2>
 
     <ul class="cause-list">
@@ -42,14 +48,20 @@ const headingId = `${id}-heading`;
 
 <style>
   .causes {
-    background: var(--color-surface-alt);
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
     padding: var(--section-y) 0;
+  }
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
   }
   h2 {
     font-size: clamp(2rem, 3.4vw, 2.75rem);
-    margin: 0 0 clamp(1.75rem, 3.5vw, 2.5rem);
+    margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
     max-width: 26ch;
     text-wrap: balance;
   }

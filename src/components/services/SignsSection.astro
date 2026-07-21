@@ -1,13 +1,22 @@
 ---
 /**
- * SignsSection.astro — "Signs You May Need ..." card grid.
+ * SignsSection.astro — "Signs You May Need ..." editorial list.
+ *
+ * Rendered as a hairline-divided two-column list, NOT a grid of boxed cards.
+ * Cards on this page are reserved for navigation (Related) and proof (Trust);
+ * making the symptom list a run of bordered cards as well produced a wall of
+ * near-identical boxes. As plain divided rows it reads as editorial content and
+ * stays easy to scan.
  *
  * The heading is a PROP, not a constant, and that is the point. "Signs You May
  * Need Water Heater Repair" is right for a repair page and wrong for an
  * installation or maintenance page, which need "Signs It May Be Time to Replace
- * Your Water Heater" or "When to Schedule ...". Forcing repair wording onto an
- * installation page would read as though nobody looked at it. Each sub-service
- * supplies its own heading in data/service-content.ts.
+ * Your Water Heater" or "When to Schedule ...". Each sub-service supplies its own
+ * heading in data/service-content.ts.
+ *
+ * The short red rule above the heading is the shared section signature used by
+ * the trust band and the other editorial sections, so the page reads as one
+ * system.
  */
 import type { ContentPoint } from '../../data/service-content';
 
@@ -23,9 +32,10 @@ const headingId = `${id}-heading`;
 
 <section class="signs" aria-labelledby={headingId}>
   <div class="container">
+    <span class="head-rule" aria-hidden="true"></span>
     <h2 id={headingId}>{heading}</h2>
 
-    <ul class="signs-grid">
+    <ul class="signs-list">
       {
         items.map((item) => (
           <li class="sign">
@@ -43,30 +53,38 @@ const headingId = `${id}-heading`;
     background: var(--color-surface);
     padding: var(--section-y) 0;
   }
+  .head-rule {
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-red);
+    margin-bottom: 1.25rem;
+  }
   h2 {
     font-size: clamp(2rem, 3.4vw, 2.75rem);
-    margin: 0 0 clamp(1.75rem, 3.5vw, 2.5rem);
+    margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
     max-width: 26ch;
     text-wrap: balance;
   }
-  .signs-grid {
+
+  /* Two-column hairline-divided list. Each row carries a top rule, so the section
+     reads as a divided editorial list rather than a set of boxes. */
+  .signs-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(2rem, 4vw, 3.5rem);
   }
   .sign {
-    padding: 1.4rem 1.5rem;
-    background: var(--color-surface-alt);
-    border: 1px solid var(--color-border);
-    border-top: 3px solid var(--color-red);
-    border-radius: var(--radius-lg);
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--color-border);
   }
   .sign h3 {
     font-size: 1.2rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.4rem;
   }
   .sign p {
     margin: 0;
@@ -75,8 +93,8 @@ const headingId = `${id}-heading`;
     color: var(--color-muted);
   }
 
-  @media (max-width: 560px) {
-    .signs-grid {
+  @media (max-width: 760px) {
+    .signs-list {
       grid-template-columns: 1fr;
     }
   }

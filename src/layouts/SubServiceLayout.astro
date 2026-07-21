@@ -30,8 +30,10 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 
 import ServiceHero from '../components/services/ServiceHero.astro';
 import SupportingContent from '../components/services/SupportingContent.astro';
+import ServiceCallout from '../components/services/ServiceCallout.astro';
 import SignsSection from '../components/services/SignsSection.astro';
 import ExpectSection from '../components/services/ExpectSection.astro';
+import EditorialImageBand from '../components/services/EditorialImageBand.astro';
 import CausesSection from '../components/services/CausesSection.astro';
 import RelatedServicesSection from '../components/services/RelatedServicesSection.astro';
 import FaqSection from '../components/services/FaqSection.astro';
@@ -60,7 +62,9 @@ import {
 // The real fleet photograph — the same proof asset the homepage Trust band uses.
 // Passing it here gives every sub-service page the same evidence beat.
 // SERVICE_HERO_IMAGES is the config-driven hero backdrop, keyed by sub-service slug.
-import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES } from '../config/images';
+// SUPPORTING_IMAGES is the optional contextual photo for the supporting block, set
+// only for the flagship pages so the plainer pages stay prose-only.
+import { HOMEPAGE_IMAGES, SERVICE_HERO_IMAGES, SUPPORTING_IMAGES } from '../config/images';
 
 interface Props {
   service: Service;
@@ -88,6 +92,20 @@ const heroHeading = `${subService.name} in Hyde Park, Utah`;
 const heroLede = `${subService.tagline} Based in Hyde Park and serving homeowners across Cache Valley.`;
 const supportingHeading =
   content.supportingHeading ?? `Professional ${subService.name} for Hyde Park and Cache Valley`;
+
+// Optional contextual photo for the mid-page editorial band (after ExpectSection).
+// Set only on the flagship pages, so most pages stay prose-only and the ones with
+// a photo read differently. The band renders only when BOTH a photo and the moved
+// context paragraph exist, so it can never appear as an image with no prose.
+const editorialImage = SUPPORTING_IMAGES[subService.slug] ?? null;
+const contextParagraphs = content.contextParagraphs ?? [];
+const showEditorialBand = editorialImage !== null && contextParagraphs.length > 0;
+// Alternate the photo side across the flagship set so they do not all match.
+const editorialMediaSide: 'left' | 'right' = (
+  ['drain-cleaning', 'sewer-camera-inspection', 'toilet-repair'] as string[]
+).includes(subService.slug)
+  ? 'left'
+  : 'right';
 
 // Home > Plumbing > Water Heater Repair. No /services/ tier at launch.
 const crumbs = [
@@ -163,6 +181,18 @@ const serviceSchema = {
     paragraphs={content.supportingParagraphs}
   />
 
+  {/* Optional highlighted beat between the hero zone and the trust band. Only
+      the pages with a genuine safety or local-insight note render one. */}
+  {content.callout && (
+    <ServiceCallout
+      id="callout"
+      variant={content.callout.variant}
+      label={content.callout.label}
+      title={content.callout.title}
+      body={content.callout.body}
+    />
+  )}
+
   <TrustSection
     id="why-us"
     heading={TRUST_HEADING}
@@ -174,6 +204,17 @@ const serviceSchema = {
   <SignsSection id="signs" heading={content.signsHeading} items={content.signs} />
 
   <ExpectSection id="expect" steps={EXPECT_STEPS} note={content.expectNote} />
+
+  {/* Optional mid-page editorial photo, placed here so it breaks up the long body
+      run rather than clustering under the hero. Renders only on flagship pages
+      that carry both a photo and the relocated context paragraph. */}
+  {showEditorialBand && editorialImage && (
+    <EditorialImageBand
+      paragraphs={contextParagraphs}
+      asset={editorialImage}
+      media={editorialMediaSide}
+    />
+  )}
 
   <CausesSection id="causes" heading={content.causesHeading} items={content.causes} />
 

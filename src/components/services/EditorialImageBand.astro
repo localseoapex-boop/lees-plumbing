@@ -1,0 +1,97 @@
+---
+/**
+ * EditorialImageBand.astro — the one optional contextual photo on a sub-service
+ * page, as a mid-page editorial split placed AFTER ExpectSection.
+ *
+ * WHY IT LIVES HERE, not under the hero. The hero already carries a photograph.
+ * A second image directly beneath it would cluster all the imagery at the top and
+ * leave the long lower body as an unbroken text run. Dropping the split into the
+ * middle of the page instead gives the image its own reading beat and breaks up
+ * the run of text sections, which is the whole point of having it.
+ *
+ * NO NEW COPY. The prose here is the closing supporting paragraph, moved out of
+ * SupportingContent (see contextParagraphs in data/service-content.ts). It is
+ * relocated, never duplicated, so no sentence renders twice on the page.
+ *
+ * NO HEADING. The band is a continuation beat, not a new topic, so it emits no
+ * <h2>. That keeps the document outline unchanged and adds no invented label.
+ *
+ * The photo is an AI illustration of the trade: DECORATIVE-adjacent, unbranded,
+ * scene-based alt (set in config/images.ts), never a claim about this business.
+ * It goes through ContentImage, so it keeps a reserved 4:3 box (no CLS), is
+ * capped at its intrinsic width (never upscaled), and can never be stretched.
+ *
+ * MOBILE ORDER. Below the breakpoint the photo always renders AFTER the prose, in
+ * both DOM and visual order, regardless of which side it takes on desktop.
+ */
+import type { ImageAsset } from '../../config/images';
+import ContentImage from '../content-pages/ContentImage.astro';
+
+interface Props {
+  paragraphs: string[];
+  asset: ImageAsset;
+  /** Which side the photo sits on at desktop. Alternated across the flagship set. */
+  media?: 'left' | 'right';
+}
+
+const { paragraphs, asset, media = 'right' } = Astro.props;
+---
+
+<section class:list={['editorial-band', `media-${media}`]}>
+  <div class="container band-inner">
+    <div class="prose-col">
+      {paragraphs.map((text) => <p>{text}</p>)}
+    </div>
+    <div class="media-col">
+      <ContentImage asset={asset} ratio="4 / 3" fit="cover" tone="light" />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Grey band, so it separates cleanly from the dark ExpectSection above and the
+     white CausesSection below. Same surface-alt tone the asides use, no new
+     colour. */
+  .editorial-band {
+    background: var(--color-surface-alt);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--section-y) 0;
+  }
+  .band-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 4.5vw, 4rem);
+    align-items: center;
+  }
+  .prose-col p {
+    margin: 0 0 1.25rem;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--color-text);
+  }
+  .prose-col p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Photo on the left at desktop: reorder the columns visually without moving the
+     prose in the DOM, so the reading order stays prose-then-image. */
+  .editorial-band.media-left .prose-col {
+    order: 2;
+  }
+  .editorial-band.media-left .media-col {
+    order: 1;
+  }
+
+  @media (max-width: 860px) {
+    .band-inner {
+      grid-template-columns: 1fr;
+    }
+    /* Stack with the photo under the prose regardless of desktop side, in both
+       DOM and visual order. */
+    .editorial-band.media-left .prose-col,
+    .editorial-band.media-left .media-col {
+      order: 0;
+    }
+  }
+</style>

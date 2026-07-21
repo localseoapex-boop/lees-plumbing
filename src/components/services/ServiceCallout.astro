@@ -1,0 +1,111 @@
+---
+/**
+ * ServiceCallout.astro — one optional, highlighted panel per service page.
+ *
+ * This is the controlled-variation piece. Most of the service framework is the
+ * same run of sections on every page; a callout is the escape hatch that lets a
+ * specific page carry a beat the others do not. A page only gets one when there
+ * is a genuine, honest thing to say, so the callout's PRESENCE (and its absence
+ * on the plainer pages) is itself the variation. It renders in the zone between
+ * the hero and the trust band.
+ *
+ * Two variants, matched to the two honest reasons to interrupt the reader:
+ *   - "safety"  — an action worth taking right now (shut the water off, cut the
+ *                 power). Light card, heavy red edge, so it reads as a caution.
+ *   - "insight" — a useful local or technical fact (Cache Valley's hard water,
+ *                 why caustic drain cleaner is a bad idea). Dark card, so it
+ *                 lands as an aside rather than an alarm.
+ *
+ * It follows the same rules as the rest of this file: no icon library exists in
+ * this project, so the accent is CSS (a red rule and a small label), the same
+ * language SignsSection, CausesSection, and ExpectSection already speak. All copy
+ * arrives through props from data/service-content.ts; this component holds none.
+ */
+interface Props {
+  id?: string;
+  variant: 'safety' | 'insight';
+  /** Overrides the default kicker. Defaults: "Safety first" / "Good to know". */
+  label?: string;
+  title: string;
+  body: string;
+}
+
+const { id, variant, label, title, body } = Astro.props;
+const kicker = label ?? (variant === 'safety' ? 'Safety first' : 'Good to know');
+const headingId = id ? `${id}-heading` : undefined;
+---
+
+<section class={`callout callout--${variant}`} aria-labelledby={headingId} {...id ? { id } : {}}>
+  <div class="container">
+    <div class="callout-card">
+      <p class="callout-kicker">{kicker}</p>
+      <h2 id={headingId} class="callout-title">{title}</h2>
+      <p class="callout-body">{body}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* A connective beat between two full sections, so it uses lighter vertical
+     rhythm than a section of its own would. Both variants share the grey band
+     tone: it always follows the white SupportingContent, so a white band would
+     read as one continuous white block. The two treatments stay distinct through
+     the CARD, not the band (light caution card vs dark aside card). */
+  .callout {
+    padding: clamp(2rem, 5vw, 3.25rem) 0;
+    background: var(--color-surface-alt);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .callout-card {
+    max-width: 900px;
+    padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.5rem, 3.5vw, 2.5rem);
+    border-radius: var(--radius-lg);
+  }
+  .callout--safety .callout-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-left: 5px solid var(--color-red);
+    box-shadow: var(--shadow-sm);
+  }
+  .callout--insight .callout-card {
+    background: var(--color-dark);
+    border-left: 5px solid var(--color-red);
+  }
+
+  .callout-kicker {
+    margin: 0 0 0.6rem;
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-red);
+  }
+  .callout-title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .callout-body {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 1.02rem;
+    line-height: 1.7;
+  }
+
+  .callout--safety .callout-title {
+    color: var(--color-dark);
+  }
+  .callout--safety .callout-body {
+    color: var(--color-text);
+  }
+  .callout--insight .callout-title {
+    color: var(--color-white);
+  }
+  .callout--insight .callout-body {
+    color: #c9cccc;
+  }
+</style>

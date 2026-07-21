@@ -188,6 +188,13 @@ export interface SubServiceContent {
   /** Defaults to "Professional [Name] for Hyde Park and Cache Valley". */
   supportingHeading?: string;
   supportingParagraphs: string[];
+  /**
+   * The one paragraph that moves into the mid-page editorial image band, beside
+   * the contextual photo, on image-enabled services. It is NOT new copy: it is
+   * the closing supporting paragraph, relocated so the image has its own reading
+   * beat lower on the page. Absent on services with no supporting image.
+   */
+  contextParagraphs?: string[];
   /** Configurable so installation and maintenance pages are not forced into repair wording. */
   signsHeading: string;
   signs: ContentPoint[];
@@ -196,6 +203,19 @@ export interface SubServiceContent {
   causes: ContentPoint[];
   /** Optional one-line note appended to the shared "What to Expect" steps. */
   expectNote?: string;
+  /**
+   * Optional highlighted panel shown between the hero and the trust band. Only a
+   * page with a genuine, honest thing to say gets one, so most pages carry a
+   * callout and a handful deliberately do not. `safety` is a light caution card
+   * for an action worth taking now; `insight` is a dark aside for a useful local
+   * or technical fact. `label` overrides the default kicker. See ServiceCallout.
+   */
+  callout?: {
+    variant: 'safety' | 'insight';
+    label?: string;
+    title: string;
+    body: string;
+  };
   faqs: FaqItem[];
   /** Sibling sub-service slugs. The parent hub is linked automatically. */
   related: string[];
@@ -235,9 +255,17 @@ export const EXPECT_STEPS: ContentPoint[] = [
 export const subServiceContent: Record<string, SubServiceContent> = {
   // ───────────────── Plumbing: water heaters ─────────────────
   'water-heater-repair': {
+    callout: {
+      variant: 'insight',
+      label: 'Local insight',
+      title: "Cache Valley's hard water is hard on water heaters",
+      body: 'The mineral content in local water leaves sediment in the bottom of a tank and scale inside a tankless heat exchanger. Both make the unit work harder for the same hot water, which is why a heater here can start to struggle years before the tank is truly worn out. If yours is getting noisy or slow to recover, it is worth a look.',
+    },
     supportingParagraphs: [
       'A water heater is easy to ignore until the morning it stops producing hot water. Most homes in Cache Valley run either a conventional tank unit, which keeps a reservoir of water hot and ready, or a tankless unit, which heats water on demand as it passes through. The two fail in different ways, so the first job on any repair call is working out which part of the system is actually at fault.',
       'On a tank heater, the usual suspects are the heating elements or the gas burner, the thermostat, the thermocouple or igniter, the dip tube, and the anode rod. On a tankless unit, scale buildup inside the heat exchanger and ignition faults are more common. A tank that is leaking from the body of the tank itself is a different matter, because that is a failure of the vessel and it cannot be repaired.',
+    ],
+    contextParagraphs: [
       'Cache Valley water carries a fair amount of mineral content, and that matters here. Hard water leaves sediment in the bottom of a tank and scale inside a tankless heat exchanger, both of which force the unit to work harder to deliver the same hot water. That is why a heater in this area can start underperforming years before the tank itself is worn out.',
     ],
     signsHeading: 'Signs You May Need Water Heater Repair',
@@ -408,6 +436,12 @@ export const subServiceContent: Record<string, SubServiceContent> = {
 
   // ───────────────── Plumbing: repairs and fixtures ─────────────────
   'leak-detection': {
+    callout: {
+      variant: 'insight',
+      label: 'Local insight',
+      title: 'A hidden leak damages the home from the inside out',
+      body: 'Water from a small supply leak can wet framing, insulation, and subfloor for a long time before it ever stains a ceiling or warps a floor. That is why a climbing water bill, a musty smell, or the sound of water running with everything off are worth acting on early. Finding the source precisely means opening as little of the house as possible to make the repair.',
+    },
     supportingParagraphs: [
       'The leaks that cost the most are the ones nobody sees. A visible drip under a sink is annoying but bounded. A supply line weeping inside a wall cavity, under a slab, or beneath a floor can run for months, and by the time it shows itself as a stain on a ceiling or a soft spot in a floor, the water has already been in the framing and insulation for a long time.',
       'Leak detection is the work of finding that source without opening up the house to look for it. The tools do the searching instead. Pressure testing isolates a section of the system and shows whether it holds. Acoustic equipment listens for the specific sound water makes escaping a pressurized line, which carries through slab and framing. A camera goes inside drain and sewer lines where the problem is not on the supply side at all.',
@@ -498,9 +532,17 @@ export const subServiceContent: Record<string, SubServiceContent> = {
   },
 
   'pipe-repair': {
+    callout: {
+      variant: 'safety',
+      label: 'Safety note',
+      title: 'For an active burst, shut the water off first',
+      body: 'If a pipe has burst or is actively leaking, close the main shutoff valve to stop the flow before anything else, then open a low faucet to drain the line. That limits the water reaching framing, insulation, and subfloor while you wait. Once it is shut off, give us a call and tell us what happened.',
+    },
     supportingParagraphs: [
       'Pipe repair covers a wide range, from a single failed section to repiping a whole house. What the work has in common is that the pipe carrying water through the home has stopped doing it reliably, whether that shows up as a burst line, a slow leak, low pressure, or water that has started to look wrong coming out of the tap.',
       'Cache Valley homes contain a mix of materials, and each ages differently. Galvanized steel, common in older houses, corrodes from the inside and gradually chokes off its own diameter, which is why an old home can lose pressure over decades without a single visible leak. Copper is durable but develops pinholes where water chemistry or high velocity has been working at it. PEX is flexible and resists freeze damage better than rigid pipe, though its fittings still need to be sound.',
+    ],
+    contextParagraphs: [
       'Repairing a single section makes sense when the rest of the system is in good condition. When the same run keeps failing in different places, that is usually the pipe telling you the material is at the end of its life, and replacing the run is more economical than chasing one pinhole after another.',
     ],
     signsHeading: 'Signs You May Need Pipe Repair',
@@ -591,6 +633,8 @@ export const subServiceContent: Record<string, SubServiceContent> = {
     supportingParagraphs: [
       'A toilet is a simple machine, which is good news when something goes wrong with it. Most of what fails is inside the tank, and most of it is repairable without replacing the fixture. The common faults are a flapper that no longer seals, a fill valve that will not shut off, a float set wrong, or a wax ring at the base that has lost its seal.',
       'The most expensive toilet problem is also the quietest. A toilet that runs continuously because the flapper is not seating is moving water constantly, and unlike a dripping faucet it makes almost no noise to remind you. That shows up on the water bill rather than anywhere in the house, and it can run for months before anyone thinks to check.',
+    ],
+    contextParagraphs: [
       'A leak at the base is a different kind of problem and deserves faster attention. Water escaping there goes into the flooring and the subfloor underneath, where it does damage well before it becomes visible. When repair no longer makes sense, either because the bowl is cracked or because the fixture is old and repairs are stacking up, replacement is straightforward.',
     ],
     signsHeading: 'Signs You May Need Toilet Repair',
@@ -678,6 +722,12 @@ export const subServiceContent: Record<string, SubServiceContent> = {
   },
 
   'garbage-disposal-repair': {
+    callout: {
+      variant: 'safety',
+      label: 'Safety note',
+      title: 'Never reach into the disposal',
+      body: 'A disposal that hums or has gone quiet can still turn over unexpectedly. Switch it off and cut the power at the wall switch or the breaker before anyone goes near the opening. Many jams free up from the reset button underneath or the hex slot on the bottom, and if that does not do it, leave it for us rather than reaching in.',
+    },
     supportingParagraphs: [
       'A garbage disposal fails in a small number of recognizable ways, and the difference between them tells you a lot about whether it needs a repair or a replacement. A unit that hums but does not turn is jammed, and the motor is fine. A unit that does nothing at all has lost power, often to nothing more than a tripped reset button. A unit that leaks may be fixable at the connections or may be failing at the body of the housing, which is a different matter.',
       'Most of what goes wrong traces back to what went down the drain. Fibrous material like celery and corn husks wraps around the impellers. Grease goes in warm and liquid and cools into a solid coating further down the line. Coffee grounds and eggshells accumulate into a dense sludge that does not flush through. Bones and utensils simply jam the mechanism outright.',
@@ -769,9 +819,17 @@ export const subServiceContent: Record<string, SubServiceContent> = {
 
   // ───────────────── Plumbing: drain and sewer ─────────────────
   'drain-cleaning': {
+    callout: {
+      variant: 'insight',
+      label: 'Maintenance tip',
+      title: 'Go easy on caustic drain cleaners',
+      body: 'Store bought chemical drain openers sit in the pipe when they do not clear the clog, and the heat and caustic action can be hard on older or plastic lines, and on whoever opens the trap later. Clearing the blockage mechanically and finding out why it formed is gentler on the plumbing and tends to hold longer.',
+    },
     supportingParagraphs: [
       'A slow drain is a warning, not an inconvenience. Drains do not slow down at random. They slow down because the inside diameter of the pipe is closing up, and whatever is causing that will keep going until the line stops entirely. Clearing it early is a smaller job than clearing it after it has backed up into a tub.',
       'What builds up depends on which drain it is. Kitchen lines fill with grease and food solids that cool and stick to the pipe wall. Bathroom lines are usually hair bound with soap scum, which forms a mat that catches everything else passing through. Laundry lines collect lint and detergent residue. In every case the material narrows the pipe gradually rather than blocking it all at once.',
+    ],
+    contextParagraphs: [
       'It matters whether one fixture is slow or several. A single slow drain is a local blockage in that branch line. Several fixtures draining slowly at the same time, particularly on the lowest level of the house, is a different signal. That points at the main line, and it is a bigger problem than a clogged sink.',
     ],
     signsHeading: 'Signs You Need Drain Cleaning',
@@ -949,6 +1007,12 @@ export const subServiceContent: Record<string, SubServiceContent> = {
   },
 
   'main-line-cleaning': {
+    callout: {
+      variant: 'safety',
+      label: 'Safety note',
+      title: 'When several drains back up at once, stop running water',
+      body: 'A backup that hits more than one fixture usually means the main line serving the whole home is blocked, not a single drain. Running more water, or flushing, only adds to what already has nowhere to go. Ease off the water and give us a call so we can clear the main and confirm it is flowing again.',
+    },
     supportingParagraphs: [
       'The main line is the single pipe that carries everything from your home out to the sewer or septic system. Every fixture in the house feeds into it. That is what makes a main line blockage different in character from a clogged sink, because when the main line closes up, nothing in the house has anywhere to drain.',
       'The tell is that several fixtures fail at once. A single clogged drain affects one fixture. A main line blockage shows up as multiple drains slowing together, toilets bubbling when a washing machine empties, and water rising in a basement shower or floor drain when an upstairs toilet is flushed. Waste water backs up and finds the lowest opening in the house, which is why the basement is usually where you see it first.',
@@ -1039,6 +1103,12 @@ export const subServiceContent: Record<string, SubServiceContent> = {
   },
 
   'sewer-line-repair': {
+    callout: {
+      variant: 'safety',
+      label: 'Safety note',
+      title: 'Treat a sewage backup as a health matter',
+      body: 'Waste water carries bacteria, so keep people and pets away from anything that has backed up, stop using the drains that feed the line, and ventilate the area. Do not try to force the blockage through. Give us a call and we will locate the problem in the line before deciding whether it needs a repair or a full replacement.',
+    },
     supportingParagraphs: [
       'The sewer line is the pipe that carries waste from your house to the municipal sewer or a septic tank. It is buried, it is usually the oldest pipe on the property, and it is the one nobody thinks about until it fails. When it does fail, the consequences arrive indoors.',
       'Sewer lines fail in a handful of ways. Roots work in through joints and cracks and grow into a mesh that catches solids. Ground settling leaves a belly, which is a low spot where water and waste sit instead of flowing away. Older clay and cast iron pipe cracks, corrodes, and eventually collapses. Any of these produces the same experience for the homeowner, which is a line that backs up, gets cleared, and then backs up again.',
@@ -1132,6 +1202,8 @@ export const subServiceContent: Record<string, SubServiceContent> = {
     supportingParagraphs: [
       'Hydro jetting cleans a drain or sewer line with water rather than a cable. A hose with a specialized nozzle is fed into the line and high pressure water is directed at the pipe wall, scouring off what has accumulated there and flushing it out of the system.',
       'The difference from snaking is worth being precise about, because the two are not interchangeable. A cable bores through a blockage. It opens a channel and restores flow, which is exactly what you want when a discrete clog is sitting in an otherwise clean pipe. What a cable does not do is remove the layer of grease, scale, and buildup coating the inside of the line. Jetting does, which is why it restores something close to the original diameter rather than punching a hole through the middle of the problem.',
+    ],
+    contextParagraphs: [
       'That makes it the right tool in specific situations. Kitchen lines with years of grease on the walls. Lines that clog again a few weeks after every snaking. Sewer lines with root hair and scale. It is not the right tool everywhere, and pipe condition matters, which is why a camera inspection is often the sensible first step. Jetting a line that is already cracked or collapsed is not a good idea, and knowing that in advance is worth the look.',
     ],
     signsHeading: 'When Hydro Jetting May Help',
@@ -1221,9 +1293,17 @@ export const subServiceContent: Record<string, SubServiceContent> = {
   },
 
   'sewer-camera-inspection': {
+    callout: {
+      variant: 'insight',
+      label: 'Service consideration',
+      title: 'Worth doing before you buy or dig',
+      body: 'A camera run shows the real condition of a line instead of guessing at it from the surface. Before buying an older home, or before any digging near the sewer, it tells you where the pipe runs, what shape it is in, and whether roots or a break are already at work, so there are far fewer surprises later.',
+    },
     supportingParagraphs: [
       'A sewer camera inspection puts a waterproof camera on a flexible cable and sends it down the line so you can see the inside of the pipe on a monitor in real time. It replaces guesswork with a picture, which matters a great deal when the alternative is digging up a yard to find out what is wrong.',
       'What it shows is the condition of the pipe and the exact nature and location of any problem. Roots that have grown in through a joint. A crack or a collapsed section. A belly where the line sags and water stands. Grease and scale coating the wall. Foreign objects. It also shows what the pipe is made of and roughly how much life is left in it, which is information you cannot get any other way.',
+    ],
+    contextParagraphs: [
       'The situation where this earns its keep most clearly is a line that keeps backing up despite being cleared. That pattern almost always means a structural defect is holding material, and clearing the line a fourth time will not change that. Seeing the inside of the pipe turns a recurring problem into a specific one, with a known cause sitting at a known point along the run, which is the difference between a targeted repair and digging to find out.',
     ],
     signsHeading: 'When a Sewer Camera Inspection May Help',
